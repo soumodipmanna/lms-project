@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Management System- Welcome</title>
+     <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f7f7f7;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #4285f4;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .button:hover {
+            background-color: #3367d6;
+        }
+    </style>
+
+</head>
+<body>
+ <div class="container">
+        <h1>Welcome to Library Management System</h1>
+        <a href="/admin/" class="button">Admin Login</a>
+        <a href="{% url 'student_login' %}" class="button">Student Login</a>
+        <a href="{% url 'student_signup' %}" class="button">Student Signup</a>
+
+    </div>
+
+</body>
+</html>
