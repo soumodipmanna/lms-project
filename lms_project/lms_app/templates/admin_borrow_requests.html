@@ -109,11 +109,11 @@
                     <tbody>
                         {{% for borrow in borrows %}}
                         <tr>
-                            <td>{{{{ borrow.student.name|default:borrow.student.roll_no }}}}</td>
-                            <td>{{{{ borrow.student.roll_no }}}}</td>
-                            <td>{{{{ borrow.book.title }}}}</td>
-                            <td>{{{{ borrow.borrow_date|date:"M d, Y" }}}}</td>
-                            <td><span class="badge badge-{{{{ borrow.status }}}}">{{{{ borrow.get_status_display }}}}</span></td>
+                            <td>{{  borrow.student.name|default:borrow.student.roll_no } }</td>
+                            <td>{{  borrow.student.roll_no } }</td>
+                            <td>{{  borrow.book.title } }</td>
+                            <td>{{  borrow.borrow_date|date:"M d, Y" } }</td>
+                            <td><span class="badge badge-{{  borrow.status } }">{{  borrow.get_status_display } }</span></td>
                             <td>
                                 {{% if borrow.status == 'pending' %}}
                                 <form method="post" action="{{% url 'admin_approve_borrow' borrow.id %}}" style="display:inline;">
@@ -125,7 +125,7 @@
                                     <button class="btn-danger">Reject</button>
                                 </form>
                                 {{% else %}}
-                                <span style="color:#999;">{{{{ borrow.get_status_display }}}}</span>
+                                <span style="color:#999;">{{  borrow.get_status_display } }</span>
                                 {{% endif %}}
                             </td>
                         </tr>

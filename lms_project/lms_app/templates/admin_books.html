@@ -113,13 +113,13 @@
                     <tbody>
                         {{% for book in books %}}
                         <tr>
-                            <td>{{{{ book.title }}}}</td>
-                            <td>{{{{ book.author }}}}</td>
-                            <td>{{{{ book.isbn }}}}</td>
-                            <td>{{{{ book.quantity }}}}</td>
+                            <td>{{  book.title } }</td>
+                            <td>{{  book.author } }</td>
+                            <td>{{  book.isbn } }</td>
+                            <td>{{  book.quantity } }</td>
                             <td>
                                 <a href="{{% url 'admin_edit_book' book.id %}}" class="btn-success">Edit</a>
-                                <form method="post" action="{{% url 'admin_delete_book' book.id %}}" style="display:inline;" onsubmit="return confirm('Delete book {{{{ book.title }}}}?');">
+                                <form method="post" action="{{% url 'admin_delete_book' book.id %}}" style="display:inline;" onsubmit="return confirm('Delete book {{  book.title } }?');">
                                     {{% csrf_token %}}
                                     <button class="btn-danger">Delete</button>
                                 </form>
