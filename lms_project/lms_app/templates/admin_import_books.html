@@ -374,8 +374,9 @@
                 <div class="info-box">
                     <h4>📄 CSV Format Requirements:</h4>
                     <p>Your CSV file must include the following columns (with headers):</p>
-                    <p><code>title,author,isbn,quantity</code></p>
-                    <p style="margin-top: 0.5rem;"><strong>All fields are required.</strong></p>
+                    <p><code>title,author,isbn,quantity,category,department</code></p>
+                    <p style="margin-top: 0.5rem;"><strong>Required fields: title, author, isbn, quantity</strong></p>
+                    <p style="margin-top: 0.5rem;"><strong>Optional fields: category, department (default to "dummy" if not provided)</strong></p>
                     <p style="margin-top: 1rem;">
                         <a href="{% url 'download_sample_books_csv' %}" class="btn-primary" style="background: #4caf50; padding: 0.6rem 1rem; font-size: 0.9rem;">
                             📥 Download Sample CSV

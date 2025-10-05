@@ -374,6 +374,8 @@
                             <th>Author</th>
                             <th>ISBN</th>
                             <th>Quantity</th>
+                            <th>Category</th>
+                            <th>Department</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -384,6 +386,8 @@
                             <td>{{ book.author }}</td>
                             <td>{{ book.isbn }}</td>
                             <td>{{ book.quantity }}</td>
+                            <td>{{ book.category }}</td>
+                            <td>{{ book.department }}</td>
                             <td>
                                 <a href="{% url 'admin_edit_book' book.id %}" class="btn-success" title="Edit">✏️</a>
                                 <form method="post" action="{% url 'admin_delete_book' book.id %}" style="display: inline;" onsubmit="return confirm('Delete book {{ book.title }}?');">
@@ -394,7 +398,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" style="text-align: center; color: #999;">No books found</td>
+                            <td colspan="7" style="text-align: center; color: #999;">No books found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
