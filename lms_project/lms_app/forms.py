@@ -49,12 +49,14 @@ class AdminCreateForm(forms.ModelForm):
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['title', 'author', 'isbn', 'quantity']
+        fields = ['title', 'author', 'isbn', 'quantity', 'category', 'department']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter book title'}),
             'author': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter author name'}),
             'isbn': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter ISBN'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Enter quantity'}),
+            'category': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter category'}),
+            'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
         }
 
 class StudentCreateForm(forms.ModelForm):
