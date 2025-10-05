@@ -282,7 +282,7 @@
         <h1>📚 Library Portal</h1>
         <div class="user-info">
             <span class="user-name">{{ student.name|default:student.roll_no }}</span>
-            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+            <a href="{% url 'student_logout' %}" class="logout-btn">Logout</a>
         </div>
     </nav>
 
