@@ -308,6 +308,155 @@
                 margin-left: 0;
             }
         }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .modal-book-info {
+            background: #f5f7fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-book-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+        
+        .modal-book-author {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .modal-form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-form-group label {
+            display: block;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-form-group input[type="date"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+        
+        .modal-form-group input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .modal-fine-info {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-fine-rate {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-fine-warning {
+            color: #856404;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn-cancel {
+            background: #e1e8ed;
+            color: #555;
+        }
+        
+        .modal-btn-cancel:hover {
+            background: #d1d8dd;
+        }
+        
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .modal-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
     </style>
 </head>
 <body>
@@ -354,12 +503,12 @@
                     <div class="book-author">by {{ book.author }}</div>
                     <div class="book-isbn">ISBN: {{ book.isbn }}</div>
                     <div class="book-quantity">{{ book.quantity }} available</div>
-                    <form method="post" action="{% url 'borrow_book' book.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-borrow" {% if book.quantity == 0 %}disabled{% endif %}>
-                            {% if book.quantity == 0 %}Out of Stock{% else %}Borrow Book{% endif %}
-                        </button>
-                    </form>
+                    <button 
+                        type="button" 
+                        class="btn-borrow" 
+                        {% if book.quantity == 0 %}disabled{% else %}onclick="openBorrowModal({{ book.id }}, '{{ book.title|escapejs }}', '{{ book.author|escapejs }}', {{ book.fine_rate }})"{% endif %}>
+                        {% if book.quantity == 0 %}Out of Stock{% else %}Borrow Book{% endif %}
+                    </button>
                 </div>
                 {% empty %}
                 <div class="no-results">No books available in the library</div>
@@ -423,6 +572,80 @@
             if (isCollapsed) {
                 document.querySelector('.sidebar').classList.add('collapsed');
                 document.querySelector('.main-content').classList.add('expanded');
+            }
+        });
+    </script>
+
+    <div class="modal-overlay" id="borrowModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Confirm Book Borrow</h3>
+            </div>
+            
+            <div class="modal-book-info">
+                <div class="modal-book-title" id="modalBookTitle"></div>
+                <div class="modal-book-author" id="modalBookAuthor"></div>
+            </div>
+            
+            <form method="post" id="borrowForm">
+                {% csrf_token %}
+                <div class="modal-form-group">
+                    <label for="expectedReturnDate">Expected Return Date</label>
+                    <input type="date" id="expectedReturnDate" name="expected_return_date" required>
+                </div>
+                
+                <div class="modal-fine-info">
+                    <div class="modal-fine-rate" id="modalFineRate"></div>
+                    <div class="modal-fine-warning" id="modalFineWarning"></div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn modal-btn-cancel" onclick="closeBorrowModal()">Cancel</button>
+                    <button type="submit" class="modal-btn modal-btn-confirm">Confirm Borrow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentBookId = null;
+        
+        function openBorrowModal(bookId, title, author, fineRate) {
+            currentBookId = bookId;
+            
+            document.getElementById('modalBookTitle').textContent = title;
+            document.getElementById('modalBookAuthor').textContent = 'by ' + author;
+            document.getElementById('modalFineRate').textContent = 'Fine Rate: $' + parseFloat(fineRate).toFixed(2) + ' per day';
+            document.getElementById('modalFineWarning').textContent = 
+                'If you return this book after the expected return date, a fine of $' + 
+                parseFloat(fineRate).toFixed(2) + ' per day will be charged.';
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            document.getElementById('expectedReturnDate').setAttribute('min', minDate);
+            document.getElementById('expectedReturnDate').value = '';
+            
+            document.getElementById('borrowForm').action = '/borrow/' + bookId + '/';
+            
+            const modal = document.getElementById('borrowModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+        
+        function closeBorrowModal() {
+            const modal = document.getElementById('borrowModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        document.getElementById('borrowModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBorrowModal();
             }
         });
     </script>

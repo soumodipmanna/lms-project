@@ -112,6 +112,11 @@ def return_book(request, borrow_id):
     record = get_object_or_404(Borrow, id=borrow_id, student=request.user.student)
 
     if request.method == 'POST':
+        # Calculate fine BEFORE setting is_returned=True
+        calculated_fine = record.calculate_fine()
+        record.fine_amount = calculated_fine
+        
+        # Now mark as returned
         record.is_returned = True
         record.return_date = timezone.now()
         record.save()
@@ -124,6 +129,11 @@ def return_book(request, borrow_id):
             action_flag=CHANGE,
             change_message=f"Book returned: {record.book.title}"
         )
+        
+        if calculated_fine > 0:
+            messages.warning(request, f"Late return! Fine charged: ${calculated_fine:.2f}")
+        else:
+            messages.success(request, "Book returned successfully!")
 
         return redirect('my_borrowed_books')
 
