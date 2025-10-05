@@ -376,6 +376,8 @@
                             <th>Quantity</th>
                             <th>Category</th>
                             <th>Department</th>
+                            <th>Language</th>
+                            <th>Fine/Day</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -388,6 +390,8 @@
                             <td>{{ book.quantity }}</td>
                             <td>{{ book.category }}</td>
                             <td>{{ book.department }}</td>
+                            <td>{{ book.language }}</td>
+                            <td>${{ book.fine_rate }}</td>
                             <td>
                                 <a href="{% url 'admin_edit_book' book.id %}" class="btn-success" title="Edit">✏️</a>
                                 <form method="post" action="{% url 'admin_delete_book' book.id %}" style="display: inline;" onsubmit="return confirm('Delete book {{ book.title }}?');">
@@ -398,7 +402,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" style="text-align: center; color: #999;">No books found</td>
+                            <td colspan="9" style="text-align: center; color: #999;">No books found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
