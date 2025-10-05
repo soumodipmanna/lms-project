@@ -26,7 +26,37 @@ This is a Django-based Library Management System that allows students to browse 
 
 ## Recent Changes (October 5, 2025)
 
-### Return Date Display and Admin Return Feature (Latest)
+### Profile Management and Authentication Enhancements (Latest)
+1. **Admin Profile Management**
+   - Added three new fields to Admin model: `full_name`, `department`, `designation`
+   - Created admin profile page at `/admin-portal/profile/` for all admins to update their details
+   - Display name field for internal use, full name for official records
+   - Profile updates reflect immediately in session
+
+2. **Admin Edit Functionality (Superadmin Only)**
+   - Superadmins can now edit other admin details
+   - Edit page includes all fields: name, full_name, email, department, designation, role
+   - Proper access control with @superadmin_required decorator
+   - Edit buttons added to admin management table
+
+3. **Form Validations**
+   - **Student Signup**: Username (min 3 chars), password (min 6 chars), email validation, roll number uniqueness check
+   - **Student Login**: Required field validation with clear error messages
+   - **Admin Login**: Email format validation, password required field check
+   - All validations happen server-side for security
+
+4. **Error Display Improvements**
+   - Login/signup errors now display on the same page (not after redirect)
+   - Clear, user-friendly error messages for authentication failures
+   - Form field errors displayed inline with red highlighting
+   - Validation errors show immediately without requiring page reload
+
+5. **Student Profile Error Handling**
+   - Fixed manage profile error with proper exception handling
+   - Graceful error message if student record not found
+   - Redirects to dashboard with helpful message instead of crashing
+
+### Return Date Display and Admin Return Feature
 1. **Student Borrowed Books Page**
    - Added "Expected Return" column showing the expected return date selected during borrowing
    - Added "Actual Return" column showing when book was actually returned
