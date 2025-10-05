@@ -65,7 +65,8 @@ def student_logout(request):
 @login_required
 def dashboard(request):
     books = Book.objects.all()
-    return render(request, 'dashboard.html', {'books': books})
+    student = request.user.student
+    return render(request, 'dashboard.html', {'books': books, 'student': student})
 
 
 @login_required
