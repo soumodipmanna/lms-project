@@ -1,5 +1,28 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password, check_password
+
+ROLE_CHOICES = (
+    ('officer', 'Admin Officer'),
+    ('superadmin', 'Superadmin'),
+)
+
+class Admin(models.Model):
+    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=100)
+    password = models.CharField(max_length=255)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='officer')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+    
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+    
+    def __str__(self):
+        return f"{self.name} ({self.email}) - {self.get_role_display()}"
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
