@@ -2,49 +2,472 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Library Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .container {
+            display: flex;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            position: fixed;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 0.5rem 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+            color: #667eea;
+            border-left: 3px solid #667eea;
+        }
+        
+        .sidebar-menu .icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+        
+        .search-bar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .messages {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .messages li {
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .messages .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .messages .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .messages .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .book-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .book-card.hidden {
+            display: none;
+        }
+        
+        .book-card.visible {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .book-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .book-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+        
+        .book-author {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .book-details {
+            margin-bottom: 1rem;
+        }
+        
+        .book-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .book-detail-item .label {
+            color: #666;
+        }
+        
+        .book-detail-item .value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .quantity-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .quantity-available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .quantity-low {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .quantity-none {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn-borrow {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-borrow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-unavailable {
+            width: 100%;
+            padding: 0.8rem;
+            background: #e0e0e0;
+            color: #888;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .books-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-<h2>Welcome ,{{user.username}}</h2>
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
-                {{ message }}
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
-<h3>Available Books:</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Title</th>
-        <th>Author</th>
-        <th>ISBN</th>
-        <th>Quantity</th>
-        <th>Action</th>
-    </tr>
-    {% for book in books %}
-    <tr>
-    <td>{{book.title}}</td>
-        <td>{{book.author}}</td>
-        <td>{{book.isbn}}</td>
-        <td>{{book.quantity}}</td>
-        <td>
-            {% if book.quantity > 0 %}
-           <form action="{% url 'borrow_book' book.id %}" method="post">
-  {% csrf_token %}
-  <button type="submit">Borrow</button>
-</form>
-
-            {% else %}
-            Unavailable
+    <nav class="navbar">
+        <h1>📚 Library Dashboard</h1>
+        <div class="user-info">
+            <span class="user-name">Welcome, {{ user.username }}</span>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'dashboard' %}" class="active"><span class="icon">📚</span> Browse Books</a></li>
+                <li><a href="{% url 'my_borrowed_books' %}"><span class="icon">📖</span> My Borrowed Books</a></li>
+                <li><a href="{% url 'student_logout' %}"><span class="icon">🚪</span> Logout</a></li>
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
-        </td></tr>
-    {% endfor %}</table>
-<br><a href="{% url 'student_logout'%}">Logout</a>
-<a href="{% url 'my_borrowed_books' %}">My Borrowed Books</a>
-
-
+            
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search books by title, author, or ISBN...">
+            </div>
+            
+            <div class="books-grid" id="booksContainer">
+                {% for book in books %}
+                <div class="book-card" data-title="{{ book.title|lower }}" data-author="{{ book.author|lower }}" data-isbn="{{ book.isbn }}">
+                    <div class="book-header">
+                        <div class="book-title">{{ book.title }}</div>
+                        <div class="book-author">by {{ book.author }}</div>
+                    </div>
+                    
+                    <div class="book-details">
+                        <div class="book-detail-item">
+                            <span class="label">ISBN:</span>
+                            <span class="value">{{ book.isbn }}</span>
+                        </div>
+                        <div class="book-detail-item">
+                            <span class="label">Available:</span>
+                            <span class="value">
+                                {% if book.quantity > 5 %}
+                                    <span class="quantity-badge quantity-available">{{ book.quantity }} copies</span>
+                                {% elif book.quantity > 0 %}
+                                    <span class="quantity-badge quantity-low">{{ book.quantity }} copies</span>
+                                {% else %}
+                                    <span class="quantity-badge quantity-none">Out of stock</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {% if book.quantity > 0 %}
+                        <form action="{% url 'borrow_book' book.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-borrow">Borrow Book</button>
+                        </form>
+                    {% else %}
+                        <button class="btn-unavailable" disabled>Unavailable</button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div id="noResults" class="no-results" style="display: none;">
+                No books found matching your search.
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const booksContainer = document.getElementById('booksContainer');
+        const noResults = document.getElementById('noResults');
+        const bookCards = Array.from(document.querySelectorAll('.book-card'));
+        
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        let isSearching = false;
+        
+        function loadMoreBooks() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = currentPage * itemsPerPage;
+            
+            bookCards.forEach((card, index) => {
+                if (index >= start && index < end && !card.classList.contains('visible') && !isSearching) {
+                    card.classList.remove('hidden');
+                    card.classList.add('visible');
+                    card.style.animationDelay = `${(index - start) * 0.05}s`;
+                }
+            });
+        }
+        
+        function initializeLazyLoad() {
+            bookCards.forEach((card, index) => {
+                if (index >= itemsPerPage) {
+                    card.classList.add('hidden');
+                }
+            });
+            loadMoreBooks();
+        }
+        
+        function handleScroll() {
+            if (isSearching) return;
+            
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                currentPage++;
+                loadMoreBooks();
+            }
+        }
+        
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            isSearching = searchTerm.length > 0;
+            
+            if (!isSearching) {
+                currentPage = 1;
+                bookCards.forEach((card, index) => {
+                    card.classList.remove('visible');
+                    card.style.display = '';
+                    if (index >= itemsPerPage) {
+                        card.classList.add('hidden');
+                    } else {
+                        card.classList.remove('hidden');
+                    }
+                });
+                loadMoreBooks();
+                noResults.style.display = 'none';
+                return;
+            }
+            
+            let visibleCount = 0;
+            
+            bookCards.forEach(card => {
+                const title = card.dataset.title;
+                const author = card.dataset.author;
+                const isbn = card.dataset.isbn;
+                
+                card.classList.remove('hidden', 'visible');
+                
+                if (title.includes(searchTerm) || author.includes(searchTerm) || isbn.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        });
+        
+        window.addEventListener('scroll', handleScroll);
+        initializeLazyLoad();
+    </script>
 </body>
 </html>

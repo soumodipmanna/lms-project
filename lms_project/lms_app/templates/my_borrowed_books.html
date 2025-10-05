@@ -2,57 +2,533 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Borrowed Books</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Borrowed Books - Library Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .container {
+            display: flex;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            position: fixed;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 0.5rem 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+            color: #667eea;
+            border-left: 3px solid #667eea;
+        }
+        
+        .sidebar-menu .icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+        
+        .search-bar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        
+        .books-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .borrow-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .borrow-card.hidden {
+            display: none;
+        }
+        
+        .borrow-card.visible {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .borrow-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .book-info {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .book-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        
+        .book-details h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .book-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-returned {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .action-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            align-items: flex-end;
+        }
+        
+        .message-box {
+            background: #f8f9fa;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #666;
+            max-width: 200px;
+        }
+        
+        .btn-return {
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-return:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: #999;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .borrow-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .book-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .action-section {
+                align-items: flex-start;
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-
-<h2>My Borrowed Books</h2>
-
-<table border="1" cellpadding="10" cellspacing="0">
-  <tr>
-    <th>Title</th>
-    <th>Borrowed At</th>
-    <th>Status</th>
-    <th>Message</th>
-    <th>Action</th>
-  </tr>
-  {% for record in borrowed %}
-  <tr>
-    <td>{{ record.book.title }}</td>
-
-    <td>
-        {% if record.status == 'approved' %}
-            <span style="color: green;">Approved</span>
-        {% elif record.status == 'rejected' %}
-            <span style="color: red;">Rejected</span>
-        {% else %}
-            <span style="color: orange;">Pending</span>
-        {% endif %}
-    </td>
-    <td>
-        {% if record.message %}
-            {{ record.message }}
-        {% else %}
-            -
-        {% endif %}
-    </td>
-    <td>
-      {% if not record.is_returned and record.status == 'approved' %}
-        <form method="post" action="{% url 'return_book' record.id %}">
-          {% csrf_token %}
-          <button type="submit">Return</button>
-        </form>
-      {% elif record.is_returned %}
-
-      {% else %}
-        -
-      {% endif %}
-    </td>
-  </tr>
-  {% empty %}
-  <tr><td colspan="5">You have not borrowed any books.</td></tr>
-  {% endfor %}
-</table>
-
+    <nav class="navbar">
+        <h1>📖 My Borrowed Books</h1>
+        <div class="user-info">
+            <span class="user-name">{{ user.username }}</span>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'dashboard' %}"><span class="icon">📚</span> Browse Books</a></li>
+                <li><a href="{% url 'my_borrowed_books' %}" class="active"><span class="icon">📖</span> My Borrowed Books</a></li>
+                <li><a href="{% url 'student_logout' %}"><span class="icon">🚪</span> Logout</a></li>
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            {% if borrowed %}
+                <div class="search-bar">
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search your borrowed books...">
+                </div>
+                
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCount">{{ borrowed|length }}</div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="approvedCount">
+                            {% for record in borrowed %}{% if record.status == 'approved' and not record.is_returned %}1{% endif %}{% endfor %}
+                        </div>
+                        <div class="stat-label">Currently Borrowed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingCount">
+                            {% for record in borrowed %}{% if record.status == 'pending' %}1{% endif %}{% endfor %}
+                        </div>
+                        <div class="stat-label">Pending Approval</div>
+                    </div>
+                </div>
+                
+                <div class="books-list" id="borrowList">
+                    {% for record in borrowed %}
+                    <div class="borrow-card" data-title="{{ record.book.title|lower }}" style="animation-delay: {{ forloop.counter0|divisibleby:10|yesno:'0.05,0.1,0.15,0.2,0.25' }}s">
+                        <div class="book-info">
+                            <div class="book-icon">📚</div>
+                            <div class="book-details">
+                                <h3>{{ record.book.title }}</h3>
+                                <div class="book-meta">
+                                    <div class="meta-item">
+                                        <span>📅</span>
+                                        <span>{{ record.borrow_date|date:"M d, Y" }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        {% if record.status == 'approved' %}
+                                            <span class="status-badge status-approved">Approved</span>
+                                        {% elif record.status == 'rejected' %}
+                                            <span class="status-badge status-rejected">Rejected</span>
+                                        {% elif record.is_returned %}
+                                            <span class="status-badge status-returned">Returned</span>
+                                        {% else %}
+                                            <span class="status-badge status-pending">Pending</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-section">
+                            {% if record.message %}
+                                <div class="message-box">💬 {{ record.message }}</div>
+                            {% endif %}
+                            
+                            {% if not record.is_returned and record.status == 'approved' %}
+                                <form method="post" action="{% url 'return_book' record.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-return">Return Book</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div id="noResults" class="no-results" style="display: none;">
+                    No books found matching your search.
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="icon">📚</div>
+                    <h3>No borrowed books yet</h3>
+                    <p>Visit the dashboard to start borrowing books</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+    
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const borrowCards = Array.from(document.querySelectorAll('.borrow-card'));
+        const noResults = document.getElementById('noResults');
+        
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let isSearching = false;
+        
+        function loadMoreBorrows() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = currentPage * itemsPerPage;
+            
+            borrowCards.forEach((card, index) => {
+                if (index >= start && index < end && !card.classList.contains('visible') && !isSearching) {
+                    card.classList.remove('hidden');
+                    card.classList.add('visible');
+                    card.style.animationDelay = `${(index - start) * 0.05}s`;
+                }
+            });
+        }
+        
+        function initializeLazyLoad() {
+            borrowCards.forEach((card, index) => {
+                if (index >= itemsPerPage) {
+                    card.classList.add('hidden');
+                }
+            });
+            loadMoreBorrows();
+        }
+        
+        function handleScroll() {
+            if (isSearching) return;
+            
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                currentPage++;
+                loadMoreBorrows();
+            }
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                isSearching = searchTerm.length > 0;
+                
+                if (!isSearching) {
+                    currentPage = 1;
+                    borrowCards.forEach((card, index) => {
+                        card.classList.remove('visible');
+                        card.style.display = '';
+                        if (index >= itemsPerPage) {
+                            card.classList.add('hidden');
+                        } else {
+                            card.classList.remove('hidden');
+                        }
+                    });
+                    loadMoreBorrows();
+                    noResults.style.display = 'none';
+                    return;
+                }
+                
+                let visibleCount = 0;
+                
+                borrowCards.forEach(card => {
+                    const title = card.dataset.title;
+                    
+                    card.classList.remove('hidden', 'visible');
+                    
+                    if (title.includes(searchTerm)) {
+                        card.style.display = 'grid';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                if (visibleCount === 0 && borrowCards.length > 0) {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
+            });
+        }
+        
+        const approvedCount = document.querySelectorAll('.status-approved').length;
+        const pendingCount = document.querySelectorAll('.status-pending').length;
+        
+        if (document.getElementById('approvedCount')) {
+            document.getElementById('approvedCount').textContent = approvedCount;
+        }
+        if (document.getElementById('pendingCount')) {
+            document.getElementById('pendingCount').textContent = pendingCount;
+        }
+        
+        if (borrowCards.length > 0) {
+            window.addEventListener('scroll', handleScroll);
+            initializeLazyLoad();
+        }
+    </script>
 </body>
 </html>
