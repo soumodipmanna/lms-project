@@ -49,7 +49,7 @@ class AdminCreateForm(forms.ModelForm):
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['title', 'author', 'isbn', 'quantity', 'category', 'department']
+        fields = ['title', 'author', 'isbn', 'quantity', 'category', 'department', 'language', 'fine_rate']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter book title'}),
             'author': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter author name'}),
@@ -57,6 +57,8 @@ class BookForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Enter quantity'}),
             'category': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter category'}),
             'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
+            'language': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter language'}),
+            'fine_rate': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Fine per day (e.g., 5.00)', 'step': '0.01'}),
         }
 
 class StudentCreateForm(forms.ModelForm):
