@@ -238,6 +238,12 @@
                 <p>Sign in to your student account</p>
             </div>
             
+            {% if error_message %}
+            <div class="errorlist">
+                {{ error_message }}
+            </div>
+            {% endif %}
+            
             <form method="post">
                 {% csrf_token %}
                 {% for field in form %}

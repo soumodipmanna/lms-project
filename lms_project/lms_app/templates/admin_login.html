@@ -211,6 +211,12 @@
                 <p>Sign in to manage library system</p>
             </div>
             
+            {% if error_message %}
+            <div class="messages">
+                <div class="alert alert-error">{{ error_message }}</div>
+            </div>
+            {% endif %}
+            
             {% if messages %}
             <div class="messages">
                 {% for message in messages %}

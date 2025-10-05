@@ -1,7 +1,7 @@
 from django.db.transaction import commit
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm
+from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm, AdminProfileUpdateForm, AdminEditForm
 from django.contrib.auth.models import User
 from .models import Book, Borrow, Student, Admin
 from django.contrib.auth.decorators import login_required
@@ -36,6 +36,7 @@ def student_signup(request):
 
 
 def student_login(request):
+    error_message = None
     if request.method == 'POST':
         form = StudentLoginForm(request.POST)
         if form.is_valid():
@@ -49,12 +50,12 @@ def student_login(request):
                     login(request, user)
                     return redirect('dashboard')
                 else:
-                    messages.error(request, 'Invalid roll number or password.')
+                    error_message = 'Invalid roll number or password.'
             except Student.DoesNotExist:
-                messages.error(request, 'Invalid roll number or password.')
+                error_message = 'Invalid roll number or password.'
     else:
         form = StudentLoginForm()
-    return render(request, 'student_login.html', {'form': form})
+    return render(request, 'student_login.html', {'form': form, 'error_message': error_message})
 
 
 def student_logout(request):
@@ -214,6 +215,7 @@ def admin_login_view(request):
     if request.session.get('admin_id'):
         return redirect('admin_dashboard')
     
+    error_message = None
     if request.method == 'POST':
         form = AdminLoginForm(request.POST)
         if form.is_valid():
@@ -229,12 +231,12 @@ def admin_login_view(request):
                     messages.success(request, f'Welcome back, {admin.name}!')
                     return redirect('admin_dashboard')
                 else:
-                    messages.error(request, 'Invalid email or password.')
+                    error_message = 'Invalid email or password.'
             except Admin.DoesNotExist:
-                messages.error(request, 'Invalid email or password.')
+                error_message = 'Invalid email or password.'
     else:
         form = AdminLoginForm()
-    return render(request, 'admin_login.html', {'form': form})
+    return render(request, 'admin_login.html', {'form': form, 'error_message': error_message})
 
 
 @admin_login_required
@@ -499,6 +501,47 @@ def admin_delete_admin_view(request, admin_id):
         return redirect('admin_manage_admins')
     
     return redirect('admin_manage_admins')
+
+
+@admin_login_required
+def admin_manage_profile_view(request):
+    admin = request.admin
+    if request.method == 'POST':
+        form = AdminProfileUpdateForm(request.POST, instance=admin)
+        if form.is_valid():
+            form.save()
+            request.session['admin_name'] = admin.name
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('admin_manage_profile')
+    else:
+        form = AdminProfileUpdateForm(instance=admin)
+    
+    context = {
+        'admin': admin,
+        'form': form,
+    }
+    return render(request, 'admin_manage_profile.html', context)
+
+
+@superadmin_required
+def admin_edit_admin_view(request, admin_id):
+    admin_to_edit = get_object_or_404(Admin, id=admin_id)
+    
+    if request.method == 'POST':
+        form = AdminEditForm(request.POST, instance=admin_to_edit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Admin {admin_to_edit.name} updated successfully!')
+            return redirect('admin_manage_admins')
+    else:
+        form = AdminEditForm(instance=admin_to_edit)
+    
+    context = {
+        'admin': request.admin,
+        'form': form,
+        'admin_to_edit': admin_to_edit,
+    }
+    return render(request, 'admin_edit_admin.html', context)
 
 
 @admin_login_required

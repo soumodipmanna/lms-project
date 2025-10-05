@@ -3,17 +3,66 @@ from django.contrib.auth.models import User
 from .models import Student, Admin, Book
 
 class StudentSignupForm(forms.ModelForm):
-    username = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput)
-    email = forms.EmailField()
+    username = forms.CharField(
+        min_length=3,
+        max_length=150,
+        error_messages={
+            'required': 'Username is required.',
+            'min_length': 'Username must be at least 3 characters long.',
+        }
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        min_length=6,
+        error_messages={
+            'required': 'Password is required.',
+            'min_length': 'Password must be at least 6 characters long.',
+        }
+    )
+    email = forms.EmailField(
+        error_messages={
+            'required': 'Email is required.',
+            'invalid': 'Enter a valid email address.',
+        }
+    )
 
     class Meta:
         model = Student
         fields = ['roll_no', 'branch']
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('Username already exists. Please choose another.')
+        return username
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Email already registered. Please use another.')
+        return email
+    
+    def clean_roll_no(self):
+        roll_no = self.cleaned_data.get('roll_no')
+        if not roll_no:
+            raise forms.ValidationError('Roll number is required.')
+        if Student.objects.filter(roll_no=roll_no).exists():
+            raise forms.ValidationError('Roll number already registered.')
+        return roll_no
 
 class StudentLoginForm(forms.Form):
-    roll_no = forms.CharField(label='Roll Number')
-    password = forms.CharField(widget=forms.PasswordInput)
+    roll_no = forms.CharField(
+        label='Roll Number',
+        error_messages={
+            'required': 'Roll number is required.',
+        }
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        error_messages={
+            'required': 'Password is required.',
+        }
+    )
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
@@ -25,8 +74,19 @@ class ProfileUpdateForm(forms.ModelForm):
         }
 
 class AdminLoginForm(forms.Form):
-    email = forms.EmailField(label='Email')
-    password = forms.CharField(widget=forms.PasswordInput)
+    email = forms.EmailField(
+        label='Email',
+        error_messages={
+            'required': 'Email is required.',
+            'invalid': 'Enter a valid email address.',
+        }
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        error_messages={
+            'required': 'Password is required.',
+        }
+    )
 
 class AdminCreateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, label='Password')
@@ -72,3 +132,26 @@ class StudentCreateForm(forms.ModelForm):
 
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField(label='CSV File', help_text='Upload a CSV file')
+
+class AdminProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Admin
+        fields = ['name', 'full_name', 'department', 'designation']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter display name'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter full name'}),
+            'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
+            'designation': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter designation'}),
+        }
+
+class AdminEditForm(forms.ModelForm):
+    class Meta:
+        model = Admin
+        fields = ['name', 'full_name', 'email', 'department', 'designation', 'role']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter display name'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter full name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input', 'placeholder': 'Enter email'}),
+            'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
+            'designation': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter designation'}),
+        }

@@ -230,6 +230,18 @@
             padding: 0.6rem 1rem;
             border-radius: 6px;
             cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        
+        .btn-edit {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
         }
         
         .card {
@@ -371,12 +383,13 @@
                             <td>{{ adm.get_role_display }}</td>
                             <td>
                                 {% if adm.id != admin.id %}
+                                <a href="{% url 'admin_edit_admin' adm.id %}" class="btn-edit">✏️ Edit</a>
                                 <form method="post" action="{% url 'admin_delete_admin' adm.id %}" style="display: inline;" onsubmit="return confirm('Delete admin {{ adm.name }}?');">
                                     {% csrf_token %}
-                                    <button class="btn-danger">Delete</button>
+                                    <button class="btn-danger">🗑️ Delete</button>
                                 </form>
                                 {% else %}
-                                <span style="color: #999;">You</span>
+                                <span style="color: #999;">You (current)</span>
                                 {% endif %}
                             </td>
                         </tr>

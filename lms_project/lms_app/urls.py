@@ -37,5 +37,8 @@ urlpatterns = [
     
     path('admin-portal/admins/', views.admin_manage_admins_view, name='admin_manage_admins'),
     path('admin-portal/admins/add/', views.admin_add_admin_view, name='admin_add_admin'),
+    path('admin-portal/admins/edit/<int:admin_id>/', views.admin_edit_admin_view, name='admin_edit_admin'),
     path('admin-portal/admins/delete/<int:admin_id>/', views.admin_delete_admin_view, name='admin_delete_admin'),
+    
+    path('admin-portal/profile/', views.admin_manage_profile_view, name='admin_manage_profile'),
 ]
