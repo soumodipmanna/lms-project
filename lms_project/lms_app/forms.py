@@ -65,3 +65,6 @@ class StudentCreateForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = ['roll_no', 'branch', 'name', 'phone_number']
+
+class CSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label='CSV File', help_text='Upload a CSV file')

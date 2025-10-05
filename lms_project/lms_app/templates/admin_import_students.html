@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Students - Admin Portal</title>
+    <title>Import Students - Admin Portal</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
@@ -33,51 +33,44 @@
         .page-header h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: 500; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.3); }
-        .btn-danger { background: #f44336; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
-        .btn-success { background: #4caf50; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
-        .card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .table { width: 100%; border-collapse: collapse; }
-        .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e9ecef; }
-        .table th { background: #f8f9fa; font-weight: 600; }
-        .table tbody tr:hover { background: #f8f9fa; }
-        .form-group { margin-bottom: 1.2rem; }
+        .btn-secondary { background: #6c757d; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: 500; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 700px; }
+        .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333; }
-        .form-group input, .form-group select { width: 100%; padding: 0.8rem; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 0.95rem; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .badge { padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500; }
-        .badge-pending { background: #fff3cd; color: #856404; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
+        .form-group input[type="file"] { width: 100%; padding: 0.8rem; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 0.95rem; }
+        .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
+        .info-box h4 { color: #1565c0; margin-bottom: 0.5rem; }
+        .info-box code { background: #fff; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.9rem; }
         .messages { position: fixed; top: 80px; right: 2rem; z-index: 1000; max-width: 400px; }
         .alert { padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .alert-error { background: #fee; border-left: 4px solid #f44336; color: #c33; }
         .alert-success { background: #efe; border-left: 4px solid #4caf50; color: #2c6b2f; }
-        .alert-info { background: #e3f2fd; border-left: 4px solid #2196f3; color: #1565c0; }
         .alert-warning { background: #fff3cd; border-left: 4px solid #ff9800; color: #856404; }
     </style>
 </head>
 <body>
     <div class="page-loader" id="pageLoader">
         <div class="books-loader"><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div></div>
-        <div class="loader-text">Loading...</div>
+        <div class="loader-text">Uploading...</div>
     </div>
     <nav class="navbar">
         <h1>🔐 Admin Portal</h1>
         <div class="user-info">
-            <span>{{ admin.name}}</span>
-            <span class="role-badge">{{ admin.get_role_display}}</span>
+            <span>{{ admin.name }}</span>
+            <span class="role-badge">{{ admin.get_role_display }}</span>
             <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
         </div>
     </nav>
     <div class="container">
         <aside class="sidebar">
             <ul class="sidebar-menu">
-                <li><a href="{% url 'admin_dashboard' %}" class=""><span>📊</span> Dashboard</a></li>
+                <li><a href="{% url 'admin_dashboard' %}"><span>📊</span> Dashboard</a></li>
                 <li><a href="{% url 'admin_manage_students' %}" class="active"><span>👥</span> Students</a></li>
-                <li><a href="{% url 'admin_manage_books' %}" class=""><span>📚</span> Books</a></li>
-                <li><a href="{% url 'admin_borrow_requests' %}" class=""><span>📋</span> Borrow Requests</a></li>
+                <li><a href="{% url 'admin_manage_books' %}"><span>📚</span> Books</a></li>
+                <li><a href="{% url 'admin_borrow_requests' %}"><span>📋</span> Borrow Requests</a></li>
                 {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}" class=""><span>🔑</span> Admins</a></li>
+                <li><a href="{% url 'admin_manage_admins' %}"><span>🔑</span> Admins</a></li>
                 {% endif %}
             </ul>
         </aside>
@@ -85,80 +78,40 @@
             {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                <div class="alert alert-{{ message.tags}}">{{ message}}</div>
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             </div>
             {% endif %}
-            
             <div class="page-header">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <h2>Manage Students</h2>
-                        <p>View and manage student accounts</p>
-                    </div>
-                    <div style="display:flex;gap:0.5rem;">
-                        <a href="{% url 'admin_import_students' %}" class="btn-primary" style="background:#ff9800;">📥 Import CSV</a>
-                        <a href="{% url 'admin_add_student'% }" class="btn-primary">+ Add Student</a>
-                    </div>
-                </div>
+                <h2>Import Students from CSV</h2>
             </div>
             <div class="card">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Roll Number</th>
-                            <th>Name</th>
-                            <th>Branch</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student in students %}
-                        <tr>
-                            <td>{{ student.roll_no }}</td>
-                            <td>{{ student.name|default:"-" }}</td>
-                            <td>{{ student.branch }}</td>
-                            <td>{{ student.user.email|default:"-" }}</td>
-                            <td>{{ student.phone_number|default:"-" }}</td>
-                            <td>
-                                <form method="post" action="{% url 'admin_delete_student' student.id %}" onsubmit="return confirm('Delete student {{ student.roll_no }}?');">
-                                    {% csrf_token %}
-                                    <button class="btn-danger">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="6" style="text-align:center;color:#999;">No students found</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="info-box">
+                    <h4>📄 CSV Format Requirements:</h4>
+                    <p>Your CSV file must include the following columns (with headers):</p>
+                    <p><code>username,password,email,roll_no,branch,name,phone_number</code></p>
+                    <p style="margin-top:0.5rem;"><strong>Required:</strong> username, password, roll_no, branch</p>
+                    <p><strong>Optional:</strong> email, name, phone_number</p>
+                </div>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>{{ form.csv_file.label }}</label>
+                        {{ form.csv_file }}
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Upload & Import</button>
+                        <a href="{% url 'admin_manage_students' %}" class="btn-secondary">Cancel</a>
+                    </div>
+                </form>
             </div>
-    
         </main>
     </div>
     <script>
         const pageLoader = document.getElementById('pageLoader');
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!this.getAttribute('href').startsWith('#') && this.getAttribute('href') !== 'javascript:void(0)' && this.getAttribute('href')) {
-                    pageLoader.classList.add('active');
-                }
-            });
+        document.querySelector('form').addEventListener('submit', function() {
+            pageLoader.classList.add('active');
         });
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                pageLoader.classList.add('active');
-            });
-        });
-        setTimeout(() => {
-            document.querySelectorAll('.messages .alert').forEach(alert => {
-                alert.style.transition = 'opacity 0.3s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            });
-        }, 5000);
     </script>
 </body>
 </html>

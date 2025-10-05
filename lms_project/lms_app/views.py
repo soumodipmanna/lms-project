@@ -1,7 +1,7 @@
 from django.db.transaction import commit
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm
+from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm
 from django.contrib.auth.models import User
 from .models import Book, Borrow, Student, Admin
 from django.contrib.auth.decorators import login_required
@@ -12,6 +12,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_str
 from django.contrib import messages
 from functools import wraps
+import csv
+import io
 
 
 def student_signup(request):
@@ -438,3 +440,151 @@ def admin_delete_admin_view(request, admin_id):
         return redirect('admin_manage_admins')
     
     return redirect('admin_manage_admins')
+
+
+@admin_login_required
+def admin_import_students_view(request):
+    if request.method == 'POST':
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']
+            
+            if not csv_file.name.endswith('.csv'):
+                messages.error(request, 'Please upload a valid CSV file.')
+                return redirect('admin_import_students')
+            
+            try:
+                decoded_file = csv_file.read().decode('utf-8')
+                io_string = io.StringIO(decoded_file)
+                reader = csv.DictReader(io_string)
+                
+                success_count = 0
+                error_count = 0
+                
+                for row in reader:
+                    try:
+                        with transaction.atomic():
+                            username = row.get('username', '').strip()
+                            password = row.get('password', '').strip()
+                            email = row.get('email', '').strip()
+                            roll_no = row.get('roll_no', '').strip()
+                            branch = row.get('branch', '').strip()
+                            name = row.get('name', '').strip()
+                            phone_number = row.get('phone_number', '').strip()
+                            
+                            if not all([username, password, roll_no, branch]):
+                                error_count += 1
+                                continue
+                            
+                            if Student.objects.filter(roll_no=roll_no).exists():
+                                error_count += 1
+                                continue
+                            
+                            user = User.objects.create_user(
+                                username=username,
+                                password=password,
+                                email=email if email else f'{username}@example.com'
+                            )
+                            
+                            Student.objects.create(
+                                user=user,
+                                roll_no=roll_no,
+                                branch=branch,
+                                name=name if name else '',
+                                phone_number=phone_number if phone_number else ''
+                            )
+                            success_count += 1
+                    except Exception as e:
+                        error_count += 1
+                        continue
+                
+                if success_count > 0:
+                    messages.success(request, f'Successfully imported {success_count} student(s).')
+                if error_count > 0:
+                    messages.warning(request, f'{error_count} student(s) failed to import (duplicates or invalid data).')
+                
+                return redirect('admin_manage_students')
+                
+            except Exception as e:
+                messages.error(request, f'Error processing CSV file: {str(e)}')
+                return redirect('admin_import_students')
+    else:
+        form = CSVUploadForm()
+    
+    context = {
+        'admin': request.admin,
+        'form': form,
+    }
+    return render(request, 'admin_import_students.html', context)
+
+
+@admin_login_required
+def admin_import_books_view(request):
+    if request.method == 'POST':
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']
+            
+            if not csv_file.name.endswith('.csv'):
+                messages.error(request, 'Please upload a valid CSV file.')
+                return redirect('admin_import_books')
+            
+            try:
+                decoded_file = csv_file.read().decode('utf-8')
+                io_string = io.StringIO(decoded_file)
+                reader = csv.DictReader(io_string)
+                
+                success_count = 0
+                error_count = 0
+                
+                for row in reader:
+                    try:
+                        with transaction.atomic():
+                            title = row.get('title', '').strip()
+                            author = row.get('author', '').strip()
+                            isbn = row.get('isbn', '').strip()
+                            quantity = row.get('quantity', '').strip()
+                            
+                            if not all([title, author, isbn, quantity]):
+                                error_count += 1
+                                continue
+                            
+                            try:
+                                quantity = int(quantity)
+                            except ValueError:
+                                error_count += 1
+                                continue
+                            
+                            if Book.objects.filter(isbn=isbn).exists():
+                                error_count += 1
+                                continue
+                            
+                            Book.objects.create(
+                                title=title,
+                                author=author,
+                                isbn=isbn,
+                                quantity=quantity
+                            )
+                            success_count += 1
+                    except Exception as e:
+                        error_count += 1
+                        continue
+                
+                if success_count > 0:
+                    messages.success(request, f'Successfully imported {success_count} book(s).')
+                if error_count > 0:
+                    messages.warning(request, f'{error_count} book(s) failed to import (duplicates or invalid data).')
+                
+                return redirect('admin_manage_books')
+                
+            except Exception as e:
+                messages.error(request, f'Error processing CSV file: {str(e)}')
+                return redirect('admin_import_books')
+    else:
+        form = CSVUploadForm()
+    
+    context = {
+        'admin': request.admin,
+        'form': form,
+    }
+    return render(request, 'admin_import_books.html', context)

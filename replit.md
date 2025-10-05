@@ -20,10 +20,32 @@ This is a Django-based Library Management System that allows students to browse 
 - Role-based access control (Admin Officer & Superadmin)
 - Complete CRUD operations for students, books, and admins
 - Admin approval/rejection workflow for borrow requests
+- **CSV Bulk Import** for students and books
 - Loading animations on all pages with purple gradient theme
 - User avatar dropdown with logout functionality
 
 ## Recent Changes (October 5, 2025)
+
+### CSV Import Feature (Latest)
+1. **Student CSV Import**
+   - Bulk upload students using CSV files
+   - Required columns: username, password, roll_no, branch
+   - Optional columns: email, name, phone_number
+   - Automatically creates User accounts for each student
+   - Validates data and skips duplicates
+   - Displays success/error counts after import
+
+2. **Book CSV Import**
+   - Bulk upload books using CSV files
+   - Required columns: title, author, isbn, quantity
+   - Validates data and skips duplicates
+   - Displays success/error counts after import
+
+3. **UI Integration**
+   - Import buttons added to Students and Books management pages
+   - Import templates with CSV format instructions
+   - Loading animations during upload
+   - Real-time success/error messaging
 
 ### Custom Admin Portal System (Latest)
 1. **Admin Model**
@@ -122,8 +144,8 @@ Access the custom admin portal at `/admin-portal/login/` with these credentials:
 - **Password**: admin123
 
 **Admin Officer Features:**
-- Manage students (add, view, delete)
-- Manage books (add, edit, delete)
+- Manage students (add individually, import via CSV, view, delete)
+- Manage books (add individually, import via CSV, edit, delete)
 - Review and approve/reject borrow requests
 
 **Superadmin Additional Features:**
@@ -145,7 +167,9 @@ Access the custom admin portal at `/admin-portal/login/` with these credentials:
 - `/admin-portal/login/` - Admin login (email-based)
 - `/admin-portal/dashboard/` - Admin dashboard with statistics
 - `/admin-portal/students/` - Manage students
+- `/admin-portal/students/import/` - Import students via CSV
 - `/admin-portal/books/` - Manage books
+- `/admin-portal/books/import/` - Import books via CSV
 - `/admin-portal/borrow-requests/` - Review borrow requests
 - `/admin-portal/admins/` - Manage admins (superadmin only)
 
