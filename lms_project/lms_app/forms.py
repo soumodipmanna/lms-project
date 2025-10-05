@@ -136,10 +136,9 @@ class CSVUploadForm(forms.Form):
 class AdminProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Admin
-        fields = ['name', 'full_name', 'department', 'designation']
+        fields = ['name', 'department', 'designation']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter display name'}),
-            'full_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter full name'}),
+            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter name'}),
             'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
             'designation': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter designation'}),
         }
@@ -147,10 +146,9 @@ class AdminProfileUpdateForm(forms.ModelForm):
 class AdminEditForm(forms.ModelForm):
     class Meta:
         model = Admin
-        fields = ['name', 'full_name', 'email', 'department', 'designation', 'role']
+        fields = ['name', 'email', 'department', 'designation', 'role']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter display name'}),
-            'full_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter full name'}),
+            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter name'}),
             'email': forms.EmailInput(attrs={'class': 'form-input', 'placeholder': 'Enter email'}),
             'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
             'designation': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter designation'}),
