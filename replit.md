@@ -14,13 +14,46 @@ This is a Django-based Library Management System that allows students to browse 
 - Student signup and login with roll number authentication
 - Book browsing dashboard
 - Book borrow request system
-- Admin approval workflow for borrow requests
 - Book return tracking
 - Student profile management (name and phone number)
-- Django admin panel for managing books and students
+- **Custom Admin Portal** with email-based authentication
+- Role-based access control (Admin Officer & Superadmin)
+- Complete CRUD operations for students, books, and admins
+- Admin approval/rejection workflow for borrow requests
+- Loading animations on all pages with purple gradient theme
 - User avatar dropdown with logout functionality
 
 ## Recent Changes (October 5, 2025)
+
+### Custom Admin Portal System (Latest)
+1. **Admin Model**
+   - Created custom Admin model with email authentication (no username)
+   - Role field: 'officer' (manages students/books/requests) or 'superadmin' (can manage admins too)
+   - Separate from Django's User model - uses session-based authentication
+   - Password hashing using Django's password utilities
+
+2. **Admin Authentication**
+   - Email-only login (no admin signup - admins created by superadmins)
+   - Custom decorators: @admin_login_required and @superadmin_required
+   - Session stores admin_id, admin_name, and admin_role
+   - Secure logout with session flush
+
+3. **Admin Features**
+   - Dashboard with statistics (total students, books, pending requests, admins)
+   - Manage Students: list, add (with User creation), delete (with User cleanup)
+   - Manage Books: list, add, edit, delete
+   - Borrow Requests: list all requests, approve (decrements book quantity), reject
+   - Manage Admins: list, add (superadmin only), delete (superadmin only, cannot delete self)
+
+4. **UI/UX Design**
+   - Purple gradient theme (#667eea to #764ba2) across all admin pages
+   - Book-themed loading animations on all pages
+   - Sidebar navigation with role-based menu items
+   - Clean, modern card-based layouts
+   - Real-time success/error messaging
+
+5. **Test Account**
+   - Superadmin: admin@library.com / admin123
 
 ### Profile Management & Authentication Updates
 1. **Student Model Enhancement**
@@ -83,34 +116,45 @@ Students can manage their profile information:
 ### Development
 The development server is configured to run automatically on port 5000.
 
-### Creating an Admin User
-To access the Django admin panel, create a superuser:
-```bash
-cd lms_project
-python manage.py createsuperuser
-```
+### Admin Portal
+Access the custom admin portal at `/admin-portal/login/` with these credentials:
+- **Email**: admin@library.com
+- **Password**: admin123
 
-### Admin Panel
-Access at `/admin/` to:
-- Add/edit books
-- Manage students
-- Approve/reject borrow requests
-- View all system data
+**Admin Officer Features:**
+- Manage students (add, view, delete)
+- Manage books (add, edit, delete)
+- Review and approve/reject borrow requests
+
+**Superadmin Additional Features:**
+- All officer features
+- Manage other admins (add, view, delete)
+- Cannot delete themselves
 
 ### Available Routes
+
+**Student Routes:**
 - `/` - Landing page
 - `/signup/` - Student registration
 - `/login/` - Student login (using roll number)
 - `/dashboard/` - Browse available books
 - `/my-borrowed-books/` - View borrowed books
 - `/manage-profile/` - Manage student profile
-- `/admin/` - Django admin panel
+
+**Admin Portal Routes:**
+- `/admin-portal/login/` - Admin login (email-based)
+- `/admin-portal/dashboard/` - Admin dashboard with statistics
+- `/admin-portal/students/` - Manage students
+- `/admin-portal/books/` - Manage books
+- `/admin-portal/borrow-requests/` - Review borrow requests
+- `/admin-portal/admins/` - Manage admins (superadmin only)
 
 ## Database
 Currently using SQLite for development. The database includes:
 - **Book** model: title, author, ISBN, quantity
 - **Student** model: user (OneToOne), roll_no, branch, name, phone_number
 - **Borrow** model: student, book, dates, status, approval flags
+- **Admin** model: email, password, name, role (officer/superadmin), is_active
 
 ## Deployment
 Configured for Replit autoscale deployment using Gunicorn as the production WSGI server.

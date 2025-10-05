@@ -146,76 +146,6 @@ def home(request):
     return render(request, 'landing.html')
 
 
-@login_required
-def admin_approve_request(request, borrow_id):
-    if not request.user.is_staff:
-        messages.error(request, "You are not authorized to approve requests.")
-        return redirect('dashboard')
-
-    borrow_request = get_object_or_404(Borrow, id=borrow_id)
-    book = borrow_request.book
-    student = borrow_request.student
-
-    if borrow_request.status != 'approved':
-        if book.quantity > 0:
-            print("before decreasing quantity:", book.quantity)
-            book.quantity -= 1
-            book.save()
-            print("after decreasing quantity:", book.quantity)
-
-            borrow_request.status = 'approved'
-            borrow_request.approve_date = timezone.now()
-            borrow_request.save()
-
-            LogEntry.objects.log_action(
-                user_id=request.user.id,
-                content_type_id=ContentType.objects.get_for_model(borrow_request).pk,
-                object_id=borrow_request.id,
-                object_repr=force_str(borrow_request),
-                action_flag=CHANGE,
-                change_message=f"Approved borrow request for {borrow_request.book.title}"
-            )
-
-            messages.success(request, f"{book.title} borrow request approved for {student.user.username}!")
-
-        else:
-            messages.error(request, "Book is out of stock!")
-    else:
-        messages.info(request, "This request is already approved.")
-
-    return redirect('admin_borrow_requests')
-
-
-@login_required
-def admin_reject_request(request, borrow_id):
-    if not request.user.is_staff:
-        messages.error(request, "You are not authorized to reject requests.")
-        return redirect('dashboard')
-
-    borrow_request = get_object_or_404(Borrow, id=borrow_id)
-    student = borrow_request.student
-
-    if borrow_request.status != 'rejected':
-        borrow_request.status = 'rejected'
-        borrow_request.save()
-
-        LogEntry.objects.log_action(
-            user_id=request.user.id,
-            content_type_id=ContentType.objects.get_for_model(borrow_request).pk,
-            object_id=borrow_request.id,
-            object_repr=force_str(borrow_request),
-            action_flag=CHANGE,
-            change_message=f"Rejected borrow request for {borrow_request.book.title}"
-        )
-
-        messages.warning(request, f"Your borrow request for {borrow_request.book.title} has been rejected.")
-
-    else:
-        messages.info(request, "This request has already been rejected.")
-
-    return redirect('admin_borrow_requests')
-
-
 def admin_login_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -428,20 +358,22 @@ def admin_approve_borrow_view(request, borrow_id):
     borrow_request = get_object_or_404(Borrow, id=borrow_id)
     book = borrow_request.book
     
-    if borrow_request.status != 'approved':
-        if book.quantity > 0:
-            book.quantity -= 1
-            book.save()
-            
-            borrow_request.status = 'approved'
-            borrow_request.is_approved = True
-            borrow_request.save()
-            
-            messages.success(request, f'Borrow request approved for {borrow_request.student.roll_no}!')
+    if request.method == 'POST':
+        if borrow_request.status != 'approved':
+            if book.quantity > 0:
+                book.quantity -= 1
+                book.save()
+                
+                borrow_request.status = 'approved'
+                borrow_request.is_approved = True
+                borrow_request.approve_date = timezone.now()
+                borrow_request.save()
+                
+                messages.success(request, f'Borrow request approved for {borrow_request.student.roll_no}!')
+            else:
+                messages.error(request, 'Book is out of stock!')
         else:
-            messages.error(request, 'Book is out of stock!')
-    else:
-        messages.info(request, 'This request is already approved.')
+            messages.info(request, 'This request is already approved.')
     
     return redirect('admin_borrow_requests')
 
@@ -450,12 +382,13 @@ def admin_approve_borrow_view(request, borrow_id):
 def admin_reject_borrow_view(request, borrow_id):
     borrow_request = get_object_or_404(Borrow, id=borrow_id)
     
-    if borrow_request.status != 'rejected':
-        borrow_request.status = 'rejected'
-        borrow_request.save()
-        messages.warning(request, f'Borrow request rejected for {borrow_request.student.roll_no}.')
-    else:
-        messages.info(request, 'This request has already been rejected.')
+    if request.method == 'POST':
+        if borrow_request.status != 'rejected':
+            borrow_request.status = 'rejected'
+            borrow_request.save()
+            messages.warning(request, f'Borrow request rejected for {borrow_request.student.roll_no}.')
+        else:
+            messages.info(request, 'This request has already been rejected.')
     
     return redirect('admin_borrow_requests')
 
