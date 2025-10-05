@@ -10,6 +10,9 @@ ROLE_CHOICES = (
 class Admin(models.Model):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=200, blank=True, null=True)
+    department = models.CharField(max_length=100, blank=True, null=True)
+    designation = models.CharField(max_length=100, blank=True, null=True)
     password = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='officer')
     is_active = models.BooleanField(default=True)

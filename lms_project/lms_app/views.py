@@ -150,7 +150,12 @@ def my_borrowed_books(request):
 
 @login_required
 def manage_profile(request):
-    student = request.user.student
+    try:
+        student = request.user.student
+    except Student.DoesNotExist:
+        messages.error(request, 'Student profile not found. Please contact admin.')
+        return redirect('dashboard')
+    
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, instance=student)
         if form.is_valid():
