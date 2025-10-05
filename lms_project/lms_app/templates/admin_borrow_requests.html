@@ -387,7 +387,10 @@
                             <th>Student</th>
                             <th>Roll No</th>
                             <th>Book</th>
-                            <th>Date</th>
+                            <th>Borrow Date</th>
+                            <th>Expected Return</th>
+                            <th>Actual Return</th>
+                            <th>Fine</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -399,6 +402,15 @@
                             <td>{{ borrow.student.roll_no }}</td>
                             <td>{{ borrow.book.title }}</td>
                             <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
+                            <td>{{ borrow.expected_return_date|date:"M d, Y"|default:"-" }}</td>
+                            <td>{{ borrow.return_date|date:"M d, Y"|default:"-" }}</td>
+                            <td>
+                                {% if borrow.fine_amount and borrow.fine_amount > 0 %}
+                                <span style="color: #d32f2f; font-weight: 600;">${{ borrow.fine_amount }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
                             <td><span class="badge badge-{{ borrow.status }}">{{ borrow.get_status_display }}</span></td>
                             <td>
                                 {% if borrow.status == 'pending' %}
@@ -410,6 +422,13 @@
                                     {% csrf_token %}
                                     <button class="btn-danger">Reject</button>
                                 </form>
+                                {% elif borrow.status == 'approved' and not borrow.is_returned %}
+                                <form method="post" action="{% url 'admin_return_book' borrow.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button class="btn-success">✓ Mark Returned</button>
+                                </form>
+                                {% elif borrow.is_returned %}
+                                <span style="color: #2e7d32; font-weight: 500;">✓ Returned</span>
                                 {% else %}
                                 <span style="color: #999;">{{ borrow.get_status_display }}</span>
                                 {% endif %}
@@ -417,7 +436,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" style="text-align: center; color: #999;">No borrow requests found</td>
+                            <td colspan="9" style="text-align: center; color: #999;">No borrow requests found</td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -145,7 +145,7 @@ def return_book(request, borrow_id):
 def my_borrowed_books(request):
     student = request.user.student
     borrowed = Borrow.objects.filter(student=student).order_by('-borrow_date')
-    return render(request, 'my_borrowed_books.html', {'borrowed': borrowed})
+    return render(request, 'my_borrowed_books.html', {'borrowed': borrowed, 'student': student})
 
 
 @login_required
@@ -409,6 +409,42 @@ def admin_reject_borrow_view(request, borrow_id):
             messages.warning(request, f'Borrow request rejected for {borrow_request.student.roll_no}.')
         else:
             messages.info(request, 'This request has already been rejected.')
+    
+    return redirect('admin_borrow_requests')
+
+
+@admin_login_required
+def admin_return_book_view(request, borrow_id):
+    borrow_record = get_object_or_404(Borrow, id=borrow_id)
+    
+    if request.method == 'POST':
+        # Verify borrow is approved before allowing return
+        if borrow_record.status != 'approved':
+            messages.error(request, 'Only approved borrow requests can be returned.')
+            return redirect('admin_borrow_requests')
+        
+        if not borrow_record.is_returned:
+            # Calculate fine BEFORE setting is_returned=True
+            calculated_fine = borrow_record.calculate_fine()
+            borrow_record.fine_amount = calculated_fine
+            
+            # Mark as returned
+            borrow_record.is_returned = True
+            borrow_record.return_date = timezone.now()
+            
+            # Increment book quantity back
+            book = borrow_record.book
+            book.quantity += 1
+            book.save()
+            
+            borrow_record.save()
+            
+            if calculated_fine > 0:
+                messages.warning(request, f'Book returned with late fee: ${calculated_fine:.2f}')
+            else:
+                messages.success(request, f'Book returned successfully by {borrow_record.student.roll_no}!')
+        else:
+            messages.info(request, 'This book has already been returned.')
     
     return redirect('admin_borrow_requests')
 

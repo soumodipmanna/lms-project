@@ -33,6 +33,7 @@ urlpatterns = [
     path('admin-portal/borrow-requests/', views.admin_borrow_requests_view, name='admin_borrow_requests'),
     path('admin-portal/borrow-requests/approve/<int:borrow_id>/', views.admin_approve_borrow_view, name='admin_approve_borrow'),
     path('admin-portal/borrow-requests/reject/<int:borrow_id>/', views.admin_reject_borrow_view, name='admin_reject_borrow'),
+    path('admin-portal/borrow-requests/return/<int:borrow_id>/', views.admin_return_book_view, name='admin_return_book'),
     
     path('admin-portal/admins/', views.admin_manage_admins_view, name='admin_manage_admins'),
     path('admin-portal/admins/add/', views.admin_add_admin_view, name='admin_add_admin'),

@@ -341,7 +341,7 @@
         <h1>📚 Library Portal</h1>
         <div class="user-info">
             <span class="user-name">{{ student.name|default:student.roll_no }}</span>
-            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+            <a href="{% url 'student_logout' %}" class="logout-btn">Logout</a>
         </div>
     </nav>
 
@@ -368,7 +368,7 @@
                 <p>Track your borrowed books and their status</p>
             </div>
 
-            {% if borrows %}
+            {% if borrowed %}
             <div class="stats-cards">
                 <div class="stat-card">
                     <div class="stat-number" id="approvedCount">0</div>
@@ -385,7 +385,7 @@
             </div>
 
             <div class="borrowed-books-grid" id="borrowedBooksGrid">
-                {% for borrow in borrows %}
+                {% for borrow in borrowed %}
                 <div class="borrow-card" data-title="{{ borrow.book.title|lower }}">
                     <div class="borrow-info">
                         <h3>{{ borrow.book.title }}</h3>
@@ -393,8 +393,14 @@
                             <div><strong>Author:</strong> {{ borrow.book.author }}</div>
                             <div><strong>ISBN:</strong> {{ borrow.book.isbn }}</div>
                             <div><strong>Borrowed On:</strong> {{ borrow.borrow_date|date:"M d, Y" }}</div>
+                            {% if borrow.expected_return_date %}
+                            <div><strong>Expected Return:</strong> {{ borrow.expected_return_date|date:"M d, Y" }}</div>
+                            {% endif %}
                             {% if borrow.return_date %}
-                            <div><strong>Return Date:</strong> {{ borrow.return_date|date:"M d, Y" }}</div>
+                            <div><strong>Actual Return:</strong> {{ borrow.return_date|date:"M d, Y" }}</div>
+                            {% endif %}
+                            {% if borrow.fine_amount and borrow.fine_amount > 0 %}
+                            <div><strong>Fine:</strong> ${{ borrow.fine_amount }}</div>
                             {% endif %}
                         </div>
                     </div>
