@@ -371,6 +371,8 @@
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Department</th>
+                            <th>Designation</th>
                             <th>Role</th>
                             <th>Actions</th>
                         </tr>
@@ -380,6 +382,8 @@
                         <tr>
                             <td>{{ adm.name }}</td>
                             <td>{{ adm.email }}</td>
+                            <td>{{ adm.department|default:"-" }}</td>
+                            <td>{{ adm.designation|default:"-" }}</td>
                             <td>{{ adm.get_role_display }}</td>
                             <td>
                                 {% if adm.id != admin.id %}
@@ -389,13 +393,14 @@
                                     <button class="btn-danger">🗑️ Delete</button>
                                 </form>
                                 {% else %}
-                                <span style="color: #999;">You (current)</span>
+                                <a href="{% url 'admin_manage_profile' %}" class="btn-edit">✏️ Edit Profile</a>
+                                <span style="color: #999; margin-left: 0.5rem;">(You)</span>
                                 {% endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" style="padding: 2rem; text-align: center; color: #999;">No admins found</td>
+                            <td colspan="6" style="padding: 2rem; text-align: center; color: #999;">No admins found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
