@@ -5,56 +5,337 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Books - Admin Portal</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
-        .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(245,247,250,0.95); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 1.5rem; }
-        .page-loader.active { display: flex; }
-        .books-loader { display: flex; gap: 0.5rem; align-items: flex-end; }
-        .book { width: 20px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 3px; animation: bookJump 0.8s ease-in-out infinite; }
-        .book:nth-child(1) { animation-delay: 0s; } .book:nth-child(2) { animation-delay: 0.15s; } .book:nth-child(3) { animation-delay: 0.3s; } .book:nth-child(4) { animation-delay: 0.45s; } .book:nth-child(5) { animation-delay: 0.6s; }
-        @keyframes bookJump { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-20px) scaleY(1.1); } }
-        .loader-text { color: #667eea; font-size: 1.1rem; font-weight: 600; animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .navbar h1 { font-size: 1.5rem; }
-        .user-info { display: flex; align-items: center; gap: 1rem; }
-        .role-badge { background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; }
-        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .logout-btn:hover { background: rgba(255,255,255,0.3); }
-        .container { display: flex; margin-top: 64px; min-height: calc(100vh - 64px); }
-        .sidebar { width: 260px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.05); position: fixed; height: calc(100vh - 64px); overflow-y: auto; }
-        .sidebar-menu { list-style: none; padding: 1rem 0; }
-        .sidebar-menu li { margin: 0.5rem 0; }
-        .sidebar-menu a { display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1.5rem; color: #555; text-decoration: none; transition: all 0.3s ease; }
-        .sidebar-menu a:hover { background: #f5f7fa; color: #667eea; }
-        .sidebar-menu a.active { background: #f0f3ff; color: #667eea; border-left: 3px solid #667eea; }
-        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
-        .page-header { margin-bottom: 2rem; }
-        .page-header h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: 500; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.3); }
-        .btn-secondary { background: #6c757d; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: 500; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 700px; }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333; }
-        .form-group input[type="file"] { width: 100%; padding: 0.8rem; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 0.95rem; }
-        .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
-        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
-        .info-box h4 { color: #1565c0; margin-bottom: 0.5rem; }
-        .info-box code { background: #fff; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.9rem; }
-        .messages { position: fixed; top: 80px; right: 2rem; z-index: 1000; max-width: 400px; }
-        .alert { padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .alert-error { background: #fee; border-left: 4px solid #f44336; color: #c33; }
-        .alert-success { background: #efe; border-left: 4px solid #4caf50; color: #2c6b2f; }
-        .alert-warning { background: #fff3cd; border-left: 4px solid #ff9800; color: #856404; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 247, 250, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .page-loader.active {
+            display: flex;
+        }
+        
+        .books-loader {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        .book {
+            width: 20px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            animation: bookJump 0.8s ease-in-out infinite;
+        }
+        
+        .book:nth-child(1) { animation-delay: 0s; }
+        .book:nth-child(2) { animation-delay: 0.15s; }
+        .book:nth-child(3) { animation-delay: 0.3s; }
+        .book:nth-child(4) { animation-delay: 0.45s; }
+        .book:nth-child(5) { animation-delay: 0.6s; }
+        
+        @keyframes bookJump {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(-20px) scaleY(1.1); }
+        }
+        
+        .loader-text {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .role-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            display: flex;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        
+        .sidebar {
+            width: 260px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+        
+        .sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 0.5rem 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.9rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-menu a:hover {
+            background: #f5f7fa;
+            color: #667eea;
+        }
+        
+        .sidebar-menu a.active {
+            background: #f0f3ff;
+            color: #667eea;
+            border-left: 3px solid #667eea;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            transition: margin-left 0.3s ease;
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            max-width: 700px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-box h4 {
+            color: #1565c0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box code {
+            background: #fff;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        
+        .messages {
+            position: fixed;
+            top: 80px;
+            right: 2rem;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-error {
+            background: #fee;
+            border-left: 4px solid #f44336;
+            color: #c33;
+        }
+        
+        .alert-success {
+            background: #efe;
+            border-left: 4px solid #4caf50;
+            color: #2c6b2f;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
     <div class="page-loader" id="pageLoader">
-        <div class="books-loader"><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div></div>
+        <div class="books-loader">
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+        </div>
         <div class="loader-text">Uploading...</div>
     </div>
+    
     <nav class="navbar">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
         <h1>🔐 Admin Portal</h1>
         <div class="user-info">
             <span>{{ admin.name }}</span>
@@ -62,6 +343,7 @@
             <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
         </div>
     </nav>
+    
     <div class="container">
         <aside class="sidebar">
             <ul class="sidebar-menu">
@@ -74,6 +356,7 @@
                 {% endif %}
             </ul>
         </aside>
+        
         <main class="main-content">
             {% if messages %}
             <div class="messages">
@@ -82,21 +365,24 @@
                 {% endfor %}
             </div>
             {% endif %}
+            
             <div class="page-header">
                 <h2>Import Books from CSV</h2>
             </div>
+            
             <div class="card">
                 <div class="info-box">
                     <h4>📄 CSV Format Requirements:</h4>
                     <p>Your CSV file must include the following columns (with headers):</p>
                     <p><code>title,author,isbn,quantity</code></p>
-                    <p style="margin-top:0.5rem;"><strong>All fields are required.</strong></p>
-                    <p style="margin-top:1rem;">
-                        <a href="{% url 'download_sample_books_csv' %}" class="btn-primary" style="background:#4caf50;padding:0.6rem 1rem;font-size:0.9rem;">
+                    <p style="margin-top: 0.5rem;"><strong>All fields are required.</strong></p>
+                    <p style="margin-top: 1rem;">
+                        <a href="{% url 'download_sample_books_csv' %}" class="btn-primary" style="background: #4caf50; padding: 0.6rem 1rem; font-size: 0.9rem;">
                             📥 Download Sample CSV
                         </a>
                     </p>
                 </div>
+                
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
@@ -111,10 +397,30 @@
             </div>
         </main>
     </div>
+    
     <script>
         const pageLoader = document.getElementById('pageLoader');
+        
         document.querySelector('form').addEventListener('submit', function() {
             pageLoader.classList.add('active');
+        });
+    </script>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.querySelector('.sidebar').classList.add('collapsed');
+                document.querySelector('.main-content').classList.add('expanded');
+            }
         });
     </script>
 </body>

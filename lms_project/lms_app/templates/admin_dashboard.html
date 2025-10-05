@@ -91,6 +91,22 @@
             font-weight: 600;
         }
         
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+        }
+        
         .user-info {
             display: flex;
             align-items: center;
@@ -135,6 +151,12 @@
             position: fixed;
             height: calc(100vh - 64px);
             overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
         }
         
         .sidebar-menu {
@@ -175,6 +197,11 @@
             margin-left: 260px;
             flex: 1;
             padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
         }
         
         .page-header {
@@ -344,6 +371,7 @@
     </div>
     
     <nav class="navbar">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
         <h1>🔐 Admin Portal</h1>
         <div class="user-info">
             <span>{{ admin.name }}</span>
@@ -469,6 +497,23 @@
                 setTimeout(() => alert.remove(), 300);
             });
         }, 5000);
+    </script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.querySelector('.sidebar').classList.add('collapsed');
+                document.querySelector('.main-content').classList.add('expanded');
+            }
+        });
     </script>
 </body>
 </html>
