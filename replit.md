@@ -26,7 +26,41 @@ This is a Django-based Library Management System that allows students to browse 
 
 ## Recent Changes (October 5, 2025)
 
-### Book Category and Department Fields (Latest)
+### Fine Rate and Return Date System (Latest)
+1. **Book Model Enhancement**
+   - Added `language` field (max_length=50, default='English') for book language
+   - Added `fine_rate` field (DecimalField, default=5.00) for variable daily fine rates per book
+   - All 500 existing books set to language='English' and fine_rate=5.00 by default
+
+2. **Borrow Model Enhancement**
+   - Added `expected_return_date` field - students choose when borrowing
+   - Added `fine_amount` field (DecimalField, default=0.00) to store calculated fines
+   - Added `calculate_fine()` method that computes fine based on days overdue × book's fine_rate
+   - Fine is automatically calculated and stored when book is returned late
+
+3. **Borrow Workflow Updates**
+   - **Modal Popup**: When borrowing, students see a confirmation modal displaying:
+     - Book title and author
+     - Fine rate per day (e.g., "$5.00/day if late")
+     - Date picker to select expected return date
+     - Warning message about late return fines
+   - **Return Process**: When returning books:
+     - Fine is calculated BEFORE marking as returned
+     - Fine amount is stored in the database
+     - Students see warning message: "Late return! Fine charged: $X.XX" if overdue
+     - Or success message: "Book returned successfully!" if on-time
+
+4. **CSV Import Updates**
+   - CSV now accepts language and fine_rate columns (optional)
+   - Updated CSV format: `title,author,isbn,quantity,category,department,language,fine_rate`
+   - Sample CSV download includes example language and fine_rate values
+
+5. **Admin Portal Updates**
+   - Book management table displays Language and Fine/Day columns
+   - Add/Edit book forms include language and fine_rate fields
+   - Import books page shows updated CSV format with all fields
+
+### Book Category and Department Fields
 1. **Book Model Enhancement**
    - Added `category` field to Book model (max_length=100, default='dummy')
    - Added `department` field to Book model (max_length=100, default='dummy')
@@ -36,13 +70,10 @@ This is a Django-based Library Management System that allows students to browse 
 2. **CSV Import Updates**
    - CSV import now accepts category and department columns
    - Fields are optional - default to 'dummy' if not provided
-   - Updated CSV format: `title,author,isbn,quantity,category,department`
-   - Sample CSV download includes example category/department values
 
 3. **Admin Portal Updates**
    - Book management table now displays Category and Department columns
    - Add/Edit book forms include category and department fields
-   - Import books page shows updated CSV format requirements
 
 4. **Purpose**
    - Enable future filtering of books by category (e.g., Programming, Literature)
@@ -209,9 +240,9 @@ Access the custom admin portal at `/admin-portal/login/` with these credentials:
 
 ## Database
 Currently using SQLite for development. The database includes:
-- **Book** model: title, author, ISBN, quantity, category, department
+- **Book** model: title, author, ISBN, quantity, category, department, language, fine_rate
 - **Student** model: user (OneToOne), roll_no, branch, name, phone_number
-- **Borrow** model: student, book, dates, status, approval flags
+- **Borrow** model: student, book, dates, status, approval flags, expected_return_date, fine_amount
 - **Admin** model: email, password, name, role (officer/superadmin), is_active
 
 ## Deployment
