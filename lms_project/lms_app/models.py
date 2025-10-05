@@ -29,6 +29,8 @@ class Book(models.Model):
     author = models.CharField(max_length=200)
     isbn = models.CharField(max_length=13, unique=True)
     quantity = models.IntegerField(default=1)
+    category = models.CharField(max_length=100, default='dummy')
+    department = models.CharField(max_length=100, default='dummy')
 
     def __str__(self):
         return self.title
