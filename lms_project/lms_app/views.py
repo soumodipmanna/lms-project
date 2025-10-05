@@ -545,6 +545,8 @@ def admin_import_books_view(request):
                             author = row.get('author', '').strip()
                             isbn = row.get('isbn', '').strip()
                             quantity = row.get('quantity', '').strip()
+                            category = row.get('category', 'dummy').strip()
+                            department = row.get('department', 'dummy').strip()
                             
                             if not all([title, author, isbn, quantity]):
                                 error_count += 1
@@ -564,7 +566,9 @@ def admin_import_books_view(request):
                                 title=title,
                                 author=author,
                                 isbn=isbn,
-                                quantity=quantity
+                                quantity=quantity,
+                                category=category,
+                                department=department
                             )
                             success_count += 1
                     except Exception as e:
@@ -611,9 +615,9 @@ def download_sample_books_csv(request):
     response['Content-Disposition'] = 'attachment; filename="sample_books.csv"'
     
     writer = csv.writer(response)
-    writer.writerow(['title', 'author', 'isbn', 'quantity'])
-    writer.writerow(['Introduction to Python', 'Mark Lutz', '978-1449355739', '10'])
-    writer.writerow(['Clean Code', 'Robert C. Martin', '978-0132350884', '5'])
-    writer.writerow(['The Pragmatic Programmer', 'Andrew Hunt', '978-0135957059', '8'])
+    writer.writerow(['title', 'author', 'isbn', 'quantity', 'category', 'department'])
+    writer.writerow(['Introduction to Python', 'Mark Lutz', '978-1449355739', '10', 'Programming', 'Computer Science'])
+    writer.writerow(['Clean Code', 'Robert C. Martin', '978-0132350884', '5', 'Software Engineering', 'Computer Science'])
+    writer.writerow(['The Pragmatic Programmer', 'Andrew Hunt', '978-0135957059', '8', 'Software Development', 'Computer Science'])
     
     return response
