@@ -40,10 +40,6 @@
         .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e9ecef; }
         .table th { background: #f8f9fa; font-weight: 600; }
         .table tbody tr:hover { background: #f8f9fa; }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333; }
-        .form-group input, .form-group select { width: 100%; padding: 0.8rem; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 0.95rem; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
         .badge { padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500; }
         .badge-pending { background: #fff3cd; color: #856404; }
         .badge-approved { background: #d4edda; color: #155724; }
@@ -72,12 +68,12 @@
     <div class="container">
         <aside class="sidebar">
             <ul class="sidebar-menu">
-                <li><a href="{% url 'admin_dashboard' %}" class=""><span>📊</span> Dashboard</a></li>
-                <li><a href="{% url 'admin_manage_students' %}" class=""><span>👥</span> Students</a></li>
-                <li><a href="{% url 'admin_manage_books' %}" class=""><span>📚</span> Books</a></li>
+                <li><a href="{% url 'admin_dashboard' %}"><span>📊</span> Dashboard</a></li>
+                <li><a href="{% url 'admin_manage_students' %}"><span>👥</span> Students</a></li>
+                <li><a href="{% url 'admin_manage_books' %}"><span>📚</span> Books</a></li>
                 <li><a href="{% url 'admin_borrow_requests' %}" class="active"><span>📋</span> Borrow Requests</a></li>
                 {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}" class=""><span>🔑</span> Admins</a></li>
+                <li><a href="{% url 'admin_manage_admins' %}"><span>🔑</span> Admins</a></li>
                 {% endif %}
             </ul>
         </aside>
@@ -89,7 +85,6 @@
                 {% endfor %}
             </div>
             {% endif %}
-            
             <div class="page-header">
                 <h2>Borrow Requests</h2>
                 <p>Manage student borrow requests</p>
@@ -107,35 +102,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for borrow in borrows %}}
+                        {% for borrow in borrows %}
                         <tr>
-                            <td>{{  borrow.student.name|default:borrow.student.roll_no } }</td>
-                            <td>{{  borrow.student.roll_no } }</td>
-                            <td>{{  borrow.book.title } }</td>
-                            <td>{{  borrow.borrow_date|date:"M d, Y" } }</td>
-                            <td><span class="badge badge-{{  borrow.status } }">{{  borrow.get_status_display } }</span></td>
+                            <td>{{ borrow.student.name|default:borrow.student.roll_no }}</td>
+                            <td>{{ borrow.student.roll_no }}</td>
+                            <td>{{ borrow.book.title }}</td>
+                            <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
+                            <td><span class="badge badge-{{ borrow.status }}">{{ borrow.get_status_display }}</span></td>
                             <td>
-                                {{% if borrow.status == 'pending' %}}
-                                <form method="post" action="{{% url 'admin_approve_borrow' borrow.id %}}" style="display:inline;">
-                                    {{% csrf_token %}}
+                                {% if borrow.status == 'pending' %}
+                                <form method="post" action="{% url 'admin_approve_borrow' borrow.id %}" style="display:inline;">
+                                    {% csrf_token %}
                                     <button class="btn-success">Approve</button>
                                 </form>
-                                <form method="post" action="{{% url 'admin_reject_borrow' borrow.id %}}" style="display:inline;">
-                                    {{% csrf_token %}}
+                                <form method="post" action="{% url 'admin_reject_borrow' borrow.id %}" style="display:inline;">
+                                    {% csrf_token %}
                                     <button class="btn-danger">Reject</button>
                                 </form>
-                                {{% else %}}
-                                <span style="color:#999;">{{  borrow.get_status_display } }</span>
-                                {{% endif %}}
+                                {% else %}
+                                <span style="color:#999;">{{ borrow.get_status_display }}</span>
+                                {% endif %}
                             </td>
                         </tr>
-                        {{% empty %}}
+                        {% empty %}
                         <tr><td colspan="6" style="text-align:center;color:#999;">No borrow requests found</td></tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
-    
         </main>
     </div>
     <script>

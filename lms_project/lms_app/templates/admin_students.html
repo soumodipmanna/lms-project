@@ -64,8 +64,8 @@
     <nav class="navbar">
         <h1>🔐 Admin Portal</h1>
         <div class="user-info">
-            <span>{{ admin.name }}</span>
-            <span class="role-badge">{{ admin.get_role_display }}</span>
+            <span>{{ admin.name}}</span>
+            <span class="role-badge">{{ admin.get_role_display}}</span>
             <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
         </div>
     </nav>
@@ -85,7 +85,7 @@
             {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                <div class="alert alert-{{ message.tags}}">{{ message}}</div>
                 {% endfor %}
             </div>
             {% endif %}
@@ -96,7 +96,7 @@
                         <h2>Manage Students</h2>
                         <p>View and manage student accounts</p>
                     </div>
-                    <a href="{{% url 'admin_add_student' %}}" class="btn-primary">+ Add Student</a>
+                    <a href="{% url 'admin_add_student'% }" class="btn-primary">+ Add Student</a>
                 </div>
             </div>
             <div class="card">
@@ -112,23 +112,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for student in students %}}
+                        {% for student in students% }
                         <tr>
-                            <td>{{  student.roll_no } }</td>
-                            <td>{{  student.name|default:"-" } }</td>
-                            <td>{{  student.branch } }</td>
-                            <td>{{  student.user.email|default:"-" } }</td>
-                            <td>{{  student.phone_number|default:"-" } }</td>
+                            <td>{{ student.roll_no } }</td>
+                            <td>{{ student.name|default:"-" } }</td>
+                            <td>{{ student.branch } }</td>
+                            <td>{{ student.user.email|default:"-" } }</td>
+                            <td>{{ student.phone_number|default:"-" } }</td>
                             <td>
-                                <form method="post" action="{{% url 'admin_delete_student' student.id %}}" onsubmit="return confirm('Delete student {{  student.roll_no } }?');">
-                                    {{% csrf_token %}}
+                                <form method="post" action="{% url 'admin_delete_student' student.id% }" onsubmit="return confirm('Delete student {{ student.roll_no } }?');">
+                                    {% csrf_token% }
                                     <button class="btn-danger">Delete</button>
                                 </form>
                             </td>
                         </tr>
-                        {{% empty %}}
+                        {% empty% }
                         <tr><td colspan="6" style="text-align:center;color:#999;">No students found</td></tr>
-                        {{% endfor %}}
+                        {% endfor% }
                     </tbody>
                 </table>
             </div>
