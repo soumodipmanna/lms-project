@@ -98,7 +98,7 @@
                     </div>
                     <div style="display:flex;gap:0.5rem;">
                         <a href="{% url 'admin_import_books' %}" class="btn-primary" style="background:#ff9800;">📥 Import CSV</a>
-                        <a href="{% url 'admin_add_book'% }" class="btn-primary">+ Add Book</a>
+                        <a href="{% url 'admin_add_book'% }" class="btn-primary">➕ Add Book</a>
                     </div>
                 </div>
             </div>
@@ -121,10 +121,10 @@
                             <td>{{ book.isbn }}</td>
                             <td>{{ book.quantity }}</td>
                             <td>
-                                <a href="{% url 'admin_edit_book' book.id %}" class="btn-success">Edit</a>
+                                <a href="{% url 'admin_edit_book' book.id %}" class="btn-success" title="Edit">✏️</a>
                                 <form method="post" action="{% url 'admin_delete_book' book.id %}" style="display:inline;" onsubmit="return confirm('Delete book {{ book.title }}?');">
                                     {% csrf_token %}
-                                    <button class="btn-danger">Delete</button>
+                                    <button class="btn-danger" title="Delete">🗑️</button>
                                 </form>
                             </td>
                         </tr>

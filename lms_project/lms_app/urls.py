@@ -20,11 +20,13 @@ urlpatterns = [
     path('admin-portal/students/', views.admin_manage_students_view, name='admin_manage_students'),
     path('admin-portal/students/add/', views.admin_add_student_view, name='admin_add_student'),
     path('admin-portal/students/import/', views.admin_import_students_view, name='admin_import_students'),
+    path('admin-portal/students/sample-csv/', views.download_sample_students_csv, name='download_sample_students_csv'),
     path('admin-portal/students/delete/<int:student_id>/', views.admin_delete_student_view, name='admin_delete_student'),
     
     path('admin-portal/books/', views.admin_manage_books_view, name='admin_manage_books'),
     path('admin-portal/books/add/', views.admin_add_book_view, name='admin_add_book'),
     path('admin-portal/books/import/', views.admin_import_books_view, name='admin_import_books'),
+    path('admin-portal/books/sample-csv/', views.download_sample_books_csv, name='download_sample_books_csv'),
     path('admin-portal/books/edit/<int:book_id>/', views.admin_edit_book_view, name='admin_edit_book'),
     path('admin-portal/books/delete/<int:book_id>/', views.admin_delete_book_view, name='admin_delete_book'),
     

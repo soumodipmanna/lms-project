@@ -92,6 +92,11 @@
                     <p><code>username,password,email,roll_no,branch,name,phone_number</code></p>
                     <p style="margin-top:0.5rem;"><strong>Required:</strong> username, password, roll_no, branch</p>
                     <p><strong>Optional:</strong> email, name, phone_number</p>
+                    <p style="margin-top:1rem;">
+                        <a href="{% url 'download_sample_students_csv' %}" class="btn-primary" style="background:#4caf50;padding:0.6rem 1rem;font-size:0.9rem;">
+                            📥 Download Sample CSV
+                        </a>
+                    </p>
                 </div>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -100,8 +105,8 @@
                         {{ form.csv_file }}
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">Upload & Import</button>
-                        <a href="{% url 'admin_manage_students' %}" class="btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-primary">⬆️ Upload & Import</button>
+                        <a href="{% url 'admin_manage_students' %}" class="btn-secondary">✖️ Cancel</a>
                     </div>
                 </form>
             </div>

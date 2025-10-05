@@ -14,6 +14,7 @@ from django.contrib import messages
 from functools import wraps
 import csv
 import io
+from django.http import HttpResponse
 
 
 def student_signup(request):
@@ -588,3 +589,31 @@ def admin_import_books_view(request):
         'form': form,
     }
     return render(request, 'admin_import_books.html', context)
+
+
+@admin_login_required
+def download_sample_students_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="sample_students.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['username', 'password', 'email', 'roll_no', 'branch', 'name', 'phone_number'])
+    writer.writerow(['student1', 'password123', 'student1@example.com', 'CS2023001', 'Computer Science', 'John Doe', '1234567890'])
+    writer.writerow(['student2', 'password123', 'student2@example.com', 'CS2023002', 'Computer Science', 'Jane Smith', '0987654321'])
+    writer.writerow(['student3', 'password123', 'student3@example.com', 'EC2023001', 'Electronics', 'Bob Wilson', '5555555555'])
+    
+    return response
+
+
+@admin_login_required
+def download_sample_books_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="sample_books.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['title', 'author', 'isbn', 'quantity'])
+    writer.writerow(['Introduction to Python', 'Mark Lutz', '978-1449355739', '10'])
+    writer.writerow(['Clean Code', 'Robert C. Martin', '978-0132350884', '5'])
+    writer.writerow(['The Pragmatic Programmer', 'Andrew Hunt', '978-0135957059', '8'])
+    
+    return response

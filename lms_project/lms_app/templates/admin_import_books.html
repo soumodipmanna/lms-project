@@ -91,6 +91,11 @@
                     <p>Your CSV file must include the following columns (with headers):</p>
                     <p><code>title,author,isbn,quantity</code></p>
                     <p style="margin-top:0.5rem;"><strong>All fields are required.</strong></p>
+                    <p style="margin-top:1rem;">
+                        <a href="{% url 'download_sample_books_csv' %}" class="btn-primary" style="background:#4caf50;padding:0.6rem 1rem;font-size:0.9rem;">
+                            📥 Download Sample CSV
+                        </a>
+                    </p>
                 </div>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -99,8 +104,8 @@
                         {{ form.csv_file }}
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">Upload & Import</button>
-                        <a href="{% url 'admin_manage_books' %}" class="btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-primary">⬆️ Upload & Import</button>
+                        <a href="{% url 'admin_manage_books' %}" class="btn-secondary">✖️ Cancel</a>
                     </div>
                 </form>
             </div>

@@ -98,7 +98,7 @@
                     </div>
                     <div style="display:flex;gap:0.5rem;">
                         <a href="{% url 'admin_import_students' %}" class="btn-primary" style="background:#ff9800;">📥 Import CSV</a>
-                        <a href="{% url 'admin_add_student'% }" class="btn-primary">+ Add Student</a>
+                        <a href="{% url 'admin_add_student'% }" class="btn-primary">➕ Add Student</a>
                     </div>
                 </div>
             </div>
@@ -123,9 +123,9 @@
                             <td>{{ student.user.email|default:"-" }}</td>
                             <td>{{ student.phone_number|default:"-" }}</td>
                             <td>
-                                <form method="post" action="{% url 'admin_delete_student' student.id %}" onsubmit="return confirm('Delete student {{ student.roll_no }}?');">
+                                <form method="post" action="{% url 'admin_delete_student' student.id %}" style="display:inline;" onsubmit="return confirm('Delete student {{ student.roll_no }}?');">
                                     {% csrf_token %}
-                                    <button class="btn-danger">Delete</button>
+                                    <button class="btn-danger" title="Delete">🗑️</button>
                                 </form>
                             </td>
                         </tr>

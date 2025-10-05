@@ -34,18 +34,22 @@ This is a Django-based Library Management System that allows students to browse 
    - Automatically creates User accounts for each student
    - Validates data and skips duplicates
    - Displays success/error counts after import
+   - **Download sample CSV** feature with pre-filled examples
 
 2. **Book CSV Import**
    - Bulk upload books using CSV files
    - Required columns: title, author, isbn, quantity
    - Validates data and skips duplicates
    - Displays success/error counts after import
+   - **Download sample CSV** feature with pre-filled examples
 
 3. **UI Integration**
    - Import buttons added to Students and Books management pages
-   - Import templates with CSV format instructions
+   - Import templates with CSV format instructions and download buttons
    - Loading animations during upload
    - Real-time success/error messaging
+   - **Icon-based UI**: Edit (✏️), Delete (🗑️), Add (➕), Import (📥), Upload (⬆️), Cancel (✖️)
+   - Enhanced visual appeal with icons throughout the admin portal
 
 ### Custom Admin Portal System (Latest)
 1. **Admin Model**
