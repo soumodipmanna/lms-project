@@ -116,6 +116,85 @@
             font-size: 1.1rem;
         }
         
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 247, 250, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .page-loader.active {
+            display: flex;
+        }
+        
+        .books-loader {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        .book {
+            width: 20px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            position: relative;
+            animation: bookJump 0.8s ease-in-out infinite;
+        }
+        
+        .book:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .book:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+        
+        .book:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        .book:nth-child(4) {
+            animation-delay: 0.45s;
+        }
+        
+        .book:nth-child(5) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes bookJump {
+            0%, 100% {
+                transform: translateY(0) scaleY(1);
+            }
+            50% {
+                transform: translateY(-20px) scaleY(1.1);
+            }
+        }
+        
+        .loader-text {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        
         .container {
             display: flex;
             margin-top: 64px;
@@ -376,6 +455,17 @@
     </style>
 </head>
 <body>
+    <div class="page-loader" id="pageLoader">
+        <div class="books-loader">
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+        </div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    
     <nav class="navbar">
         <h1>📚 Library Dashboard</h1>
         <div class="user-info">
@@ -460,8 +550,26 @@
     </div>
     
     <script>
+        const pageLoader = document.getElementById('pageLoader');
         const userAvatar = document.getElementById('userAvatar');
         const dropdownMenu = document.getElementById('dropdownMenu');
+        
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!this.getAttribute('href').startsWith('#') && 
+                    !this.classList.contains('dropdown-item') &&
+                    this.getAttribute('href') !== 'javascript:void(0)' &&
+                    this.getAttribute('href')) {
+                    pageLoader.classList.add('active');
+                }
+            });
+        });
+        
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                pageLoader.classList.add('active');
+            });
+        });
         
         userAvatar.addEventListener('click', function(e) {
             e.stopPropagation();
