@@ -31,6 +31,8 @@ class Book(models.Model):
     quantity = models.IntegerField(default=1)
     category = models.CharField(max_length=100, default='dummy')
     department = models.CharField(max_length=100, default='dummy')
+    language = models.CharField(max_length=50, default='English')
+    fine_rate = models.DecimalField(max_digits=10, decimal_places=2, default=5.00, help_text='Fine per day in currency')
 
     def __str__(self):
         return self.title
@@ -57,11 +59,23 @@ class Borrow(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     borrow_date = models.DateField(auto_now_add=True)
+    expected_return_date = models.DateField(null=True, blank=True)
     return_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     is_approved = models.BooleanField(default=False)
     is_returned = models.BooleanField(default=False)
     message = models.CharField(max_length=255, blank=True)
+    fine_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return f"{self.student} - {self.book} ({self.status})"
+    
+    def calculate_fine(self):
+        """Calculate fine if book is overdue"""
+        if self.expected_return_date and not self.is_returned:
+            from datetime import date
+            today = date.today()
+            if today > self.expected_return_date:
+                overdue_days = (today - self.expected_return_date).days
+                return overdue_days * float(self.book.fine_rate)
+        return 0.00
