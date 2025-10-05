@@ -41,10 +41,79 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            position: relative;
         }
         
         .user-name {
             font-weight: 500;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-avatar:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            gap: 0.6rem;
+        }
+        
+        .dropdown-item:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .dropdown-item:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .dropdown-item:hover {
+            background: #f5f7fa;
+            color: #667eea;
+        }
+        
+        .dropdown-item .icon {
+            font-size: 1.1rem;
         }
         
         .container {
@@ -311,6 +380,15 @@
         <h1>📚 Library Dashboard</h1>
         <div class="user-info">
             <span class="user-name">Welcome, {{ user.username }}</span>
+            <div class="user-avatar" id="userAvatar">
+                👤
+            </div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="{% url 'student_logout' %}" class="dropdown-item">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
         </div>
     </nav>
     
@@ -319,7 +397,6 @@
             <ul class="sidebar-menu">
                 <li><a href="{% url 'dashboard' %}" class="active"><span class="icon">📚</span> Browse Books</a></li>
                 <li><a href="{% url 'my_borrowed_books' %}"><span class="icon">📖</span> My Borrowed Books</a></li>
-                <li><a href="{% url 'student_logout' %}"><span class="icon">🚪</span> Logout</a></li>
             </ul>
         </aside>
         
@@ -382,6 +459,20 @@
     </div>
     
     <script>
+        const userAvatar = document.getElementById('userAvatar');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        
+        userAvatar.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!userAvatar.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+        
         const searchInput = document.getElementById('searchInput');
         const booksContainer = document.getElementById('booksContainer');
         const noResults = document.getElementById('noResults');
