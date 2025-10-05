@@ -73,27 +73,33 @@ def borrow_book(request, book_id):
     if request.user.is_authenticated:
         book = get_object_or_404(Book, id=book_id)
 
-        existing_request = Borrow.objects.filter(
-            book=book,
-            student=request.user.student,
-            status__in=['pending', 'approved']
-        ).exists()
-
-        if existing_request:
-            messages.warning(
-                request,
-                "You already have a borrow request or have borrowed this book."
-            )
-        else:
-            Borrow.objects.create(
+        if request.method == 'POST':
+            existing_request = Borrow.objects.filter(
                 book=book,
                 student=request.user.student,
-                status='pending'
-            )
-            messages.success(
-                request,
-                "Your borrow request has been sent to the admin."
-            )
+                status__in=['pending', 'approved']
+            ).exists()
+
+            if existing_request:
+                messages.warning(
+                    request,
+                    "You already have a borrow request or have borrowed this book."
+                )
+            else:
+                expected_return_date = request.POST.get('expected_return_date')
+                from datetime import datetime
+                expected_return_date = datetime.strptime(expected_return_date, '%Y-%m-%d').date() if expected_return_date else None
+                
+                Borrow.objects.create(
+                    book=book,
+                    student=request.user.student,
+                    status='pending',
+                    expected_return_date=expected_return_date
+                )
+                messages.success(
+                    request,
+                    "Your borrow request has been sent to the admin."
+                )
 
         return redirect('dashboard')
     else:
