@@ -26,7 +26,28 @@ This is a Django-based Library Management System that allows students to browse 
 
 ## Recent Changes (October 5, 2025)
 
-### Fine Rate and Return Date System (Latest)
+### Return Date Display and Admin Return Feature (Latest)
+1. **Student Borrowed Books Page**
+   - Added "Expected Return" column showing the expected return date selected during borrowing
+   - Added "Actual Return" column showing when book was actually returned
+   - Added fine display showing any late return fees charged
+   - Fixed variable mismatch and logout URL issues
+
+2. **Admin Borrow Requests Page**
+   - Added comprehensive columns: Borrow Date, Expected Return, Actual Return, Fine
+   - Added "Mark as Returned" button for approved books not yet returned
+   - Shows checkmark "✓ Returned" status for already returned books
+   - Fine amounts displayed in red color when > $0
+
+3. **Admin Return Book Feature**
+   - Admins can mark approved books as returned from borrow requests page
+   - Automatically calculates fine based on expected vs actual return date
+   - Increments book quantity back to inventory
+   - Security: Only approved borrows can be returned (prevents inventory inflation)
+   - Shows warning message for late returns with fine, success message for on-time returns
+   - URL: `/admin-portal/borrow-requests/return/<borrow_id>/`
+
+### Fine Rate and Return Date System
 1. **Book Model Enhancement**
    - Added `language` field (max_length=50, default='English') for book language
    - Added `fine_rate` field (DecimalField, default=5.00) for variable daily fine rates per book
