@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Borrowed Books</title>
+</head>
+<body>
+
+<h2>My Borrowed Books</h2>
+
+<table border="1" cellpadding="10" cellspacing="0">
+  <tr>
+    <th>Title</th>
+    <th>Borrowed At</th>
+    <th>Status</th>
+    <th>Message</th>
+    <th>Action</th>
+  </tr>
+  {% for record in borrowed %}
+  <tr>
+    <td>{{ record.book.title }}</td>
+
+    <td>
+        {% if record.status == 'approved' %}
+            <span style="color: green;">Approved</span>
+        {% elif record.status == 'rejected' %}
+            <span style="color: red;">Rejected</span>
+        {% else %}
+            <span style="color: orange;">Pending</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if record.message %}
+            {{ record.message }}
+        {% else %}
+            -
+        {% endif %}
+    </td>
+    <td>
+      {% if not record.is_returned and record.status == 'approved' %}
+        <form method="post" action="{% url 'return_book' record.id %}">
+          {% csrf_token %}
+          <button type="submit">Return</button>
+        </form>
+      {% elif record.is_returned %}
+
+      {% else %}
+        -
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="5">You have not borrowed any books.</td></tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>
