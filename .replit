@@ -33,6 +33,14 @@ outputType = "webview"
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 34155
+externalPort = 3000
+
+[[ports]]
+localPort = 38389
+externalPort = 3001
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd lms_project && gunicorn --bind=0.0.0.0:5000 --reuse-port lms_project.wsgi:application"]
