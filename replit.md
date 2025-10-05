@@ -26,7 +26,37 @@ This is a Django-based Library Management System that allows students to browse 
 
 ## Recent Changes (October 5, 2025)
 
-### CSV Import Feature (Latest)
+### Book Category and Department Fields (Latest)
+1. **Book Model Enhancement**
+   - Added `category` field to Book model (max_length=100, default='dummy')
+   - Added `department` field to Book model (max_length=100, default='dummy')
+   - Created migration 0012 to apply these changes
+   - All 500 existing books automatically set to category='dummy' and department='dummy'
+
+2. **CSV Import Updates**
+   - CSV import now accepts category and department columns
+   - Fields are optional - default to 'dummy' if not provided
+   - Updated CSV format: `title,author,isbn,quantity,category,department`
+   - Sample CSV download includes example category/department values
+
+3. **Admin Portal Updates**
+   - Book management table now displays Category and Department columns
+   - Add/Edit book forms include category and department fields
+   - Import books page shows updated CSV format requirements
+
+4. **Purpose**
+   - Enable future filtering of books by category (e.g., Programming, Literature)
+   - Enable future filtering by department (e.g., Computer Science, Humanities)
+   - Supports better book organization and search capabilities
+
+### Collapsible Sidebar Feature
+1. **All Pages Enhanced**
+   - Added hamburger menu (☰) button to navbar on all admin and student pages
+   - Click to toggle sidebar collapse/expand with smooth animations
+   - Sidebar state persists using localStorage across page reloads
+   - Smooth CSS transitions (0.3s ease) for all animations
+
+### CSV Import Feature
 1. **Student CSV Import**
    - Bulk upload students using CSV files
    - Required columns: username, password, roll_no, branch
@@ -179,7 +209,7 @@ Access the custom admin portal at `/admin-portal/login/` with these credentials:
 
 ## Database
 Currently using SQLite for development. The database includes:
-- **Book** model: title, author, ISBN, quantity
+- **Book** model: title, author, ISBN, quantity, category, department
 - **Student** model: user (OneToOne), roll_no, branch, name, phone_number
 - **Borrow** model: student, book, dates, status, approval flags
 - **Admin** model: email, password, name, role (officer/superadmin), is_active
