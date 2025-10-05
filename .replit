@@ -41,10 +41,6 @@ externalPort = 3000
 localPort = 39073
 externalPort = 3001
 
-[[ports]]
-localPort = 40747
-externalPort = 3002
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd lms_project && gunicorn --bind=0.0.0.0:5000 --reuse-port lms_project.wsgi:application"]
