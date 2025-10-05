@@ -379,7 +379,7 @@
     <nav class="navbar">
         <h1>📚 Library Dashboard</h1>
         <div class="user-info">
-            <span class="user-name">Welcome, {{ user.username }}</span>
+            <span class="user-name">Welcome, {% if user.student.name %}{{ user.student.name }}{% else %}{{ user.student.roll_no }}{% endif %}</span>
             <div class="user-avatar" id="userAvatar">
                 👤
             </div>
@@ -397,6 +397,7 @@
             <ul class="sidebar-menu">
                 <li><a href="{% url 'dashboard' %}" class="active"><span class="icon">📚</span> Browse Books</a></li>
                 <li><a href="{% url 'my_borrowed_books' %}"><span class="icon">📖</span> My Borrowed Books</a></li>
+                <li><a href="{% url 'manage_profile' %}"><span class="icon">👤</span> Manage Profile</a></li>
             </ul>
         </aside>
         
