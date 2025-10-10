@@ -619,8 +619,16 @@
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
+            const toggleBtn = document.getElementById('sidebarToggle');
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                toggleBtn.innerHTML = '→';
+            } else {
+                toggleBtn.innerHTML = '☰';
+            }
+            
             localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         }
         
@@ -629,6 +637,7 @@
             if (isCollapsed) {
                 document.querySelector('.sidebar').classList.add('collapsed');
                 document.querySelector('.main-content').classList.add('expanded');
+                document.getElementById('sidebarToggle').innerHTML = '→';
             }
         });
     </script>

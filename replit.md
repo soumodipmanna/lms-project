@@ -14,7 +14,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Navigation**: Both student and admin interfaces feature sidebar navigation, with role-based menu items for administrators.
 - **Layout**: Clean, modern card-based layouts are used for dashboards and management pages.
 - **Interactivity**: All pages include a collapsible sidebar toggled by a hamburger menu, with state persistence using localStorage. Smooth CSS transitions are used for animations.
-- **Sidebar Design**: Modern collapsible sidebar with gradient background, smooth cubic-bezier animations, rounded menu items with hover effects (translateX + accent bar), and active state with purple gradient. Features enhanced shadows and 0.4s transition timing. When collapsed, displays a 70px icon-only bar with centered icons and hidden text labels.
+- **Sidebar Design**: Modern collapsible sidebar with gradient background, smooth cubic-bezier animations, rounded menu items with hover effects (translateX + accent bar), and active state with purple gradient. Features enhanced shadows and 0.4s transition timing. When collapsed, displays a 70px icon-only bar with centered icons and hidden text labels. Toggle button icon changes dynamically: ☰ (hamburger) when expanded, → (arrow) when collapsed.
 - **Iconography**: An icon-based UI is used for actions like Edit (✏️), Delete (🗑️), Add (➕), Import (📥), Upload (⬆️), and Cancel (✖️) to enhance visual appeal and clarity.
 - **Dashboard Cards**: Admin dashboard displays stat cards for Total Students (purple), Total Books (green), Pending Requests (orange), Fine Management (red, ₹), and Total Admins (blue, superadmin only).
 
