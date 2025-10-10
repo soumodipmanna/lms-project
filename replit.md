@@ -23,8 +23,16 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
     - **Student**: Uses roll number for login. Password hashing is handled by Django's utilities. Logout redirects to the home page.
     - **Admin**: Custom `Admin` model with email-based authentication. Two roles: 'officer' (manages students, books, requests) and 'superadmin' (manages other admins too). Custom decorators (`@admin_login_required`, `@superadmin_required`) enforce access control. Logout redirects to the home page.
 - **User Management**:
-    - **Student**: Signup, login, profile management (name, phone number), and viewing borrowed books.
+    - **Student**: Signup creates account with 'pending' status requiring admin approval. Login checks status and shows rejection/disabled reasons. Profile management (name, phone number) and viewing borrowed books.
     - **Admin**: CRUD operations for students, books, and other admins (superadmin only).
+- **Signup Approval Workflow**:
+    - New student signups are set to 'pending' status by default
+    - Admin "Signup Requests" page displays all pending signups
+    - Admins can approve (one-click) or reject (with mandatory reason via modal) signup requests
+    - Admins can disable existing active students (with mandatory reason via modal)
+    - Student login enforces status checks: only 'approved' students can login
+    - Rejected/disabled students see their status and reason when attempting login
+    - Manually added or CSV-imported students are auto-approved
 - **Book Management**:
     - Comprehensive CRUD for books, including fields for title, author, ISBN, quantity, category, department, language, and `fine_rate`.
     - CSV Bulk Import for students and books, with validation, duplicate handling, and sample CSV downloads.
@@ -38,7 +46,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
     - User-friendly error messages displayed inline and on the same page for authentication failures.
 - **Core Models**:
     - `Book`: Includes `language`, `fine_rate`, `category`, and `department` fields for better organization.
-    - `Student`: Linked to Django's `User` model, with `roll_no`, `branch`, `name`, and `phone_number`.
+    - `Student`: Linked to Django's `User` model, with `roll_no`, `branch`, `name`, `phone_number`, `status` (pending/approved/rejected/disabled), and `status_reason` (for rejection/disable explanations).
     - `Borrow`: Tracks student, book, dates, status, `expected_return_date`, `fine_amount`, and `reject_reason`.
     - `Admin`: Custom model with `email`, `password`, `name`, `role`, and `is_active`.
 
