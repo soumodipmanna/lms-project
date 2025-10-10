@@ -13,7 +13,10 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Design Language**: iOS 26 liquid glass (glassmorphism) design system with frosted glass effects, translucent UI components, and modern blur aesthetics.
 - **Theming**: Consistent purple gradient accents (#667eea to #764ba2) for active states and CTAs, complemented by book-themed loading animations.
 - **Navigation**: Both student and admin interfaces feature sidebar navigation with identical glassmorphism styling, role-based menu items for administrators.
-- **Navbar Design**: Ultra-transparent glass appearance with 10% white translucent background, 20px backdrop blur with saturation boost, dark text (#333) for readability, and subtle border effects.
+- **Navbar Design**: 
+  - Admin/Student pages: Ultra-transparent glass appearance with 10% white translucent background (rgba(255,255,255,0.1))
+  - Landing page: Ultra-transparent purple tint with 8% opacity (rgba(102,126,234,0.08))
+  - All navbars: 20px backdrop blur with saturation boost, dark text (#333), subtle border effects
 - **Sidebar Design**: 
   - 50% transparent white background (rgba(255,255,255,0.5)) with 20px backdrop blur and saturation effects
   - Smooth cubic-bezier animations (0.4s timing), rounded menu items with hover effects (translateX + accent bar)
@@ -21,7 +24,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
   - When collapsed: 70px icon-only bar with centered icons, hidden text labels (using .icon and .label classes)
   - Toggle button icon changes dynamically: ☰ (hamburger) when expanded, → (arrow) when collapsed
   - Identical implementation across all admin and student pages
-- **Search Bars**: iOS glass design with 60% translucent background, 20px blur/saturate filters, glass borders, smooth focus states with purple accent halos
+- **Search Bars**: iOS glass design with 60% translucent background, 20px blur/saturate filters, glass borders, 24px fully rounded corners (pill shape), smooth focus states with purple accent halos
 - **Layout**: Clean, modern card-based layouts are used for dashboards and management pages.
 - **Interactivity**: All pages include a collapsible sidebar toggled by a hamburger menu, with state persistence using localStorage. Smooth CSS transitions are used for animations.
 - **Iconography**: An icon-based UI is used for actions like Edit (✏️), Delete (🗑️), Add (➕), Import (📥), Upload (⬆️), and Cancel (✖️) to enhance visual appeal and clarity.
