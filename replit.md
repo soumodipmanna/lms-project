@@ -19,8 +19,8 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 
 **Technical Implementations & Feature Specifications:**
 - **Authentication**:
-    - **Student**: Uses roll number for login. Password hashing is handled by Django's utilities.
-    - **Admin**: Custom `Admin` model with email-based authentication. Two roles: 'officer' (manages students, books, requests) and 'superadmin' (manages other admins too). Custom decorators (`@admin_login_required`, `@superadmin_required`) enforce access control.
+    - **Student**: Uses roll number for login. Password hashing is handled by Django's utilities. Logout redirects to the home page.
+    - **Admin**: Custom `Admin` model with email-based authentication. Two roles: 'officer' (manages students, books, requests) and 'superadmin' (manages other admins too). Custom decorators (`@admin_login_required`, `@superadmin_required`) enforce access control. Logout redirects to the home page.
 - **User Management**:
     - **Student**: Signup, login, profile management (name, phone number), and viewing borrowed books.
     - **Admin**: CRUD operations for students, books, and other admins (superadmin only).

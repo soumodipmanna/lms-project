@@ -60,7 +60,7 @@ def student_login(request):
 
 def student_logout(request):
     logout(request)
-    return redirect('student_login')
+    return redirect('home')
 
 
 @login_required
@@ -247,7 +247,7 @@ def admin_login_view(request):
 def admin_logout_view(request):
     request.session.flush()
     messages.success(request, 'You have been logged out successfully.')
-    return redirect('admin_login')
+    return redirect('home')
 
 
 @admin_login_required
