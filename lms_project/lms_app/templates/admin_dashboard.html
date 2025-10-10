@@ -259,6 +259,7 @@
         .stat-icon.green { background: #e7f9f1; color: #10b981; }
         .stat-icon.orange { background: #fff4e6; color: #f59e0b; }
         .stat-icon.blue { background: #eff6ff; color: #3b82f6; }
+        .stat-icon.red { background: #fee2e2; color: #ef4444; }
         
         .stat-number {
             font-size: 2rem;
@@ -435,6 +436,16 @@
                             <div class="stat-label">Pending Requests</div>
                         </div>
                         <div class="stat-icon orange">⏳</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-number">₹{{ total_fines|floatformat:2 }}</div>
+                            <div class="stat-label">Fine Management</div>
+                        </div>
+                        <div class="stat-icon red">💰</div>
                     </div>
                 </div>
 

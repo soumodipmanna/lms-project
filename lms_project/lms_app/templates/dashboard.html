@@ -576,37 +576,6 @@
         });
     </script>
 
-    <div class="modal-overlay" id="borrowModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Confirm Book Borrow</h3>
-            </div>
-            
-            <div class="modal-book-info">
-                <div class="modal-book-title" id="modalBookTitle"></div>
-                <div class="modal-book-author" id="modalBookAuthor"></div>
-            </div>
-            
-            <form method="post" id="borrowForm">
-                {% csrf_token %}
-                <div class="modal-form-group">
-                    <label for="expectedReturnDate">Expected Return Date</label>
-                    <input type="date" id="expectedReturnDate" name="expected_return_date" required>
-                </div>
-                
-                <div class="modal-fine-info">
-                    <div class="modal-fine-rate" id="modalFineRate"></div>
-                    <div class="modal-fine-warning" id="modalFineWarning"></div>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button type="button" class="modal-btn modal-btn-cancel" onclick="closeBorrowModal()">Cancel</button>
-                    <button type="submit" class="modal-btn modal-btn-confirm">Confirm Borrow</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         let currentBookId = null;
         
@@ -642,7 +611,40 @@
                 modal.style.display = 'none';
             }, 300);
         }
-        
+    </script>
+    
+    <div class="modal-overlay" id="borrowModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Confirm Book Borrow</h3>
+            </div>
+            
+            <div class="modal-book-info">
+                <div class="modal-book-title" id="modalBookTitle"></div>
+                <div class="modal-book-author" id="modalBookAuthor"></div>
+            </div>
+            
+            <form method="post" id="borrowForm">
+                {% csrf_token %}
+                <div class="modal-form-group">
+                    <label for="expectedReturnDate">Expected Return Date</label>
+                    <input type="date" id="expectedReturnDate" name="expected_return_date" required>
+                </div>
+                
+                <div class="modal-fine-info">
+                    <div class="modal-fine-rate" id="modalFineRate"></div>
+                    <div class="modal-fine-warning" id="modalFineWarning"></div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn modal-btn-cancel" onclick="closeBorrowModal()">Cancel</button>
+                    <button type="submit" class="modal-btn modal-btn-confirm">Confirm Borrow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
         document.getElementById('borrowModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeBorrowModal();

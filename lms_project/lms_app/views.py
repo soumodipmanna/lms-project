@@ -67,7 +67,11 @@ def student_logout(request):
 def dashboard(request):
     books = Book.objects.all()
     student = request.user.student
-    return render(request, 'dashboard.html', {'books': books, 'student': student})
+    response = render(request, 'dashboard.html', {'books': books, 'student': student})
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 @login_required
@@ -253,12 +257,17 @@ def admin_dashboard_view(request):
     pending_requests = Borrow.objects.filter(status='pending').count()
     total_admins = Admin.objects.count()
     
+    # Calculate total fines
+    from django.db.models import Sum
+    total_fines = Borrow.objects.filter(fine_amount__gt=0).aggregate(Sum('fine_amount'))['fine_amount__sum'] or 0
+    
     context = {
         'admin': request.admin,
         'total_students': total_students,
         'total_books': total_books,
         'pending_requests': pending_requests,
         'total_admins': total_admins,
+        'total_fines': total_fines,
     }
     return render(request, 'admin_dashboard.html', context)
 
