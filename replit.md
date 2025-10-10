@@ -10,11 +10,20 @@ None recorded yet.
 The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alongside standard student-facing functionalities.
 
 **UI/UX Decisions:**
-- **Theming**: A consistent purple gradient theme (#667eea to #764ba2) is applied across all admin pages, complemented by book-themed loading animations.
-- **Navigation**: Both student and admin interfaces feature sidebar navigation, with role-based menu items for administrators.
+- **Design Language**: iOS 26 liquid glass (glassmorphism) design system with frosted glass effects, translucent UI components, and modern blur aesthetics.
+- **Theming**: Consistent purple gradient accents (#667eea to #764ba2) for active states and CTAs, complemented by book-themed loading animations.
+- **Navigation**: Both student and admin interfaces feature sidebar navigation with identical glassmorphism styling, role-based menu items for administrators.
+- **Navbar Design**: Neutral glass appearance with 80% white translucent background, 20px backdrop blur with saturation boost, dark text (#333) for readability, and subtle border effects.
+- **Sidebar Design**: 
+  - 50% transparent white background (rgba(255,255,255,0.5)) with 20px backdrop blur and saturation effects
+  - Smooth cubic-bezier animations (0.4s timing), rounded menu items with hover effects (translateX + accent bar)
+  - Active state with purple gradient and white text, enhanced shadows for depth
+  - When collapsed: 70px icon-only bar with centered icons, hidden text labels (using .icon and .label classes)
+  - Toggle button icon changes dynamically: ☰ (hamburger) when expanded, → (arrow) when collapsed
+  - Identical implementation across all admin and student pages
+- **Search Bars**: iOS glass design with 60% translucent background, 20px blur/saturate filters, glass borders, smooth focus states with purple accent halos
 - **Layout**: Clean, modern card-based layouts are used for dashboards and management pages.
 - **Interactivity**: All pages include a collapsible sidebar toggled by a hamburger menu, with state persistence using localStorage. Smooth CSS transitions are used for animations.
-- **Sidebar Design**: Modern collapsible sidebar with gradient background, smooth cubic-bezier animations, rounded menu items with hover effects (translateX + accent bar), and active state with purple gradient. Features enhanced shadows and 0.4s transition timing. When collapsed, displays a 70px icon-only bar with centered icons and hidden text labels. Toggle button icon changes dynamically: ☰ (hamburger) when expanded, → (arrow) when collapsed.
 - **Iconography**: An icon-based UI is used for actions like Edit (✏️), Delete (🗑️), Add (➕), Import (📥), Upload (⬆️), and Cancel (✖️) to enhance visual appeal and clarity.
 - **Dashboard Cards**: Admin dashboard displays stat cards for Total Students (purple), Total Books (green), Pending Requests (orange), Fine Management (red, ₹), and Total Admins (blue, superadmin only).
 
