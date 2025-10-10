@@ -525,11 +525,11 @@
             <ul class="sidebar-menu">
                 <li><a href="{% url 'admin_dashboard' %}"><span class="icon">📊</span><span class="label">Dashboard</span></a></li>
                 <li><a href="{% url 'admin_signup_requests' %}" class="active"><span class="icon">✋</span><span class="label">Signup Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_students' %}"><span class="icon">👥</span><span class="label">Students</span></a></li>
-                <li><a href="{% url 'admin_manage_books' %}"><span class="icon">📚</span><span class="label">Books</span></a></li>
+                <li><a href="{% url 'admin_manage_students' %}"><span class="icon">👥</span><span class="label">Manage Students</span></a></li>
+                <li><a href="{% url 'admin_manage_books' %}"><span class="icon">📚</span><span class="label">Manage Books</span></a></li>
                 <li><a href="{% url 'admin_borrow_requests' %}"><span class="icon">📋</span><span class="label">Borrow Requests</span></a></li>
                 {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}"><span class="icon">🔑</span><span class="label">Admins</span></a></li>
+                <li><a href="{% url 'admin_manage_admins' %}"><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
                 {% endif %}
             </ul>
         </aside>
