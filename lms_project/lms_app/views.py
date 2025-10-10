@@ -764,7 +764,11 @@ def admin_signup_requests(request):
         'admin': request.admin,
         'pending_students': pending_students,
     }
-    return render(request, 'admin_signup_requests.html', context)
+    response = render(request, 'admin_signup_requests.html', context)
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 @admin_login_required
