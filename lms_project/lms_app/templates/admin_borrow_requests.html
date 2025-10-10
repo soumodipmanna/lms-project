@@ -558,7 +558,9 @@
                 alert('Please provide a reason for rejection.');
                 return;
             }
-            document.getElementById('rejectForm').submit();
+            const form = document.getElementById('rejectForm');
+            form.action = '/admin-portal/borrow-requests/reject/' + currentBorrowId + '/';
+            form.submit();
         }
     </script>
     
@@ -588,10 +590,6 @@
             if (e.target === this) {
                 closeRejectModal();
             }
-        });
-        
-        document.getElementById('rejectForm').addEventListener('submit', function() {
-            this.action = '/admin-portal/borrow-requests/reject/' + currentBorrowId + '/';
         });
     </script>
 </body>
