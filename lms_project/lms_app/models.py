@@ -39,12 +39,21 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+STUDENT_STATUS_CHOICES = (
+    ('pending', 'Pending Approval'),
+    ('approved', 'Approved'),
+    ('rejected', 'Rejected'),
+    ('disabled', 'Disabled'),
+)
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     roll_no = models.CharField(max_length=20, unique=True)
     branch = models.CharField(max_length=50)
     name = models.CharField(max_length=100, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STUDENT_STATUS_CHOICES, default='pending')
+    status_reason = models.TextField(blank=True, null=True, help_text='Reason for rejection or disabling')
 
     def __str__(self):
         return self.roll_no
