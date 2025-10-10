@@ -29,6 +29,7 @@ def student_signup(request):
             student = user_form.save(commit=False)
             student.user = user
             student.save()
+            messages.success(request, 'Signup successful! Your account is pending admin approval. You will be able to login once approved.')
             return redirect('student_login')
     else:
         user_form = StudentSignupForm()
@@ -47,8 +48,17 @@ def student_login(request):
                 student = Student.objects.get(roll_no=roll_no)
                 user = authenticate(username=student.user.username, password=password)
                 if user is not None:
-                    login(request, user)
-                    return redirect('dashboard')
+                    if student.status == 'approved':
+                        login(request, user)
+                        return redirect('dashboard')
+                    elif student.status == 'pending':
+                        error_message = 'Your account is pending approval. Please wait for admin approval.'
+                    elif student.status == 'rejected':
+                        reason = f" Reason: {student.status_reason}" if student.status_reason else ""
+                        error_message = f'Your account has been rejected.{reason}'
+                    elif student.status == 'disabled':
+                        reason = f" Reason: {student.status_reason}" if student.status_reason else ""
+                        error_message = f'Your account has been disabled.{reason}'
                 else:
                     error_message = 'Invalid roll number or password.'
             except Student.DoesNotExist:
