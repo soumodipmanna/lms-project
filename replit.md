@@ -15,6 +15,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Layout**: Clean, modern card-based layouts are used for dashboards and management pages.
 - **Interactivity**: All pages include a collapsible sidebar toggled by a hamburger menu, with state persistence using localStorage. Smooth CSS transitions are used for animations.
 - **Iconography**: An icon-based UI is used for actions like Edit (✏️), Delete (🗑️), Add (➕), Import (📥), Upload (⬆️), and Cancel (✖️) to enhance visual appeal and clarity.
+- **Dashboard Cards**: Admin dashboard displays stat cards for Total Students (purple), Total Books (green), Pending Requests (orange), Fine Management (red, ₹), and Total Admins (blue, superadmin only).
 
 **Technical Implementations & Feature Specifications:**
 - **Authentication**:
@@ -45,6 +46,8 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Deployment**: Utilizes Gunicorn as the WSGI server for production environments, configured for Replit autoscale deployment.
 - **Database**: SQLite is used for development, with a structured schema including `Book`, `Student`, `Borrow`, and `Admin` models.
 - **Currency**: All monetary values, specifically fine rates, are displayed in Indian Rupees (₹).
+- **Caching**: Cache control headers (no-cache, no-store, must-revalidate) are implemented on the student dashboard to prevent browser caching issues with JavaScript functionality.
+- **JavaScript Architecture**: Modal-related JavaScript functions are defined before HTML elements that reference them to ensure proper availability when inline onclick handlers execute.
 
 ## External Dependencies
 - **Backend Framework**: Django 5.2.7
