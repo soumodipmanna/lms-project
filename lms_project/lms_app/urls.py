@@ -17,11 +17,16 @@ urlpatterns = [
     path('admin-portal/logout/', views.admin_logout_view, name='admin_logout'),
     path('admin-portal/dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
     
+    path('admin-portal/signup-requests/', views.admin_signup_requests, name='admin_signup_requests'),
+    path('admin-portal/signup-requests/approve/<int:student_id>/', views.admin_approve_student, name='admin_approve_student'),
+    path('admin-portal/signup-requests/reject/<int:student_id>/', views.admin_reject_student, name='admin_reject_student'),
+    
     path('admin-portal/students/', views.admin_manage_students_view, name='admin_manage_students'),
     path('admin-portal/students/add/', views.admin_add_student_view, name='admin_add_student'),
     path('admin-portal/students/import/', views.admin_import_students_view, name='admin_import_students'),
     path('admin-portal/students/sample-csv/', views.download_sample_students_csv, name='download_sample_students_csv'),
     path('admin-portal/students/delete/<int:student_id>/', views.admin_delete_student_view, name='admin_delete_student'),
+    path('admin-portal/students/disable/<int:student_id>/', views.admin_disable_student, name='admin_disable_student'),
     
     path('admin-portal/books/', views.admin_manage_books_view, name='admin_manage_books'),
     path('admin-portal/books/add/', views.admin_add_book_view, name='admin_add_book'),

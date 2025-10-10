@@ -284,7 +284,7 @@ def admin_dashboard_view(request):
 
 @admin_login_required
 def admin_manage_students_view(request):
-    students = Student.objects.all().select_related('user')
+    students = Student.objects.filter(status__in=['approved', 'disabled']).select_related('user')
     context = {
         'admin': request.admin,
         'students': students,
@@ -304,6 +304,7 @@ def admin_add_student_view(request):
             )
             student = form.save(commit=False)
             student.user = user
+            student.status = 'approved'
             student.save()
             messages.success(request, f'Student {student.roll_no} added successfully!')
             return redirect('admin_manage_students')
@@ -619,7 +620,8 @@ def admin_import_students_view(request):
                                 roll_no=roll_no,
                                 branch=branch,
                                 name=name if name else '',
-                                phone_number=phone_number if phone_number else ''
+                                phone_number=phone_number if phone_number else '',
+                                status='approved'
                             )
                             success_count += 1
                     except Exception as e:
@@ -753,3 +755,54 @@ def download_sample_books_csv(request):
     writer.writerow(['The Pragmatic Programmer', 'Andrew Hunt', '978-0135957059', '8', 'Software Development', 'Computer Science', 'English', '4.00'])
     
     return response
+
+
+@admin_login_required
+def admin_signup_requests(request):
+    pending_students = Student.objects.filter(status='pending').order_by('-id')
+    context = {
+        'admin': request.admin,
+        'pending_students': pending_students,
+    }
+    return render(request, 'admin_signup_requests.html', context)
+
+
+@admin_login_required
+def admin_approve_student(request, student_id):
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=student_id)
+        student.status = 'approved'
+        student.status_reason = None
+        student.save()
+        messages.success(request, f'Student {student.roll_no} has been approved successfully.')
+    return redirect('admin_signup_requests')
+
+
+@admin_login_required
+def admin_reject_student(request, student_id):
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=student_id)
+        reject_reason = request.POST.get('reject_reason', '')
+        if reject_reason:
+            student.status = 'rejected'
+            student.status_reason = reject_reason
+            student.save()
+            messages.success(request, f'Student {student.roll_no} has been rejected.')
+        else:
+            messages.error(request, 'Rejection reason is required.')
+    return redirect('admin_signup_requests')
+
+
+@admin_login_required
+def admin_disable_student(request, student_id):
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=student_id)
+        disable_reason = request.POST.get('disable_reason', '')
+        if disable_reason:
+            student.status = 'disabled'
+            student.status_reason = disable_reason
+            student.save()
+            messages.success(request, f'Student {student.roll_no} has been disabled.')
+        else:
+            messages.error(request, 'Disable reason is required.')
+    return redirect('admin_manage_students')
