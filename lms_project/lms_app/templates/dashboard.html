@@ -93,13 +93,15 @@
         
         .sidebar {
             width: 260px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-            box-shadow: 2px 0 20px rgba(102, 126, 234, 0.15);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
             position: fixed;
             height: calc(100vh - 64px);
             overflow-y: auto;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(102, 126, 234, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .sidebar.collapsed {
@@ -223,25 +225,33 @@
         }
         
         .search-box {
-            background: white;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
         
         .search-box input {
             width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
+            padding: 0.9rem 1.2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
             font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .search-box input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
         
         .books-grid {
