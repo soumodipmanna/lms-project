@@ -127,18 +127,23 @@
         }
         
         .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 0.6rem 1.2rem;
-            border-radius: 8px;
+            border-radius: 16px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         }
         
         .container {
@@ -149,13 +154,15 @@
         
         .sidebar {
             width: 260px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-            box-shadow: 2px 0 20px rgba(102, 126, 234, 0.15);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
             position: fixed;
             height: calc(100vh - 64px);
             overflow-y: auto;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(102, 126, 234, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .sidebar.collapsed {
@@ -274,45 +281,70 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgba(74, 90, 184, 0.8);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 0.8rem 1.5rem;
-            border-radius: 8px;
+            border-radius: 16px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
             font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .btn-primary:hover {
+            background: rgba(74, 90, 184, 0.9);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 24px rgba(74, 90, 184, 0.4);
         }
         
         .btn-danger {
-            background: #f44336;
+            background: rgba(244, 67, 54, 0.8);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 0.6rem 1rem;
-            border-radius: 6px;
+            border-radius: 14px;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
         }
         
         .btn-success {
-            background: #4caf50;
+            background: rgba(76, 175, 80, 0.8);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 0.6rem 1rem;
-            border-radius: 6px;
+            border-radius: 14px;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-success:hover {
+            background: rgba(76, 175, 80, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
         
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
         
         .table {
@@ -383,12 +415,15 @@
         }
         
         .modal-content {
-            background: white;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 2rem;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
         }
         
         .modal-header {
@@ -434,17 +469,21 @@
         }
         
         .btn-cancel {
-            background: #6c757d;
+            background: rgba(108, 117, 125, 0.8);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 6px;
+            border-radius: 14px;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .btn-cancel:hover {
-            background: #5a6268;
+            background: rgba(90, 98, 104, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
         }
         
         .status-badge {
