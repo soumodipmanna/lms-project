@@ -13,7 +13,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Design Language**: iOS 26 liquid glass (glassmorphism) design system with frosted glass effects, translucent UI components, and modern blur aesthetics.
 - **Theming**: Consistent purple gradient accents (#667eea to #764ba2) for active states and CTAs, complemented by book-themed loading animations.
 - **Navigation**: Both student and admin interfaces feature sidebar navigation with identical glassmorphism styling, role-based menu items for administrators.
-- **Navbar Design**: Neutral glass appearance with 80% white translucent background, 20px backdrop blur with saturation boost, dark text (#333) for readability, and subtle border effects.
+- **Navbar Design**: Ultra-transparent glass appearance with 10% white translucent background, 20px backdrop blur with saturation boost, dark text (#333) for readability, and subtle border effects.
 - **Sidebar Design**: 
   - 50% transparent white background (rgba(255,255,255,0.5)) with 20px backdrop blur and saturation effects
   - Smooth cubic-bezier animations (0.4s timing), rounded menu items with hover effects (translateX + accent bar)
