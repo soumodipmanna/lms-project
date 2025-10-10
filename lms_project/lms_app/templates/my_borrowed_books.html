@@ -400,7 +400,13 @@
                             <div><strong>Actual Return:</strong> {{ borrow.return_date|date:"M d, Y" }}</div>
                             {% endif %}
                             {% if borrow.fine_amount and borrow.fine_amount > 0 %}
-                            <div><strong>Fine:</strong> ${{ borrow.fine_amount }}</div>
+                            <div><strong>Fine:</strong> ₹{{ borrow.fine_amount }}</div>
+                            {% endif %}
+                            {% if borrow.status == 'rejected' and borrow.reject_reason %}
+                            <div style="margin-top: 0.75rem; padding: 0.75rem; background: #ffebee; border-left: 3px solid #d32f2f; border-radius: 4px;">
+                                <strong style="color: #d32f2f;">Rejection Reason:</strong><br>
+                                <span style="color: #c62828;">{{ borrow.reject_reason }}</span>
+                            </div>
                             {% endif %}
                         </div>
                     </div>

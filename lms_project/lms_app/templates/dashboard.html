@@ -615,9 +615,9 @@
             
             document.getElementById('modalBookTitle').textContent = title;
             document.getElementById('modalBookAuthor').textContent = 'by ' + author;
-            document.getElementById('modalFineRate').textContent = 'Fine Rate: $' + parseFloat(fineRate).toFixed(2) + ' per day';
+            document.getElementById('modalFineRate').textContent = 'Fine Rate: ₹' + parseFloat(fineRate).toFixed(2) + ' per day';
             document.getElementById('modalFineWarning').textContent = 
-                'If you return this book after the expected return date, a fine of $' + 
+                'If you return this book after the expected return date, a fine of ₹' + 
                 parseFloat(fineRate).toFixed(2) + ' per day will be charged.';
             
             const tomorrow = new Date();

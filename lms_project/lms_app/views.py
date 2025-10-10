@@ -133,7 +133,7 @@ def return_book(request, borrow_id):
         )
         
         if calculated_fine > 0:
-            messages.warning(request, f"Late return! Fine charged: ${calculated_fine:.2f}")
+            messages.warning(request, f"Late return! Fine charged: ₹{calculated_fine:.2f}")
         else:
             messages.success(request, "Book returned successfully!")
 
@@ -411,7 +411,14 @@ def admin_reject_borrow_view(request, borrow_id):
     
     if request.method == 'POST':
         if borrow_request.status != 'rejected':
+            reject_reason = request.POST.get('reject_reason', '').strip()
+            
+            if not reject_reason:
+                messages.error(request, 'Reject reason is required.')
+                return redirect('admin_borrow_requests')
+            
             borrow_request.status = 'rejected'
+            borrow_request.reject_reason = reject_reason
             borrow_request.save()
             messages.warning(request, f'Borrow request rejected for {borrow_request.student.roll_no}.')
         else:
@@ -447,7 +454,7 @@ def admin_return_book_view(request, borrow_id):
             borrow_record.save()
             
             if calculated_fine > 0:
-                messages.warning(request, f'Book returned with late fee: ${calculated_fine:.2f}')
+                messages.warning(request, f'Book returned with late fee: ₹{calculated_fine:.2f}')
             else:
                 messages.success(request, f'Book returned successfully by {borrow_record.student.roll_no}!')
         else:

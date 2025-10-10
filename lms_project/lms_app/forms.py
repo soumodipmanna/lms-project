@@ -118,7 +118,7 @@ class BookForm(forms.ModelForm):
             'category': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter category'}),
             'department': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter department'}),
             'language': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter language'}),
-            'fine_rate': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Fine per day (e.g., 5.00)', 'step': '0.01'}),
+            'fine_rate': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Fine per day in ₹ (e.g., 5.00)', 'step': '0.01'}),
         }
 
 class StudentCreateForm(forms.ModelForm):

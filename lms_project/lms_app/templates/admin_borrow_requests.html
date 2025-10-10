@@ -329,6 +329,42 @@
             border-left: 4px solid #ff9800;
             color: #856404;
         }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
     </style>
 </head>
 <body>
@@ -406,7 +442,7 @@
                             <td>{{ borrow.return_date|date:"M d, Y"|default:"-" }}</td>
                             <td>
                                 {% if borrow.fine_amount and borrow.fine_amount > 0 %}
-                                <span style="color: #d32f2f; font-weight: 600;">${{ borrow.fine_amount }}</span>
+                                <span style="color: #d32f2f; font-weight: 600;">₹{{ borrow.fine_amount }}</span>
                                 {% else %}
                                 -
                                 {% endif %}
@@ -418,10 +454,11 @@
                                     {% csrf_token %}
                                     <button class="btn-success">Approve</button>
                                 </form>
-                                <form method="post" action="{% url 'admin_reject_borrow' borrow.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button class="btn-danger">Reject</button>
-                                </form>
+                                <button class="btn-danger" 
+                                        data-borrow-id="{{ borrow.id }}" 
+                                        data-book-title="{{ borrow.book.title }}" 
+                                        data-student-roll="{{ borrow.student.roll_no }}"
+                                        onclick="openRejectModal(this)">Reject</button>
                                 {% elif borrow.status == 'approved' and not borrow.is_returned %}
                                 <form method="post" action="{% url 'admin_return_book' borrow.id %}" style="display: inline;">
                                     {% csrf_token %}
@@ -488,6 +525,73 @@
                 document.querySelector('.sidebar').classList.add('collapsed');
                 document.querySelector('.main-content').classList.add('expanded');
             }
+        });
+        
+        let currentBorrowId = null;
+        
+        function openRejectModal(button) {
+            currentBorrowId = button.getAttribute('data-borrow-id');
+            const bookTitle = button.getAttribute('data-book-title');
+            const rollNo = button.getAttribute('data-student-roll');
+            
+            document.getElementById('rejectBookTitle').textContent = bookTitle;
+            document.getElementById('rejectStudentRoll').textContent = rollNo;
+            document.getElementById('rejectReasonText').value = '';
+            const modal = document.getElementById('rejectModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+        
+        function closeRejectModal() {
+            const modal = document.getElementById('rejectModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        function submitRejectForm() {
+            const reason = document.getElementById('rejectReasonText').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection.');
+                return;
+            }
+            document.getElementById('rejectForm').submit();
+        }
+        
+        document.getElementById('rejectModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRejectModal();
+            }
+        });
+    </script>
+    
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1rem; color: #d32f2f;">Reject Borrow Request</h2>
+            <p style="margin-bottom: 1rem;">
+                <strong>Book:</strong> <span id="rejectBookTitle"></span><br>
+                <strong>Student Roll No:</strong> <span id="rejectStudentRoll"></span>
+            </p>
+            <form id="rejectForm" method="post" action="">
+                {% csrf_token %}
+                <div style="margin-bottom: 1rem;">
+                    <label for="rejectReasonText" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Reason for Rejection: <span style="color: red;">*</span></label>
+                    <textarea id="rejectReasonText" name="reject_reason" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical;" placeholder="Enter the reason for rejecting this request..." required></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="closeRejectModal()" style="background: #6c757d; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">Cancel</button>
+                    <button type="button" onclick="submitRejectForm()" style="background: #d32f2f; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">Reject Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('rejectForm').addEventListener('submit', function() {
+            this.action = '/admin-portal/borrow-requests/reject/' + currentBorrowId + '/';
         });
     </script>
 </body>

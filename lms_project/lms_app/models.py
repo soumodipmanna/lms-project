@@ -34,7 +34,7 @@ class Book(models.Model):
     category = models.CharField(max_length=100, default='dummy')
     department = models.CharField(max_length=100, default='dummy')
     language = models.CharField(max_length=50, default='English')
-    fine_rate = models.DecimalField(max_digits=10, decimal_places=2, default=5.00, help_text='Fine per day in currency')
+    fine_rate = models.DecimalField(max_digits=10, decimal_places=2, default=5.00, help_text='Fine per day in rupees (₹)')
 
     def __str__(self):
         return self.title
@@ -68,6 +68,7 @@ class Borrow(models.Model):
     is_returned = models.BooleanField(default=False)
     message = models.CharField(max_length=255, blank=True)
     fine_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    reject_reason = models.TextField(blank=True, null=True, help_text='Reason for rejection')
 
     def __str__(self):
         return f"{self.student} - {self.book} ({self.status})"
