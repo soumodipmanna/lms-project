@@ -394,16 +394,107 @@
         }
         
         @media (max-width: 768px) {
-            .sidebar {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            
+            .navbar h1 {
+                font-size: 1.1rem;
+            }
+            
+            .user-name {
                 display: none;
+            }
+            
+            .logout-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 64px;
+                height: calc(100vh - 64px);
+                z-index: 99;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
             }
             
             .main-content {
                 margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .page-header p {
+                font-size: 0.9rem;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .search-box {
+                padding: 1rem;
+            }
+            
+            .search-box input {
+                font-size: 0.9rem;
+                padding: 0.75rem 1rem;
             }
             
             .borrow-card {
                 grid-template-columns: 1fr;
+                padding: 1.25rem;
+                gap: 1rem;
+            }
+            
+            .borrow-info h3 {
+                font-size: 1.1rem;
+            }
+            
+            .borrow-details {
+                font-size: 0.9rem;
+            }
+            
+            .messages {
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar h1 {
+                font-size: 1rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .borrow-card {
+                padding: 1rem;
             }
         }
     </style>
@@ -554,14 +645,32 @@
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                sidebar.classList.toggle('mobile-open');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
         }
+        
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile && sidebar.classList.contains('mobile-open')) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            }
+        });
         
         window.addEventListener('DOMContentLoaded', function() {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
+            if (isCollapsed && window.innerWidth > 768) {
                 document.querySelector('.sidebar').classList.add('collapsed');
                 document.querySelector('.main-content').classList.add('expanded');
             }

@@ -373,12 +373,108 @@
         }
         
         @media (max-width: 768px) {
-            .sidebar {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            
+            .navbar h1 {
+                font-size: 1.1rem;
+            }
+            
+            .user-name {
                 display: none;
+            }
+            
+            .logout-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 64px;
+                height: calc(100vh - 64px);
+                z-index: 99;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
             }
             
             .main-content {
                 margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .page-header p {
+                font-size: 0.9rem;
+            }
+            
+            .search-box {
+                padding: 1rem;
+            }
+            
+            .search-box input {
+                font-size: 0.9rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .books-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .book-card {
+                padding: 1.25rem;
+            }
+            
+            .book-title {
+                font-size: 1rem;
+            }
+            
+            .modal {
+                width: 95%;
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.25rem;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .messages {
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar h1 {
+                font-size: 1rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .book-card {
+                padding: 1rem;
+            }
+            
+            .btn-borrow {
+                padding: 0.7rem;
+                font-size: 0.9rem;
             }
         }
         
@@ -637,21 +733,39 @@
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
             const toggleBtn = document.getElementById('sidebarToggle');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
+            const isMobile = window.innerWidth <= 768;
             
-            if (sidebar.classList.contains('collapsed')) {
-                toggleBtn.innerHTML = '→';
+            if (isMobile) {
+                sidebar.classList.toggle('mobile-open');
             } else {
-                toggleBtn.innerHTML = '☰';
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                
+                if (sidebar.classList.contains('collapsed')) {
+                    toggleBtn.innerHTML = '→';
+                } else {
+                    toggleBtn.innerHTML = '☰';
+                }
+                
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             }
-            
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         }
+        
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile && sidebar.classList.contains('mobile-open')) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            }
+        });
         
         window.addEventListener('DOMContentLoaded', function() {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
+            if (isCollapsed && window.innerWidth > 768) {
                 document.querySelector('.sidebar').classList.add('collapsed');
                 document.querySelector('.main-content').classList.add('expanded');
                 document.getElementById('sidebarToggle').innerHTML = '→';

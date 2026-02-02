@@ -564,13 +564,137 @@
         }
         
         @media (max-width: 768px) {
-            .sidebar {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            
+            .navbar h1 {
+                font-size: 1.1rem;
+            }
+            
+            .navbar h1 i {
                 display: none;
             }
             
+            .user-name {
+                display: none;
+            }
+            
+            .logout-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 64px;
+                height: calc(100vh - 64px);
+                z-index: 99;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
             .main-content {
+                padding: 1rem;
                 padding-left: 1rem;
-                padding-right: 1rem;
+                margin: 0;
+                max-width: 100%;
+            }
+            
+            .page-header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .page-header p {
+                font-size: 0.9rem;
+            }
+            
+            .create-post-card {
+                padding: 1rem;
+            }
+            
+            .create-post-form textarea {
+                min-height: 80px;
+                font-size: 0.95rem;
+            }
+            
+            .post-actions-row {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .btn-post {
+                width: 100%;
+            }
+            
+            .post-card {
+                padding: 1rem;
+            }
+            
+            .author-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .author-info h4 {
+                font-size: 0.95rem;
+            }
+            
+            .post-content {
+                font-size: 0.95rem;
+            }
+            
+            .post-interactions {
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            
+            .interaction-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .comment-form {
+                flex-direction: column;
+            }
+            
+            .comment-form button {
+                width: 100%;
+            }
+            
+            .messages {
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar h1 {
+                font-size: 1rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .post-header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .interaction-btn span {
+                display: none;
+            }
+            
+            .interaction-btn i {
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -589,7 +713,7 @@
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li><a href="{% url 'dashboard' %}"><span class="icon"><i class="fas fa-book-open"></i></span><span class="label">Available Books</span></a></li>
-                <li><a href="{% url 'my_borrowed_books' %}"><span class="icon"><i class="fas fa-books"></i></span><span class="label">My Borrowed Books</span></a></li>
+                <li><a href="{% url 'my_borrowed_books' %}"><span class="icon"><i class="fas fa-book-bookmark"></i></span><span class="label">My Borrowed Books</span></a></li>
                 <li><a href="{% url 'social_wall' %}" class="active"><span class="icon"><i class="fas fa-comments"></i></span><span class="label">Knowledge Wall</span></a></li>
                 <li><a href="{% url 'manage_profile' %}"><span class="icon"><i class="fas fa-user"></i></span><span class="label">Manage Profile</span></a></li>
             </ul>
@@ -720,21 +844,39 @@
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
             const toggleBtn = document.getElementById('sidebarToggle');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
+            const isMobile = window.innerWidth <= 768;
             
-            if (sidebar.classList.contains('collapsed')) {
-                toggleBtn.innerHTML = '→';
+            if (isMobile) {
+                sidebar.classList.toggle('mobile-open');
             } else {
-                toggleBtn.innerHTML = '☰';
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                
+                if (sidebar.classList.contains('collapsed')) {
+                    toggleBtn.innerHTML = '→';
+                } else {
+                    toggleBtn.innerHTML = '☰';
+                }
+                
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             }
-            
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         }
+        
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile && sidebar.classList.contains('mobile-open')) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            }
+        });
         
         window.addEventListener('DOMContentLoaded', function() {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
+            if (isCollapsed && window.innerWidth > 768) {
                 document.querySelector('.sidebar').classList.add('collapsed');
                 document.querySelector('.main-content').classList.add('expanded');
                 document.getElementById('sidebarToggle').innerHTML = '→';
