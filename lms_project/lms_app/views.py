@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm, AdminProfileUpdateForm, AdminEditForm
 from django.contrib.auth.models import User
-from .models import Book, Borrow, Student, Admin
+from .models import Book, Borrow, Student, Admin, Post, Like, Comment
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db import transaction
@@ -14,7 +14,8 @@ from django.contrib import messages
 from functools import wraps
 import csv
 import io
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from .moderation import validate_content
 
 
 def student_signup(request):
@@ -810,3 +811,112 @@ def admin_disable_student(request, student_id):
         else:
             messages.error(request, 'Disable reason is required.')
     return redirect('admin_manage_students')
+
+
+@login_required
+def social_wall(request):
+    posts = Post.objects.select_related('author').prefetch_related('likes', 'comments', 'comments__user').all()
+    try:
+        student = request.user.student
+    except Student.DoesNotExist:
+        student = None
+    user_liked_posts = set(Like.objects.filter(user=request.user).values_list('post_id', flat=True))
+    is_admin = request.session.get('admin_id') is not None
+    
+    context = {
+        'posts': posts,
+        'student': student,
+        'user_liked_posts': user_liked_posts,
+        'is_admin': is_admin,
+    }
+    response = render(request, 'social_wall.html', context)
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response
+
+
+@login_required
+def create_post(request):
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        
+        is_valid, error_message = validate_content(content)
+        if not is_valid:
+            messages.error(request, error_message)
+            return redirect('social_wall')
+        
+        post = Post.objects.create(
+            author=request.user,
+            content=content,
+            image=image
+        )
+        messages.success(request, 'Your post has been shared!')
+    return redirect('social_wall')
+
+
+@login_required
+def like_post(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+        
+        if not created:
+            like.delete()
+            liked = False
+        else:
+            liked = True
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'liked': liked,
+                'like_count': post.like_count()
+            })
+    return redirect('social_wall')
+
+
+@login_required
+def add_comment(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        content = request.POST.get('content', '').strip()
+        
+        is_valid, error_message = validate_content(content)
+        if not is_valid:
+            messages.error(request, error_message)
+            return redirect('social_wall')
+        
+        Comment.objects.create(
+            user=request.user,
+            post=post,
+            content=content
+        )
+        messages.success(request, 'Comment added!')
+    return redirect('social_wall')
+
+
+@login_required
+def delete_post(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        is_admin = request.session.get('admin_id') is not None
+        
+        if post.author == request.user or is_admin:
+            post.delete()
+            messages.success(request, 'Post deleted successfully.')
+        else:
+            messages.error(request, 'You do not have permission to delete this post.')
+    return redirect('social_wall')
+
+
+@login_required
+def delete_comment(request, comment_id):
+    if request.method == 'POST':
+        comment = get_object_or_404(Comment, id=comment_id)
+        is_admin = request.session.get('admin_id') is not None
+        
+        if comment.user == request.user or is_admin:
+            comment.delete()
+            messages.success(request, 'Comment deleted.')
+        else:
+            messages.error(request, 'You do not have permission to delete this comment.')
+    return redirect('social_wall')

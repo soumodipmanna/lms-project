@@ -61,6 +61,18 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
     - `Student`: Linked to Django's `User` model, with `roll_no`, `branch`, `name`, `phone_number`, `status` (pending/approved/rejected/disabled), and `status_reason` (for rejection/disable explanations).
     - `Borrow`: Tracks student, book, dates, status, `expected_return_date`, `fine_amount`, and `reject_reason`.
     - `Admin`: Custom model with `email`, `password`, `name`, `role`, and `is_active`.
+    - `Post`: Social wall posts with `author`, `content`, `image`, `created_at`, and `updated_at` fields.
+    - `Like`: User likes on posts with unique constraint (user, post).
+    - `Comment`: Post comments with `user`, `post`, `content`, and `created_at`.
+- **Social Wall (Knowledge Wall)**:
+    - An internal knowledge-sharing feature similar to Twitter
+    - Users can create posts with text and optional image attachments
+    - Interactive features: Like (heart icon), Comment (bubble icon), Share (copy link)
+    - Content moderation: Automatic filtering of bad words and inappropriate content
+    - Delete permissions: Users can delete their own posts; admins can delete any post
+    - Real-time like/comment counts displayed on each post
+    - Comments section toggleable for each post
+    - Media file uploads handled via Django's ImageField with Pillow
 
 **System Design Choices:**
 - **Development Environment**: Configured for Replit, running on port 5000 with `0.0.0.0` binding.
@@ -75,3 +87,16 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Database**: SQLite (for development)
 - **WSGI Server**: Gunicorn (for production deployment)
 - **Python Version**: 3.11
+- **Image Processing**: Pillow 12.1.0 (for image uploads)
+- **Icons**: Font Awesome 6.4 (CDN)
+
+## Recent Changes
+- **February 2026**: Added Social Wall (Knowledge Wall) feature
+  - Created Post, Like, Comment models with image upload support
+  - Implemented content moderation system (bad word filtering)
+  - Added views for creating posts, liking, commenting, sharing, and deleting
+  - Built responsive template with Font Awesome icons
+  - Added social wall navigation link to dashboard sidebar
+  - Added icons to login and signup pages
+  - Configured media file handling for image uploads
+  - Created comprehensive README.md for GitHub showcase

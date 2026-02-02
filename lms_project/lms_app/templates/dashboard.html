@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Library Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -544,9 +545,10 @@
     <div class="container">
         <aside class="sidebar">
             <ul class="sidebar-menu">
-                <li><a href="{% url 'dashboard' %}" class="active"><span class="icon">📖</span><span class="label">Available Books</span></a></li>
-                <li><a href="{% url 'my_borrowed_books' %}"><span class="icon">📚</span><span class="label">My Borrowed Books</span></a></li>
-                <li><a href="{% url 'manage_profile' %}"><span class="icon">👤</span><span class="label">Manage Profile</span></a></li>
+                <li><a href="{% url 'dashboard' %}" class="active"><span class="icon"><i class="fas fa-book-open"></i></span><span class="label">Available Books</span></a></li>
+                <li><a href="{% url 'my_borrowed_books' %}"><span class="icon"><i class="fas fa-books"></i></span><span class="label">My Borrowed Books</span></a></li>
+                <li><a href="{% url 'social_wall' %}"><span class="icon"><i class="fas fa-comments"></i></span><span class="label">Knowledge Wall</span></a></li>
+                <li><a href="{% url 'manage_profile' %}"><span class="icon"><i class="fas fa-user"></i></span><span class="label">Manage Profile</span></a></li>
             </ul>
         </aside>
 

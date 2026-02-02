@@ -46,4 +46,11 @@ urlpatterns = [
     path('admin-portal/admins/delete/<int:admin_id>/', views.admin_delete_admin_view, name='admin_delete_admin'),
     
     path('admin-portal/profile/', views.admin_manage_profile_view, name='admin_manage_profile'),
+    
+    path('social-wall/', views.social_wall, name='social_wall'),
+    path('social-wall/post/', views.create_post, name='create_post'),
+    path('social-wall/like/<int:post_id>/', views.like_post, name='like_post'),
+    path('social-wall/comment/<int:post_id>/', views.add_comment, name='add_comment'),
+    path('social-wall/delete/<int:post_id>/', views.delete_post, name='delete_post'),
+    path('social-wall/delete-comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 ]
