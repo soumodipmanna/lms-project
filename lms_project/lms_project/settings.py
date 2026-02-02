@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,12 +26,11 @@ SECRET_KEY = 'django-insecure-!-od-3guye!n0&-f%ikh!&7*b@mbp7dm392kn^5!l7bdn^pwi=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get("REPLIT_DOMAINS", "").split(",") if os.environ.get("REPLIT_DOMAINS") else ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.replit.dev',
-    'https://*.replit.app',
-]
+    "https://" + domain for domain in os.environ.get("REPLIT_DOMAINS", "").split(",")
+] if os.environ.get("REPLIT_DOMAINS") else []
 
 X_FRAME_OPTIONS = 'ALLOWALL'
 
