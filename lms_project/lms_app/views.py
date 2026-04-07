@@ -806,6 +806,9 @@ def admin_signup_requests(request):
 def admin_approve_student(request, student_id):
     if request.method == 'POST':
         student = get_object_or_404(Student, id=student_id)
+        if student.status == 'approved':
+            messages.info(request, f'Student {student.roll_no} is already approved.')
+            return redirect('admin_signup_requests')
         student.status = 'approved'
         student.status_reason = None
         student.save()
