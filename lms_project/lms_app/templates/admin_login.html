@@ -4,30 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Library Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Raleway', sans-serif;
+            background: radial-gradient(ellipse at 70% 30%, #0f1628 0%, #0a0a0f 50%),
+                        radial-gradient(ellipse at 20% 80%, #1a0f2e 0%, transparent 50%),
+                        #0a0a0f;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow: hidden;
+            position: relative;
         }
-        
+
+        .floating-objects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-book {
+            position: absolute;
+            width: 35px;
+            height: 48px;
+            transform-style: preserve-3d;
+            animation: floatBook 12s ease-in-out infinite;
+        }
+
+        .floating-book .book-cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
+            border-radius: 2px 6px 6px 2px;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.3);
+            transform: rotateY(-10deg);
+        }
+
+        .floating-book .book-spine {
+            position: absolute;
+            left: -4px;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #b8941e, #8b6914);
+            border-radius: 2px 0 0 2px;
+            transform: rotateY(70deg) translateZ(-2px);
+        }
+
+        .floating-book .book-pages {
+            position: absolute;
+            right: 2px;
+            top: 3px;
+            width: 85%;
+            height: calc(100% - 6px);
+            background: linear-gradient(90deg, #f5f0e0, #e8dcc8);
+            border-radius: 0 3px 3px 0;
+            transform: translateZ(-1px);
+        }
+
+        .fb1 { top: 15%; left: 10%; animation-delay: 0s; animation-duration: 15s; }
+        .fb2 { top: 40%; right: 8%; animation-delay: -4s; animation-duration: 13s; }
+        .fb3 { bottom: 20%; left: 20%; animation-delay: -7s; animation-duration: 16s; }
+        .fb4 { top: 70%; right: 18%; animation-delay: -1s; animation-duration: 14s; }
+
+        @keyframes floatBook {
+            0%, 100% {
+                transform: translateY(0) rotateX(10deg) rotateY(-15deg) rotateZ(-5deg);
+                opacity: 0.2;
+            }
+            25% {
+                transform: translateY(-30px) rotateX(15deg) rotateY(5deg) rotateZ(3deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-15px) rotateX(-5deg) rotateY(10deg) rotateZ(-2deg);
+                opacity: 0.25;
+            }
+            75% {
+                transform: translateY(-40px) rotateX(8deg) rotateY(-10deg) rotateZ(5deg);
+                opacity: 0.2;
+            }
+        }
+
+        .floating-page {
+            position: absolute;
+            width: 25px;
+            height: 35px;
+            background: linear-gradient(135deg, rgba(245, 240, 224, 0.12), rgba(232, 220, 200, 0.06));
+            border-radius: 2px;
+            border: 1px solid rgba(245, 240, 224, 0.08);
+            animation: floatPage 10s ease-in-out infinite;
+        }
+
+        .fp1 { top: 25%; right: 28%; animation-delay: -2s; }
+        .fp2 { bottom: 30%; left: 30%; animation-delay: -6s; animation-duration: 11s; }
+
+        @keyframes floatPage {
+            0%, 100% {
+                transform: translateY(0) rotateX(0deg) rotateZ(5deg);
+                opacity: 0.12;
+            }
+            50% {
+                transform: translateY(-50px) rotateX(20deg) rotateZ(-10deg);
+                opacity: 0.2;
+            }
+        }
+
+        .floating-bookmark {
+            position: absolute;
+            width: 10px;
+            height: 38px;
+            animation: floatBookmark 11s ease-in-out infinite;
+        }
+
+        .floating-bookmark::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #d4af37, #c9302c);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+        }
+
+        .bm1 { top: 18%; left: 35%; animation-delay: -4s; }
+
+        @keyframes floatBookmark {
+            0%, 100% {
+                transform: translateY(0) rotateZ(5deg);
+                opacity: 0.18;
+            }
+            50% {
+                transform: translateY(-35px) rotateZ(-8deg);
+                opacity: 0.3;
+            }
+        }
+
+        .peacock-accent {
+            position: absolute;
+            top: 10%;
+            right: 5%;
+            width: 55px;
+            height: 150px;
+            z-index: 1;
+            opacity: 0.3;
+            animation: accentSway 8s ease-in-out infinite;
+            transform: rotate(20deg);
+        }
+
+        @keyframes accentSway {
+            0%, 100% { transform: rotate(20deg); }
+            50% { transform: rotate(25deg) translateY(-5px); }
+        }
+
+        .peacock-accent .feather-shaft {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1.5px;
+            height: 100%;
+            background: linear-gradient(to top, #8b6914, #2d5016);
+            border-radius: 1px;
+        }
+
+        .peacock-accent .feather-eye {
+            position: absolute;
+            top: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 42px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center,
+                #1a1a2e 15%, #0d1b4a 25%, #1b4d3e 35%,
+                #2d8a6e 45%, #d4af37 55%, #1b6b4a 65%,
+                #0d4a3a 80%, transparent 100%);
+            animation: featherShimmer 3s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(45, 138, 110, 0.25);
+        }
+
+        @keyframes featherShimmer {
+            0%, 100% {
+                background: radial-gradient(ellipse at center,
+                    #1a1a2e 15%, #0d1b4a 25%, #1b4d3e 35%,
+                    #2d8a6e 45%, #d4af37 55%, #1b6b4a 65%,
+                    #0d4a3a 80%, transparent 100%);
+            }
+            50% {
+                background: radial-gradient(ellipse at center,
+                    #0d1b4a 15%, #1a1a2e 25%, #2d8a6e 35%,
+                    #1b4d3e 45%, #e0c050 55%, #0d4a3a 65%,
+                    #1b6b4a 80%, transparent 100%);
+            }
+        }
+
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(245, 247, 250, 0.95);
+            background: rgba(10, 10, 15, 0.97);
             display: none;
             justify-content: center;
             align-items: center;
@@ -35,188 +226,279 @@
             flex-direction: column;
             gap: 1.5rem;
         }
-        
+
         .page-loader.active {
             display: flex;
         }
-        
+
         .books-loader {
             display: flex;
             gap: 0.5rem;
             align-items: flex-end;
         }
-        
-        .book {
+
+        .book-load {
             width: 20px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
             border-radius: 3px;
             position: relative;
             animation: bookJump 0.8s ease-in-out infinite;
         }
-        
-        .book:nth-child(1) { animation-delay: 0s; }
-        .book:nth-child(2) { animation-delay: 0.15s; }
-        .book:nth-child(3) { animation-delay: 0.3s; }
-        .book:nth-child(4) { animation-delay: 0.45s; }
-        .book:nth-child(5) { animation-delay: 0.6s; }
-        
+
+        .book-load:nth-child(1) { animation-delay: 0s; }
+        .book-load:nth-child(2) { animation-delay: 0.15s; }
+        .book-load:nth-child(3) { animation-delay: 0.3s; }
+        .book-load:nth-child(4) { animation-delay: 0.45s; }
+        .book-load:nth-child(5) { animation-delay: 0.6s; }
+
         @keyframes bookJump {
             0%, 100% { transform: translateY(0) scaleY(1); }
             50% { transform: translateY(-20px) scaleY(1.1); }
         }
-        
+
         .loader-text {
-            color: #667eea;
+            color: #d4af37;
+            font-family: 'Raleway', sans-serif;
             font-size: 1.1rem;
             font-weight: 600;
+            letter-spacing: 2px;
             animation: pulse 1.5s ease-in-out infinite;
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 0.6; }
             50% { opacity: 1; }
         }
-        
+
+        .login-wrapper {
+            max-width: 420px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            animation: loginEntrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes loginEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .login-container {
-            background: white;
+            background: rgba(20, 20, 35, 0.75);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
             padding: 3rem;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 1px rgba(212, 175, 55, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.12);
             width: 100%;
-            max-width: 420px;
+            animation: cardFloat 6s ease-in-out infinite;
         }
-        
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
         .header {
             text-align: center;
             margin-bottom: 2.5rem;
         }
-        
+
         .header h1 {
             font-size: 1.8rem;
-            color: #333;
+            color: #d4af37;
             margin-bottom: 0.5rem;
-            font-weight: 600;
+            font-weight: 700;
         }
-        
+
         .header p {
-            color: #666;
+            color: #888;
             font-size: 0.95rem;
+            font-weight: 300;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group label {
             display: block;
-            color: #333;
+            color: #b0b0b0;
             font-size: 0.9rem;
             font-weight: 500;
             margin-bottom: 0.5rem;
+            letter-spacing: 0.3px;
         }
-        
+
         .form-group input {
             width: 100%;
             padding: 0.9rem 1rem;
-            border: 2px solid #e1e8ed;
+            border: 1px solid rgba(212, 175, 55, 0.2);
             border-radius: 10px;
             font-size: 0.95rem;
+            font-family: 'Raleway', sans-serif;
             transition: all 0.3s ease;
             outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
         }
-        
+
         .form-group input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+            background: rgba(255, 255, 255, 0.08);
         }
-        
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
         .btn-submit {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
+            color: #0a0a0f;
             border: none;
             border-radius: 10px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
+            font-family: 'Raleway', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 0.5rem;
+            letter-spacing: 0.5px;
         }
-        
+
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+            background: linear-gradient(135deg, #e0c050 0%, #d4af37 100%);
         }
-        
+
         .btn-submit:active {
             transform: translateY(0);
         }
-        
+
         .back-link {
             display: inline-block;
-            color: white;
+            color: #888;
             text-decoration: none;
             margin-bottom: 1rem;
             font-size: 0.9rem;
-            opacity: 0.9;
+            transition: color 0.3s ease;
         }
-        
+
         .back-link:hover {
-            opacity: 1;
+            color: #d4af37;
         }
-        
+
         .messages {
             margin-bottom: 1.5rem;
         }
-        
+
         .alert {
             padding: 0.8rem 1rem;
             border-radius: 8px;
             margin-bottom: 0.5rem;
             font-size: 0.9rem;
         }
-        
+
         .alert-error {
-            background: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
+            background: rgba(200, 50, 50, 0.15);
+            border: 1px solid rgba(200, 50, 50, 0.3);
+            color: #ff8a8a;
         }
-        
+
         .alert-success {
-            background: #efe;
-            border: 1px solid #cfc;
-            color: #3c3;
+            background: rgba(50, 200, 50, 0.15);
+            border: 1px solid rgba(50, 200, 50, 0.3);
+            color: #8aff8a;
+        }
+
+        @media (max-width: 768px) {
+            .floating-book,
+            .floating-page,
+            .floating-bookmark {
+                display: none;
+            }
+
+            .peacock-accent {
+                opacity: 0.15;
+                width: 35px;
+                height: 90px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="page-loader" id="pageLoader">
         <div class="books-loader">
-            <div class="book"></div>
-            <div class="book"></div>
-            <div class="book"></div>
-            <div class="book"></div>
-            <div class="book"></div>
+            <div class="book-load"></div>
+            <div class="book-load"></div>
+            <div class="book-load"></div>
+            <div class="book-load"></div>
+            <div class="book-load"></div>
         </div>
         <div class="loader-text">Loading...</div>
     </div>
-    
-    <div style="max-width: 420px; width: 100%;">
+
+    <div class="floating-objects">
+        <div class="floating-book fb1">
+            <div class="book-spine"></div>
+            <div class="book-pages"></div>
+            <div class="book-cover"></div>
+        </div>
+        <div class="floating-book fb2">
+            <div class="book-spine"></div>
+            <div class="book-pages"></div>
+            <div class="book-cover"></div>
+        </div>
+        <div class="floating-book fb3">
+            <div class="book-spine"></div>
+            <div class="book-pages"></div>
+            <div class="book-cover"></div>
+        </div>
+        <div class="floating-book fb4">
+            <div class="book-spine"></div>
+            <div class="book-pages"></div>
+            <div class="book-cover"></div>
+        </div>
+
+        <div class="floating-page fp1"></div>
+        <div class="floating-page fp2"></div>
+
+        <div class="floating-bookmark bm1"></div>
+    </div>
+
+    <div class="peacock-accent">
+        <div class="feather-eye"></div>
+        <div class="feather-shaft"></div>
+    </div>
+
+    <div class="login-wrapper">
         <a href="/" class="back-link">← Back to Home</a>
         <div class="login-container">
             <div class="header">
                 <h1>Admin Portal</h1>
                 <p>Sign in to manage library system</p>
             </div>
-            
+
             {% if error_message %}
             <div class="messages">
                 <div class="alert alert-error">{{ error_message }}</div>
             </div>
             {% endif %}
-            
+
             {% if messages %}
             <div class="messages">
                 {% for message in messages %}
@@ -224,37 +506,37 @@
                 {% endfor %}
             </div>
             {% endif %}
-            
+
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="id_email">Email</label>
                     {{ form.email }}
                 </div>
-                
+
                 <div class="form-group">
                     <label for="id_password">Password</label>
                     {{ form.password }}
                 </div>
-                
+
                 <button type="submit" class="btn-submit">Sign In</button>
             </form>
         </div>
     </div>
-    
+
     <script>
         const pageLoader = document.getElementById('pageLoader');
-        
+
         document.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function(e) {
-                if (!this.getAttribute('href').startsWith('#') && 
+                if (!this.getAttribute('href').startsWith('#') &&
                     this.getAttribute('href') !== 'javascript:void(0)' &&
                     this.getAttribute('href')) {
                     pageLoader.classList.add('active');
                 }
             });
         });
-        
+
         document.querySelector('form').addEventListener('submit', function() {
             pageLoader.classList.add('active');
         });
