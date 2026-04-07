@@ -27,21 +27,24 @@ class Command(BaseCommand):
             days_until_due = (borrow.expected_return_date - today).days
 
             if days_until_due in (7, 2, 1):
-                send_return_reminder(borrow, days_until_due)
-                reminder_count += 1
-                self.stdout.write(
-                    f"  Reminder ({days_until_due}d): {borrow.student.roll_no} - {borrow.book.title}"
-                )
+                sent = send_return_reminder(borrow, days_until_due)
+                if sent:
+                    reminder_count += 1
+                    self.stdout.write(
+                        f"  Reminder ({days_until_due}d): {borrow.student.roll_no} - {borrow.book.title}"
+                    )
 
             if days_until_due < 0:
-                send_overdue_admin_alert(borrow)
-                overdue_count += 1
+                sent = send_overdue_admin_alert(borrow)
+                if sent:
+                    overdue_count += 1
 
-                send_daily_fine_notification(borrow)
-                fine_count += 1
-                self.stdout.write(
-                    f"  Overdue ({abs(days_until_due)}d): {borrow.student.roll_no} - {borrow.book.title}"
-                )
+                sent = send_daily_fine_notification(borrow)
+                if sent:
+                    fine_count += 1
+                    self.stdout.write(
+                        f"  Overdue ({abs(days_until_due)}d): {borrow.student.roll_no} - {borrow.book.title}"
+                    )
 
         self.stdout.write(self.style.SUCCESS(
             f"\nDone: {reminder_count} reminder(s), {overdue_count} overdue alert(s), {fine_count} fine notification(s)"

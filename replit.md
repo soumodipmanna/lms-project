@@ -56,11 +56,27 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Error Handling & Validation**:
     - Server-side form validations for student signup, login, and admin login.
     - User-friendly error messages displayed inline and on the same page for authentication failures.
+- **Email Notifications**:
+    - Email sent to both student and admins when a borrow request is approved
+    - Return reminder emails at 7 days, 2 days, and 1 day before due date (to student)
+    - Daily overdue alert emails to admins when return date passes
+    - Daily fine notification emails to students with overdue books (shows current fine, urges return)
+    - Fine waiver approval notification email to students
+    - All notifications logged in EmailNotificationLog to prevent duplicate sends
+    - Scheduled via `python manage.py send_notifications` management command
+    - Email backend configurable via environment variables (defaults to console for dev)
+- **Fine Waiver System**:
+    - Admin officers can request fine waivers (with reason and amount) from the Manage Fines page
+    - Superadmins can approve or reject waiver requests
+    - Approved waivers automatically reduce the fine amount on the borrow record
+    - Student receives email notification when waiver is approved
 - **Core Models**:
     - `Book`: Includes `language`, `fine_rate`, `category`, and `department` fields for better organization.
     - `Student`: Linked to Django's `User` model, with `roll_no`, `branch`, `name`, `phone_number`, `status` (pending/approved/rejected/disabled), and `status_reason` (for rejection/disable explanations).
     - `Borrow`: Tracks student, book, dates, status, `expected_return_date`, `fine_amount`, and `reject_reason`.
     - `Admin`: Custom model with `email`, `password`, `name`, `role`, and `is_active`.
+    - `EmailNotificationLog`: Tracks sent notifications (type, recipient, borrow, subject, timestamp, success) for deduplication.
+    - `FineWaiver`: Tracks waiver requests (borrow, requested_by, approved_by, amounts, reason, status).
     - `Post`: Social wall posts with `author`, `content`, `image`, `created_at`, and `updated_at` fields.
     - `Like`: User likes on posts with unique constraint (user, post).
     - `Comment`: Post comments with `user`, `post`, `content`, and `created_at`.
@@ -91,6 +107,16 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Icons**: Font Awesome 6.4 (CDN)
 
 ## Recent Changes
+- **April 2026**: Added Email Notifications & Fine Waiver System
+  - Email notifications on borrow approval (to student + all admins)
+  - Return reminders at 7, 2, and 1 day(s) before due date
+  - Daily overdue alerts to admins and daily fine notifications to students
+  - EmailNotificationLog model for deduplication and audit trail
+  - FineWaiver model with request/approve/reject workflow
+  - Manage Fines admin page with waiver request UI and superadmin approval
+  - `send_notifications` management command for scheduled email processing
+  - Styled HTML email templates for all notification types
+  - Email backend configurable via env vars (EMAIL_BACKEND, EMAIL_HOST, etc.)
 - **February 2026**: Added Social Wall (Knowledge Wall) feature
   - Created Post, Like, Comment models with image upload support
   - Implemented content moderation system (bad word filtering)

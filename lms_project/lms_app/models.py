@@ -83,13 +83,18 @@ class Borrow(models.Model):
         return f"{self.student} - {self.book} ({self.status})"
     
     def calculate_fine(self):
-        """Calculate fine if book is overdue"""
+        """Calculate fine if book is overdue, accounting for approved waivers"""
         if self.expected_return_date and not self.is_returned:
             from datetime import date
             today = date.today()
             if today > self.expected_return_date:
                 overdue_days = (today - self.expected_return_date).days
-                return overdue_days * float(self.book.fine_rate)
+                gross_fine = overdue_days * float(self.book.fine_rate)
+                total_waived = sum(
+                    float(w.waived_amount)
+                    for w in self.waivers.filter(status='approved')
+                )
+                return max(gross_fine - total_waived, 0.0)
         return 0.00
 
 

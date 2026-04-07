@@ -100,11 +100,11 @@ def send_return_reminder(borrow, days_remaining):
     elif days_remaining == 1:
         notif_type = 'reminder_1day'
     else:
-        return
+        return False
 
     student_email = borrow.student.user.email
     if _already_sent_today(notif_type, borrow, student_email):
-        return
+        return False
 
     student_name = borrow.student.name or borrow.student.roll_no
     context = {
@@ -123,16 +123,19 @@ def send_return_reminder(borrow, days_remaining):
         notification_type=notif_type,
         borrow=borrow,
     )
+    return True
 
 
 def send_overdue_admin_alert(borrow):
     admin_emails = list(Admin.objects.filter(is_active=True).values_list('email', flat=True))
     if not admin_emails:
-        return
+        return False
 
+    sent_any = False
     for email in admin_emails:
         if _already_sent_today('overdue_admin', borrow, email):
             continue
+        sent_any = True
 
         overdue_days = (date.today() - borrow.expected_return_date).days
         fine = borrow.calculate_fine()
@@ -155,12 +158,13 @@ def send_overdue_admin_alert(borrow):
             notification_type='overdue_admin',
             borrow=borrow,
         )
+    return sent_any
 
 
 def send_daily_fine_notification(borrow):
     student_email = borrow.student.user.email
     if _already_sent_today('fine_daily', borrow, student_email):
-        return
+        return False
 
     overdue_days = (date.today() - borrow.expected_return_date).days
     fine = borrow.calculate_fine()
@@ -184,6 +188,7 @@ def send_daily_fine_notification(borrow):
         notification_type='fine_daily',
         borrow=borrow,
     )
+    return True
 
 
 def send_fine_waiver_notification(borrow, waived_amount, original_fine, new_fine):

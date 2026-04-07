@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm, AdminProfileUpdateForm, AdminEditForm
 from django.contrib.auth.models import User
-from .models import Book, Borrow, Student, Admin, Post, Like, Comment
+from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver, EmailNotificationLog
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db import transaction
@@ -416,6 +416,12 @@ def admin_approve_borrow_view(request, borrow_id):
                 borrow_request.is_approved = True
                 borrow_request.approve_date = timezone.now()
                 borrow_request.save()
+                
+                try:
+                    from .notifications import send_borrow_confirmation
+                    send_borrow_confirmation(borrow_request)
+                except Exception:
+                    pass
                 
                 messages.success(request, f'Borrow request approved for {borrow_request.student.roll_no}!')
             else:
@@ -920,3 +926,128 @@ def delete_comment(request, comment_id):
         else:
             messages.error(request, 'You do not have permission to delete this comment.')
     return redirect('social_wall')
+
+
+@admin_login_required
+def admin_manage_fines_view(request):
+    from django.db.models import Sum, Q
+    borrows_with_fines = Borrow.objects.filter(
+        Q(fine_amount__gt=0) | Q(status='approved', is_returned=False, expected_return_date__lt=timezone.now().date())
+    ).select_related('student', 'student__user', 'book').order_by('-borrow_date')
+
+    for borrow in borrows_with_fines:
+        if not borrow.is_returned and borrow.expected_return_date and borrow.expected_return_date < timezone.now().date():
+            borrow.live_fine = borrow.calculate_fine()
+        else:
+            borrow.live_fine = float(borrow.fine_amount)
+        borrow.active_waiver = borrow.waivers.filter(status='pending').first()
+        borrow.approved_waiver = borrow.waivers.filter(status='approved').first()
+
+    pending_waivers = FineWaiver.objects.filter(status='pending').select_related(
+        'borrow', 'borrow__student', 'borrow__book', 'requested_by'
+    ).order_by('-created_at')
+
+    context = {
+        'admin': request.admin,
+        'borrows_with_fines': borrows_with_fines,
+        'pending_waivers': pending_waivers,
+    }
+    return render(request, 'admin_fines.html', context)
+
+
+@admin_login_required
+def admin_request_waiver_view(request, borrow_id):
+    borrow = get_object_or_404(Borrow, id=borrow_id)
+
+    if request.method == 'POST':
+        existing = FineWaiver.objects.filter(borrow=borrow, status='pending').exists()
+        if existing:
+            messages.warning(request, 'A waiver request is already pending for this borrow record.')
+            return redirect('admin_manage_fines')
+
+        waived_amount = request.POST.get('waived_amount', '0')
+        reason = request.POST.get('reason', '').strip()
+
+        if not reason:
+            messages.error(request, 'Reason is required for a waiver request.')
+            return redirect('admin_manage_fines')
+
+        try:
+            waived_amount = float(waived_amount)
+        except ValueError:
+            messages.error(request, 'Invalid waiver amount.')
+            return redirect('admin_manage_fines')
+
+        current_fine = borrow.calculate_fine() if not borrow.is_returned else float(borrow.fine_amount)
+        if waived_amount <= 0 or waived_amount > current_fine:
+            messages.error(request, f'Waiver amount must be between 0 and Rs.{current_fine:.2f}.')
+            return redirect('admin_manage_fines')
+
+        FineWaiver.objects.create(
+            borrow=borrow,
+            requested_by=request.admin,
+            original_fine=current_fine,
+            waived_amount=waived_amount,
+            reason=reason,
+        )
+        messages.success(request, 'Fine waiver request submitted for approval.')
+
+    return redirect('admin_manage_fines')
+
+
+@superadmin_required
+def admin_approve_waiver_view(request, waiver_id):
+    from django.db import transaction
+
+    waiver = get_object_or_404(FineWaiver, id=waiver_id)
+
+    if request.method == 'POST':
+        with transaction.atomic():
+            waiver = FineWaiver.objects.select_for_update().get(id=waiver_id)
+            if waiver.status != 'pending':
+                messages.info(request, 'This waiver has already been processed.')
+                return redirect('admin_manage_fines')
+
+            waiver.status = 'approved'
+            waiver.approved_by = request.admin
+            waiver.save()
+
+            borrow = Borrow.objects.select_for_update().get(id=waiver.borrow_id)
+            new_fine = float(waiver.original_fine) - float(waiver.waived_amount)
+            if new_fine < 0:
+                new_fine = 0
+            borrow.fine_amount = new_fine
+            borrow.save()
+
+        try:
+            from .notifications import send_fine_waiver_notification
+            send_fine_waiver_notification(
+                borrow,
+                float(waiver.waived_amount),
+                float(waiver.original_fine),
+                new_fine,
+            )
+        except Exception:
+            pass
+
+        messages.success(request, f'Fine waiver approved. New fine: Rs.{new_fine:.2f}')
+
+    return redirect('admin_manage_fines')
+
+
+@superadmin_required
+def admin_reject_waiver_view(request, waiver_id):
+    waiver = get_object_or_404(FineWaiver, id=waiver_id)
+
+    if request.method == 'POST':
+        if waiver.status != 'pending':
+            messages.info(request, 'This waiver has already been processed.')
+            return redirect('admin_manage_fines')
+
+        rejection_reason = request.POST.get('rejection_reason', '').strip()
+        waiver.status = 'rejected'
+        waiver.rejection_reason = rejection_reason
+        waiver.save()
+        messages.warning(request, 'Fine waiver request rejected.')
+
+    return redirect('admin_manage_fines')

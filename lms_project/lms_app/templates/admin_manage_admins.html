@@ -413,6 +413,7 @@
                 <li><a href="{% url 'admin_manage_students' %}"><span class="icon">👥</span><span class="label">Manage Students</span></a></li>
                 <li><a href="{% url 'admin_manage_books' %}"><span class="icon">📚</span><span class="label">Manage Books</span></a></li>
                 <li><a href="{% url 'admin_borrow_requests' %}"><span class="icon">📋</span><span class="label">Borrow Requests</span></a></li>
+                <li><a href="{% url 'admin_manage_fines' %}"><span class="icon">💰</span><span class="label">Manage Fines</span></a></li>
                 {% if admin.role == 'superadmin' %}
                 <li><a href="{% url 'admin_manage_admins' %}" class="active"><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
                 {% endif %}
