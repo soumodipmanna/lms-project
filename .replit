@@ -41,3 +41,7 @@ run = ["bash", "-c", "cd lms_project && gunicorn --bind=0.0.0.0:5000 --reuse-por
 [userenv]
 
 [userenv.shared]
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 60000
