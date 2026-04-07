@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 def _send_email(subject, template_name, context, recipient_list, notification_type, borrow=None):
     html_message = render_to_string(template_name, context)
     plain_message = strip_tags(html_message)
+    all_succeeded = True
 
     for recipient in recipient_list:
         try:
@@ -39,6 +40,9 @@ def _send_email(subject, template_name, context, recipient_list, notification_ty
                 subject=subject,
                 success=False,
             )
+            all_succeeded = False
+
+    return all_succeeded
 
 
 def _already_sent_today(notification_type, borrow, recipient_email=None):
@@ -115,7 +119,7 @@ def send_return_reminder(borrow, days_remaining):
         'days_remaining': days_remaining,
     }
 
-    _send_email(
+    return _send_email(
         subject=f"Return Reminder: {borrow.book.title} due in {days_remaining} day(s)",
         template_name='emails/return_reminder.html',
         context=context,
@@ -123,7 +127,6 @@ def send_return_reminder(borrow, days_remaining):
         notification_type=notif_type,
         borrow=borrow,
     )
-    return True
 
 
 def send_overdue_admin_alert(borrow):
@@ -150,7 +153,7 @@ def send_overdue_admin_alert(borrow):
             'fine_rate': borrow.book.fine_rate,
         }
 
-        _send_email(
+        result = _send_email(
             subject=f"Overdue Book Alert: {borrow.book.title} - {borrow.student.roll_no}",
             template_name='emails/overdue_admin.html',
             context=context,
@@ -158,6 +161,8 @@ def send_overdue_admin_alert(borrow):
             notification_type='overdue_admin',
             borrow=borrow,
         )
+        if result:
+            sent_any = True
     return sent_any
 
 
@@ -180,7 +185,7 @@ def send_daily_fine_notification(borrow):
         'fine_rate': borrow.book.fine_rate,
     }
 
-    _send_email(
+    return _send_email(
         subject=f"Overdue Fine Alert: {borrow.book.title} - Current Fine: Rs.{fine:.2f}",
         template_name='emails/fine_daily.html',
         context=context,
@@ -188,7 +193,6 @@ def send_daily_fine_notification(borrow):
         notification_type='fine_daily',
         borrow=borrow,
     )
-    return True
 
 
 def send_fine_waiver_notification(borrow, waived_amount, original_fine, new_fine):

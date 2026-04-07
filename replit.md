@@ -117,6 +117,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
   - `send_notifications` management command for scheduled email processing
   - Styled HTML email templates for all notification types
   - Email backend configurable via env vars (EMAIL_BACKEND, EMAIL_HOST, etc.)
+  - Schedule `cd lms_project && python manage.py send_notifications` daily via cron or a Replit scheduled workflow
 - **February 2026**: Added Social Wall (Knowledge Wall) feature
   - Created Post, Like, Comment models with image upload support
   - Implemented content moderation system (bad word filtering)
