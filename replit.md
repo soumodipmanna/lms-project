@@ -10,25 +10,32 @@ None recorded yet.
 The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alongside standard student-facing functionalities.
 
 **UI/UX Decisions:**
-- **Design Language**: iOS 26 liquid glass (glassmorphism) design system with frosted glass effects, translucent UI components, and modern blur aesthetics.
-- **Theming**: Consistent purple gradient accents (#667eea to #764ba2) for active states and CTAs, complemented by book-themed loading animations.
-- **Navigation**: Both student and admin interfaces feature sidebar navigation with identical glassmorphism styling, role-based menu items for administrators.
+- **Landing & Login Pages**: Dark, luxurious 3D animated design
+  - Raleway font from Google Fonts as primary font family
+  - Dark rich color theme: deep black/navy backgrounds (#0a0a0f) with gold (#d4af37) and teal/emerald accents
+  - Animated 3D floating library objects (books, open pages, bookmarks, reading glasses) using CSS 3D transforms and keyframe animations
+  - Animated peacock feather with iridescent color-shifting shimmer (prominent on landing, subtle on login pages)
+  - Landing page hero with 3D perspective, gold-shine heading, staggered entrance animations, 3D hover effects on feature cards
+  - Login pages with dark frosted-glass (glassmorphism) cards, float animation, gold-accented inputs/buttons
+  - Responsive: floating objects hidden on mobile, feather scaled down
+- **App Interior (Dashboard/Admin/Student pages)**: iOS 26 liquid glass (glassmorphism) design system with frosted glass effects, translucent UI components, and modern blur aesthetics.
+- **Theming**: Purple gradient accents (#667eea to #764ba2) for interior pages; gold (#d4af37) and teal for landing/login pages
+- **Navigation**: Both student and admin interfaces feature sidebar navigation with glassmorphism styling, role-based menu items for administrators.
 - **Navbar Design**: 
   - Admin/Student pages: Ultra-transparent glass appearance with 10% white translucent background (rgba(255,255,255,0.1))
-  - Landing page: Ultra-transparent purple tint with 8% opacity (rgba(102,126,234,0.08))
   - All navbars: 20px backdrop blur with saturation boost, dark text (#333), subtle border effects
 - **Sidebar Design**: 
   - 50% transparent white background (rgba(255,255,255,0.5)) with 20px backdrop blur and saturation effects
   - Smooth cubic-bezier animations (0.4s timing), rounded menu items with hover effects (translateX + accent bar)
   - Active state with purple gradient and white text, enhanced shadows for depth
   - When collapsed: 70px icon-only bar with centered icons, hidden text labels (using .icon and .label classes)
-  - Toggle button icon changes dynamically: ☰ (hamburger) when expanded, → (arrow) when collapsed
+  - Toggle button icon changes dynamically
   - Identical implementation across all admin and student pages
 - **Search Bars**: iOS glass design with 60% translucent background, 20px blur/saturate filters, glass borders, 24px fully rounded corners (pill shape), smooth focus states with purple accent halos
 - **Layout**: Clean, modern card-based layouts are used for dashboards and management pages.
 - **Interactivity**: All pages include a collapsible sidebar toggled by a hamburger menu, with state persistence using localStorage. Smooth CSS transitions are used for animations.
-- **Iconography**: An icon-based UI is used for actions like Edit (✏️), Delete (🗑️), Add (➕), Import (📥), Upload (⬆️), and Cancel (✖️) to enhance visual appeal and clarity.
-- **Dashboard Cards**: Admin dashboard displays stat cards for Total Students (purple), Total Books (green), Pending Requests (orange), Fine Management (red, ₹), and Total Admins (blue, superadmin only).
+- **Iconography**: An icon-based UI is used for actions like Edit, Delete, Add, Import, Upload, and Cancel to enhance visual appeal and clarity.
+- **Dashboard Cards**: Admin dashboard displays stat cards for Total Students (purple), Total Books (green), Pending Requests (orange), Fine Management (red), and Total Admins (blue, superadmin only).
 
 **Technical Implementations & Feature Specifications:**
 - **Authentication**:
@@ -110,6 +117,10 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Icons**: Font Awesome 6.4 (CDN)
 
 ## Recent Changes
+- **April 2026**: Modern 3D animated redesign for landing & login pages
+  - Dark luxurious theme with 3D floating library objects and animated peacock feather
+  - Glassmorphism login cards with gold accents and Raleway typography
+  - Responsive design with mobile-friendly adaptations
 - **April 2026**: Added Email Notifications & Fine Waiver System
   - Email notifications on borrow approval (to student + all admins)
   - Return reminders at 7, 2, and 1 day(s) before due date
