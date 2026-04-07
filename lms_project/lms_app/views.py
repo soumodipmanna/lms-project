@@ -990,13 +990,14 @@ def admin_request_waiver_view(request, borrow_id):
             messages.error(request, 'Reason is required for a waiver request.')
             return redirect('admin_manage_fines')
 
+        from decimal import Decimal, InvalidOperation
         try:
-            waived_amount = float(waived_amount)
-        except ValueError:
+            waived_amount = Decimal(waived_amount)
+        except (ValueError, InvalidOperation):
             messages.error(request, 'Invalid waiver amount.')
             return redirect('admin_manage_fines')
 
-        current_fine = float(borrow.calculate_fine()) if not borrow.is_returned else float(borrow.fine_amount)
+        current_fine = borrow.calculate_fine() if not borrow.is_returned else borrow.fine_amount
         if waived_amount <= 0 or waived_amount > current_fine:
             messages.error(request, f'Waiver amount must be between 0 and Rs.{current_fine:.2f}.')
             return redirect('admin_manage_fines')
@@ -1030,10 +1031,11 @@ def admin_approve_waiver_view(request, waiver_id):
             waiver.approved_by = request.admin
             waiver.save()
 
+            from decimal import Decimal
             borrow = Borrow.objects.select_for_update().get(id=waiver.borrow_id)
-            new_fine = float(waiver.original_fine) - float(waiver.waived_amount)
-            if new_fine < 0:
-                new_fine = 0
+            new_fine = waiver.original_fine - waiver.waived_amount
+            if new_fine < Decimal('0'):
+                new_fine = Decimal('0')
             borrow.fine_amount = new_fine
             borrow.save()
 
@@ -1041,8 +1043,8 @@ def admin_approve_waiver_view(request, waiver_id):
             from .notifications import send_fine_waiver_notification
             send_fine_waiver_notification(
                 borrow,
-                float(waiver.waived_amount),
-                float(waiver.original_fine),
+                waiver.waived_amount,
+                waiver.original_fine,
                 new_fine,
             )
         except Exception as e:
