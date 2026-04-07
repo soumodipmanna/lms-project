@@ -499,6 +499,7 @@
                             <th>Expected Return</th>
                             <th>Actual Return</th>
                             <th>Fine</th>
+                            <th>Waiver</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -515,6 +516,17 @@
                             <td>
                                 {% if borrow.fine_amount and borrow.fine_amount > 0 %}
                                 <span style="color: #d32f2f; font-weight: 600;">₹{{ borrow.fine_amount }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if borrow.waiver_status == 'approved' %}
+                                <span style="color: #2e7d32; font-weight: 600; font-size: 12px;">✓ Waived ₹{{ borrow.waiver_amount }}</span>
+                                {% elif borrow.waiver_status == 'pending' %}
+                                <span style="color: #ef6c00; font-weight: 600; font-size: 12px;">⏳ Pending ₹{{ borrow.waiver_amount }}</span>
+                                {% elif borrow.waiver_status == 'rejected' %}
+                                <span style="color: #d32f2f; font-weight: 600; font-size: 12px;">✗ Rejected</span>
                                 {% else %}
                                 -
                                 {% endif %}
@@ -545,7 +557,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="9" style="text-align: center; color: #999;">No borrow requests found</td>
+                            <td colspan="10" style="text-align: center; color: #999;">No borrow requests found</td>
                         </tr>
                         {% endfor %}
                     </tbody>

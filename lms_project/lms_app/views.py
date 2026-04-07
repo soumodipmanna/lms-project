@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm, AdminProfileUpdateForm, AdminEditForm
 from django.contrib.auth.models import User
-from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver, EmailNotificationLog
+from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db import transaction
@@ -393,7 +393,23 @@ def admin_delete_book_view(request, book_id):
 
 @admin_login_required
 def admin_borrow_requests_view(request):
-    borrows = Borrow.objects.all().select_related('student', 'student__user', 'book').order_by('-borrow_date')
+    borrows = Borrow.objects.all().select_related('student', 'student__user', 'book').prefetch_related('waivers').order_by('-borrow_date')
+    for borrow in borrows:
+        approved = borrow.waivers.filter(status='approved').first()
+        pending = borrow.waivers.filter(status='pending').first()
+        rejected = borrow.waivers.filter(status='rejected').first()
+        if approved:
+            borrow.waiver_status = 'approved'
+            borrow.waiver_amount = approved.waived_amount
+        elif pending:
+            borrow.waiver_status = 'pending'
+            borrow.waiver_amount = pending.waived_amount
+        elif rejected:
+            borrow.waiver_status = 'rejected'
+            borrow.waiver_amount = rejected.waived_amount
+        else:
+            borrow.waiver_status = None
+            borrow.waiver_amount = None
     context = {
         'admin': request.admin,
         'borrows': borrows,
@@ -420,8 +436,10 @@ def admin_approve_borrow_view(request, borrow_id):
                 try:
                     from .notifications import send_borrow_confirmation
                     send_borrow_confirmation(borrow_request)
-                except Exception:
-                    pass
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"Failed to send borrow confirmation email: {e}")
+                    messages.warning(request, 'Borrow approved but confirmation email could not be sent.')
                 
                 messages.success(request, f'Borrow request approved for {borrow_request.student.roll_no}!')
             else:
@@ -1027,8 +1045,10 @@ def admin_approve_waiver_view(request, waiver_id):
                 float(waiver.original_fine),
                 new_fine,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to send waiver notification email: {e}")
+            messages.warning(request, 'Waiver approved but notification email could not be sent.')
 
         messages.success(request, f'Fine waiver approved. New fine: Rs.{new_fine:.2f}')
 
