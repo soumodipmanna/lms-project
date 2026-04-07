@@ -135,6 +135,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'student_login'
 
+import logging
+_settings_logger = logging.getLogger('django')
+
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 if EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
@@ -143,6 +146,7 @@ if EMAIL_HOST_PASSWORD:
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
     DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'LMS-Info <noreply@library.com>')
+    _settings_logger.info('Email: SMTP mode active (Mailgun via %s:%s)', EMAIL_HOST, EMAIL_PORT)
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     EMAIL_HOST = 'localhost'
@@ -150,3 +154,4 @@ else:
     EMAIL_USE_TLS = False
     EMAIL_HOST_USER = ''
     DEFAULT_FROM_EMAIL = 'Library Management System <noreply@library.com>'
+    _settings_logger.info('Email: console backend (no SMTP credentials configured)')
