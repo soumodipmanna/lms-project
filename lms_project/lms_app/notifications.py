@@ -214,3 +214,46 @@ def send_fine_waiver_notification(borrow, waived_amount, original_fine, new_fine
         notification_type='fine_waived',
         borrow=borrow,
     )
+
+
+def send_signup_received_notification(student):
+    student_email = student.user.email
+    if not student_email:
+        return False
+
+    student_name = student.name or student.roll_no
+    context = {
+        'student_name': student_name,
+        'roll_no': student.roll_no,
+        'branch': student.branch,
+        'email': student_email,
+    }
+
+    return _send_email(
+        subject="Signup Request Received - Awaiting Approval",
+        template_name='emails/signup_received.html',
+        context=context,
+        recipient_list=[student_email],
+        notification_type='signup_received',
+    )
+
+
+def send_signup_approved_notification(student):
+    student_email = student.user.email
+    if not student_email:
+        return False
+
+    student_name = student.name or student.roll_no
+    context = {
+        'student_name': student_name,
+        'roll_no': student.roll_no,
+        'branch': student.branch,
+    }
+
+    return _send_email(
+        subject="Account Approved - You Can Now Log In!",
+        template_name='emails/signup_approved.html',
+        context=context,
+        recipient_list=[student_email],
+        notification_type='signup_approved',
+    )

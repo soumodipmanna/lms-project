@@ -30,6 +30,12 @@ def student_signup(request):
             student = user_form.save(commit=False)
             student.user = user
             student.save()
+            try:
+                from .notifications import send_signup_received_notification
+                send_signup_received_notification(student)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to send signup received email: {e}")
             messages.success(request, 'Signup successful! Your account is pending admin approval. You will be able to login once approved.')
             return redirect('student_login')
     else:
@@ -803,6 +809,13 @@ def admin_approve_student(request, student_id):
         student.status = 'approved'
         student.status_reason = None
         student.save()
+        try:
+            from .notifications import send_signup_approved_notification
+            send_signup_approved_notification(student)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to send signup approved email: {e}")
+            messages.warning(request, 'Student approved but notification email could not be sent.')
         messages.success(request, f'Student {student.roll_no} has been approved successfully.')
     return redirect('admin_signup_requests')
 

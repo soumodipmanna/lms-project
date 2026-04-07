@@ -107,6 +107,8 @@ NOTIFICATION_TYPE_CHOICES = (
     ('overdue_admin', 'Overdue Alert to Admin'),
     ('fine_daily', 'Daily Fine Notification'),
     ('fine_waived', 'Fine Waived Notification'),
+    ('signup_received', 'Signup Request Received'),
+    ('signup_approved', 'Signup Approved'),
 )
 
 class EmailNotificationLog(models.Model):
