@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); padding: 30px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; }
+        .body { padding: 30px; }
+        .alert-box { background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+        .overdue-days { font-size: 48px; font-weight: 700; color: #d32f2f; }
+        .overdue-label { font-size: 16px; color: #c62828; font-weight: 600; }
+        .info-box { background: #f0f3ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8ecff; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #555; }
+        .info-value { color: #333; }
+        .fine-highlight { color: #d32f2f; font-weight: 700; font-size: 18px; }
+        .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #888; font-size: 13px; }
+        p { color: #555; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Overdue Book Alert</h1>
+        </div>
+        <div class="body">
+            <p>A borrowed book has not been returned past its due date.</p>
+
+            <div class="alert-box">
+                <div class="overdue-days">{{ overdue_days }}</div>
+                <div class="overdue-label">day{{ overdue_days|pluralize }} overdue</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Student</span>
+                    <span class="info-value">{{ student_name }} ({{ student_roll }})</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Book Title</span>
+                    <span class="info-value">{{ book_title }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Due Date</span>
+                    <span class="info-value">{{ expected_return_date }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Fine Rate</span>
+                    <span class="info-value">Rs.{{ fine_rate }}/day</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Current Fine</span>
+                    <span class="fine-highlight">Rs.{{ fine_amount }}</span>
+                </div>
+            </div>
+
+            <p>Please take appropriate action to recover this book.</p>
+        </div>
+        <div class="footer">
+            <p>Library Management System</p>
+        </div>
+    </div>
+</body>
+</html>

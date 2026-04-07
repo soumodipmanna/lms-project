@@ -93,6 +93,53 @@ class Borrow(models.Model):
         return 0.00
 
 
+NOTIFICATION_TYPE_CHOICES = (
+    ('borrow_confirmed', 'Borrow Confirmed'),
+    ('reminder_7day', '7-Day Return Reminder'),
+    ('reminder_2day', '2-Day Return Reminder'),
+    ('reminder_1day', '1-Day Return Reminder'),
+    ('overdue_admin', 'Overdue Alert to Admin'),
+    ('fine_daily', 'Daily Fine Notification'),
+    ('fine_waived', 'Fine Waived Notification'),
+)
+
+class EmailNotificationLog(models.Model):
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPE_CHOICES)
+    recipient_email = models.EmailField()
+    borrow = models.ForeignKey(Borrow, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
+    subject = models.CharField(max_length=255)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    success = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"{self.notification_type} to {self.recipient_email} at {self.sent_at}"
+
+
+WAIVER_STATUS_CHOICES = (
+    ('pending', 'Pending Approval'),
+    ('approved', 'Approved'),
+    ('rejected', 'Rejected'),
+)
+
+class FineWaiver(models.Model):
+    borrow = models.ForeignKey(Borrow, on_delete=models.CASCADE, related_name='waivers')
+    requested_by = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name='waiver_requests')
+    approved_by = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True, related_name='waiver_approvals')
+    original_fine = models.DecimalField(max_digits=10, decimal_places=2)
+    waived_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=WAIVER_STATUS_CHOICES, default='pending')
+    rejection_reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Waiver for {self.borrow} - {self.status}"
+
+
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField(max_length=500)

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; }
+        .body { padding: 30px; }
+        .info-box { background: #f0f3ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8ecff; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #555; }
+        .info-value { color: #333; }
+        .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #888; font-size: 13px; }
+        p { color: #555; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Book Borrowed Successfully</h1>
+        </div>
+        <div class="body">
+            {% if is_admin %}
+            <p>A book has been issued to a student. Here are the details:</p>
+            {% else %}
+            <p>Dear {{ student_name }},</p>
+            <p>Your book borrow request has been approved. Here are the details:</p>
+            {% endif %}
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Book Title</span>
+                    <span class="info-value">{{ book_title }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Author</span>
+                    <span class="info-value">{{ book_author }}</span>
+                </div>
+                {% if is_admin %}
+                <div class="info-row">
+                    <span class="info-label">Student Roll No</span>
+                    <span class="info-value">{{ student_roll }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="info-label">Borrow Date</span>
+                    <span class="info-value">{{ borrow_date }}</span>
+                </div>
+                {% if expected_return_date %}
+                <div class="info-row">
+                    <span class="info-label">Expected Return Date</span>
+                    <span class="info-value">{{ expected_return_date }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if not is_admin %}
+            <p>Please return the book on or before the expected return date to avoid any fines.</p>
+            {% endif %}
+        </div>
+        <div class="footer">
+            <p>Library Management System</p>
+        </div>
+    </div>
+</body>
+</html>

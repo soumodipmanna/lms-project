@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%); padding: 30px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; }
+        .body { padding: 30px; }
+        .success-box { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 25px; margin: 20px 0; text-align: center; }
+        .waived-amount { font-size: 42px; font-weight: 700; color: #2e7d32; }
+        .waived-label { font-size: 14px; color: #388e3c; font-weight: 600; margin-top: 5px; }
+        .info-box { background: #f0f3ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8ecff; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #555; }
+        .info-value { color: #333; }
+        .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #888; font-size: 13px; }
+        p { color: #555; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fine Waiver Approved</h1>
+        </div>
+        <div class="body">
+            <p>Dear {{ student_name }},</p>
+            <p>Your fine has been partially or fully waived by the library administration.</p>
+
+            <div class="success-box">
+                <div class="waived-amount">Rs.{{ waived_amount }}</div>
+                <div class="waived-label">Fine Waived</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Book</span>
+                    <span class="info-value">{{ book_title }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Original Fine</span>
+                    <span class="info-value">Rs.{{ original_fine }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Amount Waived</span>
+                    <span class="info-value" style="color: #2e7d32; font-weight: 600;">Rs.{{ waived_amount }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Remaining Fine</span>
+                    <span class="info-value" style="font-weight: 700;">Rs.{{ new_fine }}</span>
+                </div>
+            </div>
+
+            {% if new_fine > 0 %}
+            <p>Please note that a remaining fine of Rs.{{ new_fine }} is still applicable.</p>
+            {% else %}
+            <p>Your fine has been fully waived. No further charges apply for this book.</p>
+            {% endif %}
+        </div>
+        <div class="footer">
+            <p>Library Management System</p>
+        </div>
+    </div>
+</body>
+</html>

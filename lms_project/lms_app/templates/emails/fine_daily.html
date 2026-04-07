@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); padding: 30px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; }
+        .body { padding: 30px; }
+        .fine-box { background: #ffebee; border: 2px solid #ef9a9a; border-radius: 8px; padding: 25px; margin: 20px 0; text-align: center; }
+        .fine-amount { font-size: 42px; font-weight: 700; color: #d32f2f; }
+        .fine-label { font-size: 14px; color: #c62828; font-weight: 600; margin-top: 5px; }
+        .fine-rate { font-size: 13px; color: #e53935; margin-top: 8px; }
+        .info-box { background: #f0f3ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8ecff; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #555; }
+        .info-value { color: #333; }
+        .urgent-notice { background: #fff8e1; border: 1px solid #ffecb3; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center; }
+        .urgent-notice strong { color: #e65100; }
+        .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #888; font-size: 13px; }
+        p { color: #555; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Overdue Fine Notice</h1>
+        </div>
+        <div class="body">
+            <p>Dear {{ student_name }},</p>
+            <p>Your borrowed book is <strong>{{ overdue_days }} day{{ overdue_days|pluralize }}</strong> past the return date and a fine is being charged daily.</p>
+
+            <div class="fine-box">
+                <div class="fine-amount">Rs.{{ fine_amount }}</div>
+                <div class="fine-label">Total Fine Accumulated</div>
+                <div class="fine-rate">Rs.{{ fine_rate }} added per day</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Book Title</span>
+                    <span class="info-value">{{ book_title }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Author</span>
+                    <span class="info-value">{{ book_author }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Due Date</span>
+                    <span class="info-value">{{ expected_return_date }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Days Overdue</span>
+                    <span class="info-value" style="color: #d32f2f; font-weight: 700;">{{ overdue_days }} day{{ overdue_days|pluralize }}</span>
+                </div>
+            </div>
+
+            <div class="urgent-notice">
+                <strong>Please return the book immediately to stop further fine accumulation.</strong>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Library Management System</p>
+        </div>
+    </div>
+</body>
+</html>
