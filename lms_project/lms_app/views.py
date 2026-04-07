@@ -832,6 +832,13 @@ def admin_reject_student(request, student_id):
             student.status = 'rejected'
             student.status_reason = reject_reason
             student.save()
+            try:
+                from .notifications import send_signup_rejected_notification
+                send_signup_rejected_notification(student, reject_reason)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to send signup rejected email: {e}")
+                messages.warning(request, 'Student rejected but notification email could not be sent.')
             messages.success(request, f'Student {student.roll_no} has been rejected.')
         else:
             messages.error(request, 'Rejection reason is required.')

@@ -109,6 +109,7 @@ NOTIFICATION_TYPE_CHOICES = (
     ('fine_waived', 'Fine Waived Notification'),
     ('signup_received', 'Signup Request Received'),
     ('signup_approved', 'Signup Approved'),
+    ('signup_rejected', 'Signup Rejected'),
 )
 
 class EmailNotificationLog(models.Model):

@@ -257,3 +257,25 @@ def send_signup_approved_notification(student):
         recipient_list=[student_email],
         notification_type='signup_approved',
     )
+
+
+def send_signup_rejected_notification(student, reject_reason):
+    student_email = student.user.email
+    if not student_email:
+        return False
+
+    student_name = student.name or student.roll_no
+    context = {
+        'student_name': student_name,
+        'roll_no': student.roll_no,
+        'branch': student.branch,
+        'reject_reason': reject_reason,
+    }
+
+    return _send_email(
+        subject="Signup Request Rejected",
+        template_name='emails/signup_rejected.html',
+        context=context,
+        recipient_list=[student_email],
+        notification_type='signup_rejected',
+    )

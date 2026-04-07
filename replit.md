@@ -59,6 +59,7 @@ The LMS is built on Django 5.2.7 and utilizes a custom administrative portal alo
 - **Email Notifications**:
     - Signup acknowledgment email when a student registers (confirming request received, awaiting approval)
     - Signup approved email when an admin approves a student's account (with login instructions)
+    - Signup rejected email when an admin rejects a student's account (includes rejection reason)
     - Email sent to both student and admins when a borrow request is approved
     - Return reminder emails at 7 days, 2 days, and 1 day before due date (to student)
     - Daily overdue alert emails to admins when return date passes
