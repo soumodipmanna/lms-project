@@ -138,7 +138,6 @@ def send_overdue_admin_alert(borrow):
     for email in admin_emails:
         if _already_sent_today('overdue_admin', borrow, email):
             continue
-        sent_any = True
 
         overdue_days = (date.today() - borrow.expected_return_date).days
         fine = borrow.calculate_fine()

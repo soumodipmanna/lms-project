@@ -996,7 +996,7 @@ def admin_request_waiver_view(request, borrow_id):
             messages.error(request, 'Invalid waiver amount.')
             return redirect('admin_manage_fines')
 
-        current_fine = borrow.calculate_fine() if not borrow.is_returned else float(borrow.fine_amount)
+        current_fine = float(borrow.calculate_fine()) if not borrow.is_returned else float(borrow.fine_amount)
         if waived_amount <= 0 or waived_amount > current_fine:
             messages.error(request, f'Waiver amount must be between 0 and Rs.{current_fine:.2f}.')
             return redirect('admin_manage_fines')

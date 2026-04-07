@@ -86,16 +86,17 @@ class Borrow(models.Model):
         """Calculate fine if book is overdue, accounting for approved waivers"""
         if self.expected_return_date and not self.is_returned:
             from datetime import date
+            from decimal import Decimal
             today = date.today()
             if today > self.expected_return_date:
                 overdue_days = (today - self.expected_return_date).days
-                gross_fine = overdue_days * float(self.book.fine_rate)
+                gross_fine = Decimal(overdue_days) * self.book.fine_rate
                 total_waived = sum(
-                    float(w.waived_amount)
-                    for w in self.waivers.filter(status='approved')
+                    (w.waived_amount for w in self.waivers.filter(status='approved')),
+                    Decimal('0.00'),
                 )
-                return max(gross_fine - total_waived, 0.0)
-        return 0.00
+                return max(gross_fine - total_waived, Decimal('0.00'))
+        return Decimal('0.00')
 
 
 NOTIFICATION_TYPE_CHOICES = (
