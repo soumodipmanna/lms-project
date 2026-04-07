@@ -41,8 +41,3 @@ run = ["bash", "-c", "cd lms_project && gunicorn --bind=0.0.0.0:5000 --reuse-por
 [userenv]
 
 [userenv.shared]
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.mailgun.org"
-EMAIL_PORT = "587"
-EMAIL_HOST_USER = "lms@sandbox9a5f44d19f9f4507bd22f3bc00c3cd9d.mailgun.org"
-DEFAULT_FROM_EMAIL = "LMS-Info <lms@sandbox9a5f44d19f9f4507bd22f3bc00c3cd9d.mailgun.org>"
