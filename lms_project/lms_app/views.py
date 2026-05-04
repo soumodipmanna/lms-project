@@ -93,6 +93,7 @@ def dashboard(request):
         review_count=Count('reviews'),
     )
     student = request.user.student
+    send_due_soon_notifications()
     _placeholder = ('', 'dummy')
     categories = sorted(Book.objects.exclude(category__in=_placeholder).values_list('category', flat=True).distinct())
     departments = sorted(Book.objects.exclude(department__in=_placeholder).values_list('department', flat=True).distinct())
@@ -204,19 +205,71 @@ def my_borrowed_books(request):
     })
 
 
+import logging as _logging
+_notif_logger = _logging.getLogger(__name__)
+
+
 def create_notification(student, message, link=''):
     try:
         Notification.objects.create(student=student, message=message, link=link)
         # Keep only the 50 most recent notifications per student
-        old_ids = (
+        old_ids = list(
             Notification.objects.filter(student=student)
             .order_by('-created_at')
             .values_list('id', flat=True)[50:]
         )
         if old_ids:
-            Notification.objects.filter(id__in=list(old_ids)).delete()
-    except Exception:
-        pass
+            Notification.objects.filter(id__in=old_ids).delete()
+    except Exception as exc:
+        _notif_logger.error(
+            "create_notification failed for student %s: %s",
+            getattr(student, 'roll_no', student),
+            exc,
+            exc_info=True,
+        )
+
+
+def send_due_soon_notifications():
+    """
+    Create in-app notifications for students whose active borrows are due
+    within 3 days. Deduplicates: one reminder per borrow per 24-hour window.
+    Call this from views or management commands to drive reminders.
+    """
+    try:
+        today = timezone.now().date()
+        due_soon_borrows = (
+            Borrow.objects.filter(
+                is_returned=False,
+                status='approved',
+                expected_return_date__isnull=False,
+                expected_return_date__lte=today + timezone.timedelta(days=3),
+                expected_return_date__gte=today,
+            )
+            .select_related('student', 'book')
+        )
+        cutoff = timezone.now() - timezone.timedelta(hours=24)
+        for borrow in due_soon_borrows:
+            days_left = (borrow.expected_return_date - today).days
+            if days_left == 0:
+                day_str = "today"
+            elif days_left == 1:
+                day_str = "tomorrow"
+            else:
+                day_str = f"in {days_left} days"
+            msg_prefix = f'Reminder: "{borrow.book.title}" is due {day_str}.'
+            already_notified = Notification.objects.filter(
+                student=borrow.student,
+                message__startswith=f'Reminder: "{borrow.book.title}" is due',
+                created_at__gte=cutoff,
+            ).exists()
+            if not already_notified:
+                create_notification(
+                    borrow.student,
+                    f'{msg_prefix} Return it on time to avoid a fine.',
+                    '/my-borrowed-books/',
+                )
+    except Exception as exc:
+        _notif_logger.error("send_due_soon_notifications failed: %s", exc, exc_info=True)
 
 
 @login_required
