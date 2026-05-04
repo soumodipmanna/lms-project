@@ -1079,11 +1079,23 @@ def admin_export_fines_pdf(request):
     ]
 
     headers = ['#', 'Student Name', 'Roll No', 'Book Title', 'Due Date',
-               'Return Status', 'Fine (₹)', 'Waiver Status', 'Waiver Amt (₹)']
+               'Overdue Days', 'Return Status', 'Fine (₹)', 'Waiver Status', 'Waiver Amt (₹)']
     data = [headers]
 
+    today = timezone.now().date()
     for i, b in enumerate(borrows, start=1):
-        if not b.is_returned and b.expected_return_date and b.expected_return_date < timezone.now().date():
+        if b.expected_return_date:
+            if b.is_returned and b.return_date:
+                return_day = b.return_date.date() if hasattr(b.return_date, 'date') else b.return_date
+                overdue_days = max(0, (return_day - b.expected_return_date).days)
+            elif not b.is_returned:
+                overdue_days = max(0, (today - b.expected_return_date).days)
+            else:
+                overdue_days = 0
+        else:
+            overdue_days = 0
+
+        if not b.is_returned and b.expected_return_date and b.expected_return_date < today:
             live_fine = b.calculate_fine()
         else:
             live_fine = float(b.fine_amount)
@@ -1111,18 +1123,18 @@ def admin_export_fines_pdf(request):
             b.student.roll_no,
             b.book.title,
             b.expected_return_date.strftime('%d %b %Y') if b.expected_return_date else '-',
+            str(overdue_days) if overdue_days > 0 else '-',
             'Returned' if b.is_returned else 'Not Returned',
             f'{live_fine:.2f}',
             waiver_status,
             waiver_amt,
         ])
 
-    col_widths = [10*mm, 42*mm, 28*mm, 60*mm, 26*mm, 26*mm, 22*mm, 24*mm, 24*mm]
+    col_widths = [10*mm, 38*mm, 26*mm, 52*mm, 24*mm, 22*mm, 24*mm, 20*mm, 22*mm, 22*mm]
     table = Table(data, colWidths=col_widths, repeatRows=1)
 
-    row_count = len(data)
-    fine_col = 6
-    waiver_col = 7
+    fine_col = 7
+    waiver_col = 8
 
     style_cmds = [
         ('BACKGROUND', (0, 0), (-1, 0), gold),
