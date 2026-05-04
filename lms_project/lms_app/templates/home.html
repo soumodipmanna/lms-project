@@ -857,22 +857,48 @@
         const drawer = document.getElementById('featuresDrawer');
         const overlay = document.getElementById('drawerOverlay');
 
-        function openDrawer() {
+        function openDrawer(pushState) {
             drawer.classList.add('open');
             overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
             drawer.scrollTop = 0;
+            if (pushState !== false) {
+                history.pushState({ featuresOpen: true }, '', '#features');
+            }
         }
 
-        function closeDrawer() {
+        function closeDrawer(pushState) {
             drawer.classList.remove('open');
             overlay.classList.remove('open');
             document.body.style.overflow = '';
+            if (pushState !== false) {
+                const url = new URL(window.location.href);
+                url.hash = '';
+                url.searchParams.delete('preview');
+                history.pushState({}, '', url.pathname + (url.search !== '?' ? url.search : ''));
+            }
         }
+
+        window.addEventListener('popstate', function(e) {
+            if (e.state && e.state.featuresOpen) {
+                openDrawer(false);
+            } else {
+                closeDrawer(false);
+            }
+        });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeDrawer();
         });
+
+        (function () {
+            const hash = window.location.hash;
+            const params = new URLSearchParams(window.location.search);
+            if (hash === '#features' || params.get('preview') === 'features') {
+                history.replaceState({ featuresOpen: true }, '', '#features');
+                openDrawer(false);
+            }
+        })();
     </script>
 </body>
 </html>
