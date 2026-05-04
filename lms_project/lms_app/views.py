@@ -194,7 +194,13 @@ def home(request):
 
 
 def about(request):
-    return render(request, 'about.html')
+    student = None
+    if request.user.is_authenticated:
+        try:
+            student = request.user.student
+        except Student.DoesNotExist:
+            pass
+    return render(request, 'about.html', {'student': student})
 
 
 def admin_login_required(view_func):
