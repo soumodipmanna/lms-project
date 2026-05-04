@@ -88,9 +88,10 @@ def student_logout(request):
 def dashboard(request):
     books = Book.objects.all()
     student = request.user.student
-    categories = sorted(Book.objects.exclude(category='').values_list('category', flat=True).distinct())
-    departments = sorted(Book.objects.exclude(department='').values_list('department', flat=True).distinct())
-    languages = sorted(Book.objects.exclude(language='').values_list('language', flat=True).distinct())
+    _placeholder = ('', 'dummy')
+    categories = sorted(Book.objects.exclude(category__in=_placeholder).values_list('category', flat=True).distinct())
+    departments = sorted(Book.objects.exclude(department__in=_placeholder).values_list('department', flat=True).distinct())
+    languages = sorted(Book.objects.exclude(language__in=_placeholder).values_list('language', flat=True).distinct())
     context = {
         'books': books,
         'student': student,

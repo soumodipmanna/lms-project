@@ -303,7 +303,7 @@
     {% endfor %}
 </div>
 
-<div class="no-results" id="noResults">No books match your filters</div>
+{% if books %}<div class="no-results" id="noResults">No books match your filters</div>{% endif %}
 
 <div class="modal-overlay" id="borrowModal">
     <div class="modal">
@@ -379,6 +379,8 @@
     filterDepartment.addEventListener('change', applyFilters);
     filterLanguage.addEventListener('change', applyFilters);
     availableOnly.addEventListener('change', applyFilters);
+
+    applyFilters();
 
     let currentBookId = null;
 
