@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm, AdminProfileUpdateForm, AdminEditForm
 from django.contrib.auth.models import User
-from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver, BookReview
+from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver, BookReview, Notification
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -174,6 +174,11 @@ def return_book(request, borrow_id):
         )
         
         if calculated_fine > 0:
+            create_notification(
+                record.student,
+                f'A late fine of ₹{calculated_fine:.2f} has been applied for returning "{record.book.title}" late.',
+                '/my-borrowed-books/',
+            )
             messages.warning(request, f"Late return! Fine charged: ₹{calculated_fine:.2f}")
         else:
             messages.success(request, "Book returned successfully!")
@@ -197,6 +202,53 @@ def my_borrowed_books(request):
         'borrowed': borrowed,
         'student': student,
     })
+
+
+def create_notification(student, message, link=''):
+    try:
+        Notification.objects.create(student=student, message=message, link=link)
+        # Keep only the 50 most recent notifications per student
+        old_ids = (
+            Notification.objects.filter(student=student)
+            .order_by('-created_at')
+            .values_list('id', flat=True)[50:]
+        )
+        if old_ids:
+            Notification.objects.filter(id__in=list(old_ids)).delete()
+    except Exception:
+        pass
+
+
+@login_required
+def notifications_json(request):
+    student = request.user.student
+    notifs = Notification.objects.filter(student=student).order_by('-created_at')[:10]
+    unread_count = Notification.objects.filter(student=student, is_read=False).count()
+    data = {
+        'unread_count': unread_count,
+        'notifications': [
+            {
+                'id': n.id,
+                'message': n.message,
+                'link': n.link,
+                'is_read': n.is_read,
+                'created_at': n.created_at.strftime('%d %b %Y, %I:%M %p'),
+            }
+            for n in notifs
+        ],
+    }
+    return JsonResponse(data)
+
+
+@require_POST
+@login_required
+def mark_notification_read(request, notif_id):
+    student = request.user.student
+    if notif_id == 0:
+        Notification.objects.filter(student=student, is_read=False).update(is_read=True)
+    else:
+        Notification.objects.filter(id=notif_id, student=student).update(is_read=True)
+    return JsonResponse({'ok': True})
 
 
 @require_POST
@@ -572,6 +624,11 @@ def admin_approve_borrow_view(request, borrow_id):
                     logging.getLogger(__name__).error(f"Failed to send borrow confirmation email: {e}")
                     messages.warning(request, 'Borrow approved but confirmation email could not be sent.')
                 
+                create_notification(
+                    borrow_request.student,
+                    f'Your borrow request for "{book.title}" has been approved.',
+                    '/my-borrowed-books/',
+                )
                 messages.success(request, f'Borrow request approved for {borrow_request.student.roll_no}!')
             else:
                 messages.error(request, 'Book is out of stock!')
@@ -596,6 +653,11 @@ def admin_reject_borrow_view(request, borrow_id):
             borrow_request.status = 'rejected'
             borrow_request.reject_reason = reject_reason
             borrow_request.save()
+            create_notification(
+                borrow_request.student,
+                f'Your borrow request for "{borrow_request.book.title}" was rejected. Reason: {reject_reason}',
+                '/my-borrowed-books/',
+            )
             messages.warning(request, f'Borrow request rejected for {borrow_request.student.roll_no}.')
         else:
             messages.info(request, 'This request has already been rejected.')
@@ -630,8 +692,18 @@ def admin_return_book_view(request, borrow_id):
             borrow_record.save()
             
             if calculated_fine > 0:
+                create_notification(
+                    borrow_record.student,
+                    f'A late fine of ₹{calculated_fine:.2f} has been applied for returning "{borrow_record.book.title}" late.',
+                    '/my-borrowed-books/',
+                )
                 messages.warning(request, f'Book returned with late fee: ₹{calculated_fine:.2f}')
             else:
+                create_notification(
+                    borrow_record.student,
+                    f'Your book "{borrow_record.book.title}" has been marked as returned. Thank you!',
+                    '/my-borrowed-books/',
+                )
                 messages.success(request, f'Book returned successfully by {borrow_record.student.roll_no}!')
         else:
             messages.info(request, 'This book has already been returned.')
@@ -944,6 +1016,11 @@ def admin_approve_student(request, student_id):
             import logging
             logging.getLogger(__name__).error(f"Failed to send signup approved email: {e}")
             messages.warning(request, 'Student approved but notification email could not be sent.')
+        create_notification(
+            student,
+            'Your library account has been approved! You can now borrow books.',
+            '/dashboard/',
+        )
         messages.success(request, f'Student {student.roll_no} has been approved successfully.')
     return redirect('admin_signup_requests')
 
@@ -964,6 +1041,11 @@ def admin_reject_student(request, student_id):
                 import logging
                 logging.getLogger(__name__).error(f"Failed to send signup rejected email: {e}")
                 messages.warning(request, 'Student rejected but notification email could not be sent.')
+            create_notification(
+                student,
+                f'Your library account application was rejected. Reason: {reject_reason}',
+                '/',
+            )
             messages.success(request, f'Student {student.roll_no} has been rejected.')
         else:
             messages.error(request, 'Rejection reason is required.')

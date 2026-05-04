@@ -26,6 +26,23 @@
         <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
         <h1>{% block navbar_title %}📚 Library Portal{% endblock %}</h1>
         <div class="user-info">
+            {% if request.user.is_authenticated %}
+            <div class="notif-bell-wrapper" id="notifBellWrapper">
+                <button class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDropdown()" aria-label="Notifications">
+                    🔔
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </button>
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-dropdown-header">
+                        <span>Notifications</span>
+                        <button class="notif-mark-all" id="notifMarkAll" onclick="markAllRead()">Mark all read</button>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <div class="notif-empty">Loading…</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             <span class="user-name">{% if student %}{{ student.name|default:student.roll_no }}{% else %}{{ request.user.username }}{% endif %}</span>
             <a href="{% url 'student_logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
@@ -136,6 +153,127 @@
                 document.getElementById('pageLoader').classList.add('active');
             });
         });
+
+        // ── Notification Bell ──
+        const NOTIF_JSON_URL = "{% url 'notifications_json' %}";
+        const MARK_READ_BASE  = "/notifications/read/";
+        const CSRF_TOKEN = "{{ csrf_token }}";
+
+        let notifOpen = false;
+        let notifData = [];
+
+        function toggleNotifDropdown() {
+            const dropdown = document.getElementById('notifDropdown');
+            notifOpen = !notifOpen;
+            dropdown.classList.toggle('open', notifOpen);
+            if (notifOpen) fetchNotifications();
+        }
+
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notifBellWrapper');
+            if (wrapper && !wrapper.contains(e.target) && notifOpen) {
+                notifOpen = false;
+                document.getElementById('notifDropdown').classList.remove('open');
+            }
+        });
+
+        function fetchNotifications() {
+            fetch(NOTIF_JSON_URL, {credentials: 'same-origin'})
+                .then(r => r.json())
+                .then(data => {
+                    notifData = data.notifications;
+                    renderBadge(data.unread_count);
+                    renderList(notifData);
+                })
+                .catch(() => {});
+        }
+
+        function renderBadge(count) {
+            const badge = document.getElementById('notifBadge');
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function renderList(items) {
+            const list = document.getElementById('notifList');
+            if (!list) return;
+            if (!items || items.length === 0) {
+                list.innerHTML = '<div class="notif-empty">No notifications yet.</div>';
+                return;
+            }
+            list.innerHTML = items.map(n => {
+                const readClass = n.is_read ? 'read' : 'unread';
+                const target = n.link ? `href="${n.link}"` : '';
+                const tag = n.link ? 'a' : 'div';
+                return `<${tag} class="notif-item ${readClass}" ${target} onclick="markRead(${n.id}, this)">
+                    <span class="notif-dot"></span>
+                    <span class="notif-text">
+                        <span class="notif-msg">${escHtml(n.message)}</span>
+                        <span class="notif-time">${escHtml(n.created_at)}</span>
+                    </span>
+                </${tag}>`;
+            }).join('');
+        }
+
+        function markRead(id, el) {
+            if (el && el.classList.contains('unread')) {
+                fetch(`${MARK_READ_BASE}${id}/`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': CSRF_TOKEN},
+                    credentials: 'same-origin'
+                }).then(() => {
+                    el.classList.remove('unread');
+                    el.classList.add('read');
+                    const badge = document.getElementById('notifBadge');
+                    if (badge) {
+                        let c = parseInt(badge.textContent) - 1;
+                        if (c <= 0) { badge.style.display = 'none'; }
+                        else { badge.textContent = c; }
+                    }
+                });
+            }
+        }
+
+        function markAllRead() {
+            fetch(`${MARK_READ_BASE}0/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF_TOKEN},
+                credentials: 'same-origin'
+            }).then(() => {
+                document.querySelectorAll('.notif-item.unread').forEach(el => {
+                    el.classList.remove('unread');
+                    el.classList.add('read');
+                });
+                renderBadge(0);
+            });
+        }
+
+        function escHtml(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        // Poll for new notifications every 60 seconds
+        function pollNotifications() {
+            fetch(NOTIF_JSON_URL, {credentials: 'same-origin'})
+                .then(r => r.json())
+                .then(data => {
+                    renderBadge(data.unread_count);
+                    if (!notifOpen) notifData = data.notifications;
+                })
+                .catch(() => {});
+        }
+
+        {% if request.user.is_authenticated %}
+        pollNotifications();
+        setInterval(pollNotifications, 60000);
+        {% endif %}
     </script>
 
     {% block extra_js %}{% endblock %}
