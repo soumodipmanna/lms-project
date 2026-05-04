@@ -944,6 +944,235 @@ def admin_disable_student(request, student_id):
     return redirect('admin_manage_students')
 
 
+@admin_login_required
+def admin_export_borrows_pdf(request):
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from datetime import datetime
+
+    borrows = Borrow.objects.all().select_related('student', 'student__user', 'book').order_by('-borrow_date')
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=15*mm, leftMargin=15*mm,
+        topMargin=15*mm, bottomMargin=15*mm,
+    )
+
+    styles = getSampleStyleSheet()
+    gold = colors.HexColor('#d4af37')
+    dark = colors.HexColor('#0a0a0f')
+
+    title_style = ParagraphStyle('title', parent=styles['Title'],
+                                 fontSize=18, textColor=gold, spaceAfter=4)
+    sub_style = ParagraphStyle('sub', parent=styles['Normal'],
+                               fontSize=9, textColor=colors.HexColor('#888888'), spaceAfter=2)
+
+    elements = [
+        Paragraph('College Library Management System', title_style),
+        Paragraph('Borrow History Report', ParagraphStyle('rpt', parent=styles['Heading2'],
+                  fontSize=13, textColor=colors.HexColor('#c0c0c0'), spaceAfter=2)),
+        Paragraph(f'Generated: {datetime.now().strftime("%d %b %Y, %I:%M %p")}', sub_style),
+        Spacer(1, 6*mm),
+    ]
+
+    headers = ['#', 'Student Name', 'Roll No', 'Book Title', 'Borrow Date',
+               'Expected Return', 'Actual Return', 'Status', 'Fine (₹)']
+    data = [headers]
+
+    for i, b in enumerate(borrows, start=1):
+        fine = f'{float(b.fine_amount):.2f}' if b.fine_amount and b.fine_amount > 0 else '-'
+        data.append([
+            str(i),
+            b.student.name or b.student.roll_no,
+            b.student.roll_no,
+            b.book.title,
+            b.borrow_date.strftime('%d %b %Y') if b.borrow_date else '-',
+            b.expected_return_date.strftime('%d %b %Y') if b.expected_return_date else '-',
+            b.return_date.strftime('%d %b %Y') if b.return_date else '-',
+            b.get_status_display(),
+            fine,
+        ])
+
+    col_widths = [10*mm, 40*mm, 28*mm, 60*mm, 26*mm, 26*mm, 26*mm, 24*mm, 22*mm]
+    table = Table(data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), gold),
+        ('TEXTCOLOR', (0, 0), (-1, 0), dark),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('TOPPADDING', (0, 0), (-1, 0), 6),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#14141f')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#c0c0c0')),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#14141f'), colors.HexColor('#1a1a2e')]),
+        ('ALIGN', (0, 1), (2, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 1), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#2a2a3a')),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, gold),
+    ]))
+    elements.append(table)
+
+    footer_style = ParagraphStyle('footer', parent=styles['Normal'],
+                                  fontSize=8, textColor=colors.HexColor('#555555'), spaceBefore=6)
+    elements.append(Spacer(1, 4*mm))
+    elements.append(Paragraph(f'Total records: {borrows.count()}  |  College Library Management System', footer_style))
+
+    doc.build(elements)
+    buffer.seek(0)
+    filename = f'borrow_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@admin_login_required
+def admin_export_fines_pdf(request):
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from django.db.models import Q
+    from datetime import datetime
+
+    borrows = Borrow.objects.filter(
+        Q(fine_amount__gt=0) | Q(status='approved', is_returned=False,
+                                  expected_return_date__lt=timezone.now().date())
+    ).select_related('student', 'student__user', 'book').prefetch_related('waivers').order_by('-borrow_date')
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=15*mm, leftMargin=15*mm,
+        topMargin=15*mm, bottomMargin=15*mm,
+    )
+
+    styles = getSampleStyleSheet()
+    gold = colors.HexColor('#d4af37')
+    dark = colors.HexColor('#0a0a0f')
+    red = colors.HexColor('#ff6b6b')
+    green = colors.HexColor('#6bff8a')
+
+    title_style = ParagraphStyle('title', parent=styles['Title'],
+                                 fontSize=18, textColor=gold, spaceAfter=4)
+    sub_style = ParagraphStyle('sub', parent=styles['Normal'],
+                               fontSize=9, textColor=colors.HexColor('#888888'), spaceAfter=2)
+
+    elements = [
+        Paragraph('College Library Management System', title_style),
+        Paragraph('Fines & Waivers Report', ParagraphStyle('rpt', parent=styles['Heading2'],
+                  fontSize=13, textColor=colors.HexColor('#c0c0c0'), spaceAfter=2)),
+        Paragraph(f'Generated: {datetime.now().strftime("%d %b %Y, %I:%M %p")}', sub_style),
+        Spacer(1, 6*mm),
+    ]
+
+    headers = ['#', 'Student Name', 'Roll No', 'Book Title', 'Due Date',
+               'Return Status', 'Fine (₹)', 'Waiver Status', 'Waiver Amt (₹)']
+    data = [headers]
+
+    for i, b in enumerate(borrows, start=1):
+        if not b.is_returned and b.expected_return_date and b.expected_return_date < timezone.now().date():
+            live_fine = b.calculate_fine()
+        else:
+            live_fine = float(b.fine_amount)
+
+        approved_waiver = b.waivers.filter(status='approved').first()
+        pending_waiver = b.waivers.filter(status='pending').first()
+        rejected_waiver = b.waivers.filter(status='rejected').first()
+
+        if approved_waiver:
+            waiver_status = 'Approved'
+            waiver_amt = f'{float(approved_waiver.waived_amount):.2f}'
+        elif pending_waiver:
+            waiver_status = 'Pending'
+            waiver_amt = f'{float(pending_waiver.waived_amount):.2f}'
+        elif rejected_waiver:
+            waiver_status = 'Rejected'
+            waiver_amt = '-'
+        else:
+            waiver_status = '-'
+            waiver_amt = '-'
+
+        data.append([
+            str(i),
+            b.student.name or b.student.roll_no,
+            b.student.roll_no,
+            b.book.title,
+            b.expected_return_date.strftime('%d %b %Y') if b.expected_return_date else '-',
+            'Returned' if b.is_returned else 'Not Returned',
+            f'{live_fine:.2f}',
+            waiver_status,
+            waiver_amt,
+        ])
+
+    col_widths = [10*mm, 42*mm, 28*mm, 60*mm, 26*mm, 26*mm, 22*mm, 24*mm, 24*mm]
+    table = Table(data, colWidths=col_widths, repeatRows=1)
+
+    row_count = len(data)
+    fine_col = 6
+    waiver_col = 7
+
+    style_cmds = [
+        ('BACKGROUND', (0, 0), (-1, 0), gold),
+        ('TEXTCOLOR', (0, 0), (-1, 0), dark),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('TOPPADDING', (0, 0), (-1, 0), 6),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#14141f')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#c0c0c0')),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#14141f'), colors.HexColor('#1a1a2e')]),
+        ('ALIGN', (0, 1), (2, -1), 'CENTER'),
+        ('ALIGN', (fine_col, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 1), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#2a2a3a')),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, gold),
+    ]
+    for row_idx, row in enumerate(data[1:], start=1):
+        if row[waiver_col] == 'Approved':
+            style_cmds.append(('TEXTCOLOR', (waiver_col, row_idx), (waiver_col, row_idx), green))
+        elif row[waiver_col] == 'Rejected':
+            style_cmds.append(('TEXTCOLOR', (waiver_col, row_idx), (waiver_col, row_idx), red))
+        elif row[waiver_col] == 'Pending':
+            style_cmds.append(('TEXTCOLOR', (waiver_col, row_idx), (waiver_col, row_idx), gold))
+
+    table.setStyle(TableStyle(style_cmds))
+    elements.append(table)
+
+    total_fines = sum(float(row[fine_col]) for row in data[1:] if row[fine_col] != '-')
+    footer_style = ParagraphStyle('footer', parent=styles['Normal'],
+                                  fontSize=8, textColor=colors.HexColor('#555555'), spaceBefore=6)
+    elements.append(Spacer(1, 4*mm))
+    elements.append(Paragraph(
+        f'Total records: {borrows.count()}  |  Total fines: ₹{total_fines:.2f}  |  College Library Management System',
+        footer_style
+    ))
+
+    doc.build(elements)
+    buffer.seek(0)
+    filename = f'fines_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
 @login_required
 def social_wall(request):
     posts = Post.objects.select_related('author').prefetch_related('likes', 'comments', 'comments__user').all()

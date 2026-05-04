@@ -13,9 +13,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h2>Manage Fines &amp; Waivers</h2>
-    <p>View fines and manage waiver requests</p>
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h2>Manage Fines &amp; Waivers</h2>
+        <p>View fines and manage waiver requests</p>
+    </div>
+    <a href="{% url 'admin_export_fines_pdf' %}" class="btn-export-pdf" title="Download fines report as PDF">
+        📄 Export PDF
+    </a>
 </div>
 
 {% if admin.role == 'superadmin' and pending_waivers %}

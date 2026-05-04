@@ -211,6 +211,19 @@ body {
     text-decoration: none; display: inline-block;
 }
 .btn-success:hover { background: rgba(50, 180, 80, 0.22); }
+.btn-export-pdf {
+    background: rgba(212, 175, 55, 0.1);
+    color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.35);
+    padding: 0.65rem 1.3rem; border-radius: 8px; cursor: pointer;
+    font-family: 'Raleway', sans-serif; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+    transition: all 0.3s ease; font-size: 0.9rem; white-space: nowrap;
+}
+.btn-export-pdf:hover {
+    background: rgba(212, 175, 55, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.18);
+}
 .btn-edit {
     background: rgba(50, 180, 80, 0.12);
     color: #6bff8a; border: 1px solid rgba(50, 180, 80, 0.25);

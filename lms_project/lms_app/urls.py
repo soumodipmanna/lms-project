@@ -52,6 +52,9 @@ urlpatterns = [
     path('admin-portal/fines/request-waiver/<int:borrow_id>/', views.admin_request_waiver_view, name='admin_request_waiver'),
     path('admin-portal/fines/approve-waiver/<int:waiver_id>/', views.admin_approve_waiver_view, name='admin_approve_waiver'),
     path('admin-portal/fines/reject-waiver/<int:waiver_id>/', views.admin_reject_waiver_view, name='admin_reject_waiver'),
+    path('admin-portal/fines/export-pdf/', views.admin_export_fines_pdf, name='admin_export_fines_pdf'),
+
+    path('admin-portal/borrow-requests/export-pdf/', views.admin_export_borrows_pdf, name='admin_export_borrows_pdf'),
     
     path('social-wall/', views.social_wall, name='social_wall'),
     path('social-wall/post/', views.create_post, name='create_post'),

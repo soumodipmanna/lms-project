@@ -3,9 +3,14 @@
 {% block title %}Borrow Requests{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h2>Borrow Requests</h2>
-    <p>Manage student borrow requests</p>
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h2>Borrow Requests</h2>
+        <p>Manage student borrow requests</p>
+    </div>
+    <a href="{% url 'admin_export_borrows_pdf' %}" class="btn-export-pdf" title="Download full borrow history as PDF">
+        📄 Export PDF
+    </a>
 </div>
 
 <div class="card">
