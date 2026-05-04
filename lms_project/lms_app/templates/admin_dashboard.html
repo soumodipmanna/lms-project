@@ -49,12 +49,115 @@
     }
     .action-link:hover { background: rgba(212, 175, 55, 0.12); color: #d4af37; border-color: rgba(212, 175, 55, 0.25); transform: translateY(-2px); }
 
-    /* ── Charts ── */
-    .charts-section-title {
-        font-size: 1.4rem; font-weight: 700; color: #d4af37;
-        margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+    /* ── Date Range Filter ── */
+    .analytics-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
         border-bottom: 1px solid rgba(212, 175, 55, 0.15);
     }
+    .charts-section-title {
+        font-size: 1.4rem; font-weight: 700; color: #d4af37;
+        margin: 0;
+    }
+    .date-range-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .date-range-filter label {
+        color: #aaa;
+        font-size: 0.85rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .date-range-filter input[type="date"] {
+        background: rgba(20, 20, 35, 0.85);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        border-radius: 8px;
+        color: #d4af37;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+    .date-range-filter input[type="date"]:focus {
+        border-color: rgba(212, 175, 55, 0.55);
+    }
+    .date-range-filter input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(75%) sepia(40%) saturate(500%) hue-rotate(5deg);
+        cursor: pointer;
+    }
+    .date-range-filter .date-sep {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    .btn-apply-range {
+        background: rgba(212, 175, 55, 0.15);
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        border-radius: 8px;
+        color: #d4af37;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.4rem 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    .btn-apply-range:hover {
+        background: rgba(212, 175, 55, 0.25);
+        border-color: rgba(212, 175, 55, 0.55);
+    }
+    .btn-apply-range:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .btn-reset-range {
+        background: transparent;
+        border: 1px solid rgba(150, 150, 150, 0.25);
+        border-radius: 8px;
+        color: #888;
+        font-size: 0.82rem;
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    .btn-reset-range:hover {
+        border-color: rgba(150, 150, 150, 0.5);
+        color: #aaa;
+    }
+    .charts-loading {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        color: #888;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+    .charts-loading.visible { display: flex; }
+    .spinner {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(212, 175, 55, 0.2);
+        border-top-color: #d4af37;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .active-range-label {
+        font-size: 0.78rem;
+        color: #888;
+        margin-top: 0.2rem;
+        display: block;
+    }
+
+    /* ── Charts ── */
     .charts-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -88,10 +191,14 @@
     }
 
     @media (max-width: 900px) {
+        .analytics-header { flex-direction: column; align-items: flex-start; }
         .charts-grid { grid-template-columns: 1fr; }
         .chart-card.full-width { grid-column: auto; }
         .chart-wrapper { height: 220px; }
         .chart-card.full-width .chart-wrapper { height: 220px; }
+    }
+    @media (max-width: 600px) {
+        .date-range-filter { flex-direction: column; align-items: flex-start; }
     }
 </style>
 {% endblock %}
@@ -184,50 +291,57 @@
     </div>
 </div>
 
-<p class="charts-section-title">📊 Analytics Overview</p>
+<div class="analytics-header">
+    <div>
+        <p class="charts-section-title">📊 Analytics Overview</p>
+        <span class="active-range-label" id="activeRangeLabel"></span>
+    </div>
+    <div>
+        <div class="date-range-filter">
+            <label for="dateFrom">From</label>
+            <input type="date" id="dateFrom" value="{{ default_date_from }}">
+            <span class="date-sep">to</span>
+            <input type="date" id="dateTo" value="{{ default_date_to }}">
+            <button class="btn-apply-range" id="btnApply" onclick="applyDateRange()">Apply</button>
+            <button class="btn-reset-range" id="btnReset" onclick="resetDateRange()">Reset</button>
+        </div>
+        <div class="charts-loading" id="chartsLoading">
+            <div class="spinner"></div>
+            <span>Updating charts…</span>
+        </div>
+    </div>
+</div>
 
 <div class="charts-grid">
     <div class="chart-card full-width">
-        <div class="chart-title"><span>📈</span> Borrowing Trends — Last 6 Months</div>
+        <div class="chart-title"><span>📈</span> Borrowing Trends</div>
         <div class="chart-wrapper">
-            {% if has_monthly_data %}
-            <canvas id="borrowingTrendsChart"></canvas>
-            {% else %}
-            <div class="chart-empty">No borrow records in the last 6 months yet.</div>
-            {% endif %}
+            <canvas id="borrowingTrendsChart" {% if not has_monthly_data %}style="display:none"{% endif %}></canvas>
+            <div class="chart-empty" id="trendEmpty" {% if has_monthly_data %}style="display:none"{% endif %}>No borrow records in the selected period.</div>
         </div>
     </div>
 
     <div class="chart-card">
         <div class="chart-title"><span>🍩</span> Books by Category</div>
         <div class="chart-wrapper">
-            {% if has_categories %}
-            <canvas id="booksByCategoryChart"></canvas>
-            {% else %}
-            <div class="chart-empty">No books added yet.</div>
-            {% endif %}
+            <canvas id="booksByCategoryChart" {% if not has_categories %}style="display:none"{% endif %}></canvas>
+            <div class="chart-empty" id="catEmpty" {% if has_categories %}style="display:none"{% endif %}>No books added yet.</div>
         </div>
     </div>
 
     <div class="chart-card">
         <div class="chart-title"><span>🏆</span> Top 5 Most Borrowed Books</div>
         <div class="chart-wrapper">
-            {% if has_top_books %}
-            <canvas id="topBooksChart"></canvas>
-            {% else %}
-            <div class="chart-empty">No borrow records yet.</div>
-            {% endif %}
+            <canvas id="topBooksChart" {% if not has_top_books %}style="display:none"{% endif %}></canvas>
+            <div class="chart-empty" id="topEmpty" {% if has_top_books %}style="display:none"{% endif %}>No borrow records in the selected period.</div>
         </div>
     </div>
 
     <div class="chart-card">
         <div class="chart-title"><span>👥</span> Student Status Distribution</div>
         <div class="chart-wrapper">
-            {% if has_student_data %}
-            <canvas id="studentStatusChart"></canvas>
-            {% else %}
-            <div class="chart-empty">No students registered yet.</div>
-            {% endif %}
+            <canvas id="studentStatusChart" {% if not has_student_data %}style="display:none"{% endif %}></canvas>
+            <div class="chart-empty" id="statusEmpty" {% if has_student_data %}style="display:none"{% endif %}>No students registered yet.</div>
         </div>
     </div>
 </div>
@@ -259,16 +373,26 @@ function jsonData(id) {
     return JSON.parse(document.getElementById(id).textContent);
 }
 
-// ── Chart 1: Borrowing Trends ──
-const trendCtx = document.getElementById('borrowingTrendsChart');
-if (trendCtx) {
-    new Chart(trendCtx, {
+const CHART_DATA_URL = '{% url "admin_dashboard_chart_data" %}';
+const DEFAULT_FROM = '{{ default_date_from }}';
+const DEFAULT_TO   = '{{ default_date_to }}';
+
+let trendChart = null;
+let catChart   = null;
+let topChart   = null;
+let statusChart = null;
+
+function buildTrendChart(labels, counts) {
+    const ctx = document.getElementById('borrowingTrendsChart');
+    if (!ctx) return;
+    if (trendChart) trendChart.destroy();
+    trendChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: jsonData('monthly-labels-data'),
+            labels,
             datasets: [{
                 label: 'Borrow Requests',
-                data: jsonData('monthly-counts-data'),
+                data: counts,
                 borderColor: GOLD,
                 backgroundColor: 'rgba(212,175,55,0.10)',
                 borderWidth: 2.5,
@@ -302,15 +426,16 @@ if (trendCtx) {
     });
 }
 
-// ── Chart 2: Books by Category ──
-const catCtx = document.getElementById('booksByCategoryChart');
-if (catCtx) {
-    new Chart(catCtx, {
+function buildCatChart(labels, counts) {
+    const ctx = document.getElementById('booksByCategoryChart');
+    if (!ctx) return;
+    if (catChart) catChart.destroy();
+    catChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: jsonData('category-labels-data'),
+            labels,
             datasets: [{
-                data: jsonData('category-counts-data'),
+                data: counts,
                 backgroundColor: PALETTE.map(c => c + 'cc'),
                 borderColor: PALETTE,
                 borderWidth: 1.5,
@@ -331,21 +456,20 @@ if (catCtx) {
     });
 }
 
-// ── Chart 3: Top 5 Most Borrowed Books ──
-const topCtx = document.getElementById('topBooksChart');
-if (topCtx) {
-    const topLabels = jsonData('top-book-labels-data');
-    const topCounts = jsonData('top-book-counts-data');
-    const shortLabels = topLabels.map(l => l.length > 28 ? l.slice(0, 26) + '\u2026' : l);
-    new Chart(topCtx, {
+function buildTopChart(labels, counts) {
+    const ctx = document.getElementById('topBooksChart');
+    if (!ctx) return;
+    if (topChart) topChart.destroy();
+    const shortLabels = labels.map(l => l.length > 28 ? l.slice(0, 26) + '\u2026' : l);
+    topChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: shortLabels,
             datasets: [{
                 label: 'Times Borrowed',
-                data: topCounts,
-                backgroundColor: PALETTE.slice(0, topCounts.length).map(c => c + 'bb'),
-                borderColor: PALETTE.slice(0, topCounts.length),
+                data: counts,
+                backgroundColor: PALETTE.slice(0, counts.length).map(c => c + 'bb'),
+                borderColor: PALETTE.slice(0, counts.length),
                 borderWidth: 1.5,
                 borderRadius: 6,
                 borderSkipped: false,
@@ -358,7 +482,7 @@ if (topCtx) {
             plugins: {
                 legend: { display: false },
                 tooltip: { ...tooltipDefaults, callbacks: {
-                    title: ctx => topLabels[ctx[0].dataIndex],
+                    title: ctx => labels[ctx[0].dataIndex],
                     label: ctx => ` Borrowed ${ctx.parsed.x} time${ctx.parsed.x !== 1 ? 's' : ''}`,
                 }},
             },
@@ -374,16 +498,17 @@ if (topCtx) {
     });
 }
 
-// ── Chart 4: Student Status (dark-gold palette) ──
-const statusCtx = document.getElementById('studentStatusChart');
-if (statusCtx) {
+function buildStatusChart(labels, counts) {
+    const ctx = document.getElementById('studentStatusChart');
+    if (!ctx) return;
+    if (statusChart) statusChart.destroy();
     const statusPalette = ['#d4af37','#a07820','#e8c96c'];
-    new Chart(statusCtx, {
+    statusChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: jsonData('status-labels-data'),
+            labels,
             datasets: [{
-                data: jsonData('status-counts-data'),
+                data: counts,
                 backgroundColor: statusPalette.map(c => c + 'bb'),
                 borderColor: statusPalette,
                 borderWidth: 1.5,
@@ -403,5 +528,100 @@ if (statusCtx) {
         },
     });
 }
+
+function setCanvasVisible(canvasId, emptyId, hasData) {
+    const canvas = document.getElementById(canvasId);
+    const empty  = document.getElementById(emptyId);
+    if (!canvas || !empty) return;
+    canvas.style.display = hasData ? '' : 'none';
+    empty.style.display  = hasData ? 'none' : '';
+}
+
+function updateRangeLabel(from, to) {
+    const label = document.getElementById('activeRangeLabel');
+    if (!label) return;
+    const fmt = d => {
+        const [y, m, day] = d.split('-');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${months[parseInt(m,10)-1]} ${parseInt(day,10)}, ${y}`;
+    };
+    label.textContent = `Showing ${fmt(from)} — ${fmt(to)}`;
+}
+
+function applyChartData(data) {
+    setCanvasVisible('borrowingTrendsChart', 'trendEmpty', data.has_monthly_data);
+    if (data.has_monthly_data) buildTrendChart(data.monthly_labels, data.monthly_counts);
+
+    setCanvasVisible('booksByCategoryChart', 'catEmpty', data.has_categories);
+    if (data.has_categories) buildCatChart(data.category_labels, data.category_counts);
+
+    setCanvasVisible('topBooksChart', 'topEmpty', data.has_top_books);
+    if (data.has_top_books) buildTopChart(data.top_book_labels, data.top_book_counts);
+
+    setCanvasVisible('studentStatusChart', 'statusEmpty', data.has_student_data);
+    if (data.has_student_data) buildStatusChart(data.student_status_labels, data.student_status_counts);
+
+    updateRangeLabel(data.date_from, data.date_to);
+}
+
+async function fetchAndUpdate(from, to) {
+    const loading = document.getElementById('chartsLoading');
+    const btn     = document.getElementById('btnApply');
+    loading.classList.add('visible');
+    if (btn) btn.disabled = true;
+    try {
+        const url = `${CHART_DATA_URL}?date_from=${encodeURIComponent(from)}&date_to=${encodeURIComponent(to)}`;
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            alert(err.error || 'Failed to load chart data.');
+            return;
+        }
+        const data = await resp.json();
+        applyChartData(data);
+    } catch (e) {
+        alert('Network error while loading chart data.');
+    } finally {
+        loading.classList.remove('visible');
+        if (btn) btn.disabled = false;
+    }
+}
+
+function applyDateRange() {
+    const from = document.getElementById('dateFrom').value;
+    const to   = document.getElementById('dateTo').value;
+    if (!from || !to) { alert('Please select both a start and end date.'); return; }
+    if (from > to)    { alert('Start date must be on or before the end date.'); return; }
+    fetchAndUpdate(from, to);
+}
+
+function resetDateRange() {
+    document.getElementById('dateFrom').value = DEFAULT_FROM;
+    document.getElementById('dateTo').value   = DEFAULT_TO;
+    fetchAndUpdate(DEFAULT_FROM, DEFAULT_TO);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const initialData = {
+        monthly_labels:        jsonData('monthly-labels-data'),
+        monthly_counts:        jsonData('monthly-counts-data'),
+        has_monthly_data:      {{ has_monthly_data|yesno:"true,false" }},
+        category_labels:       jsonData('category-labels-data'),
+        category_counts:       jsonData('category-counts-data'),
+        has_categories:        {{ has_categories|yesno:"true,false" }},
+        top_book_labels:       jsonData('top-book-labels-data'),
+        top_book_counts:       jsonData('top-book-counts-data'),
+        has_top_books:         {{ has_top_books|yesno:"true,false" }},
+        student_status_labels: jsonData('status-labels-data'),
+        student_status_counts: jsonData('status-counts-data'),
+        has_student_data:      {{ has_student_data|yesno:"true,false" }},
+        date_from:             DEFAULT_FROM,
+        date_to:               DEFAULT_TO,
+    };
+    applyChartData(initialData);
+
+    document.getElementById('dateFrom').addEventListener('keydown', e => { if (e.key === 'Enter') applyDateRange(); });
+    document.getElementById('dateTo').addEventListener('keydown',   e => { if (e.key === 'Enter') applyDateRange(); });
+});
 </script>
 {% endblock %}

@@ -470,29 +470,23 @@ def admin_logout_view(request):
     return redirect('home')
 
 
-@admin_login_required
-def admin_dashboard_view(request):
-    from datetime import date, timedelta
-    from django.db.models import Sum, Count
+def _get_dashboard_chart_data(date_from, date_to):
+    from django.db.models import Count
     from django.db.models.functions import TruncMonth
 
-    total_students = Student.objects.count()
-    total_books = Book.objects.count()
-    pending_requests = Borrow.objects.filter(status='pending').count()
-    total_admins = Admin.objects.count()
-    total_fines = Borrow.objects.filter(fine_amount__gt=0).aggregate(Sum('fine_amount'))['fine_amount__sum'] or 0
-
-    # --- Chart 1: Borrowing Trends (last 6 months) ---
-    today = date.today()
     month_starts = []
-    d = today.replace(day=1)
-    for _ in range(6):
-        month_starts.insert(0, d)
-        d = (d - timedelta(days=1)).replace(day=1)
+    d = date_from.replace(day=1)
+    end_month = date_to.replace(day=1)
+    while d <= end_month:
+        month_starts.append(d)
+        if d.month == 12:
+            d = d.replace(year=d.year + 1, month=1)
+        else:
+            d = d.replace(month=d.month + 1)
 
     monthly_borrows_qs = (
         Borrow.objects
-        .filter(borrow_date__gte=month_starts[0])
+        .filter(borrow_date__gte=date_from, borrow_date__lte=date_to)
         .annotate(month=TruncMonth('borrow_date'))
         .values('month')
         .annotate(count=Count('id'))
@@ -501,16 +495,15 @@ def admin_dashboard_view(request):
     monthly_labels = [ms.strftime('%b %Y') for ms in month_starts]
     monthly_counts = [monthly_map.get(ms, 0) for ms in month_starts]
 
-    # --- Chart 2: Books by Category ---
     books_by_cat = list(
         Book.objects.values('category').annotate(count=Count('id')).order_by('-count')
     )
     category_labels = [b['category'] for b in books_by_cat]
     category_counts = [b['count'] for b in books_by_cat]
 
-    # --- Chart 3: Top 5 Most Borrowed Books ---
     top_books = list(
         Borrow.objects
+        .filter(borrow_date__gte=date_from, borrow_date__lte=date_to)
         .values('book__title')
         .annotate(count=Count('id'))
         .order_by('-count')[:5]
@@ -518,7 +511,6 @@ def admin_dashboard_view(request):
     top_book_labels = [b['book__title'] for b in top_books]
     top_book_counts = [b['count'] for b in top_books]
 
-    # --- Chart 4: Student Status Distribution ---
     status_qs = list(Student.objects.values('status').annotate(count=Count('id')))
     status_map = {s['status']: s['count'] for s in status_qs}
     student_status_labels = ['Approved', 'Pending', 'Rejected']
@@ -528,13 +520,7 @@ def admin_dashboard_view(request):
         status_map.get('rejected', 0),
     ]
 
-    context = {
-        'admin': request.admin,
-        'total_students': total_students,
-        'total_books': total_books,
-        'pending_requests': pending_requests,
-        'total_admins': total_admins,
-        'total_fines': total_fines,
+    return {
         'monthly_labels': monthly_labels,
         'monthly_counts': monthly_counts,
         'has_monthly_data': any(c > 0 for c in monthly_counts),
@@ -547,6 +533,62 @@ def admin_dashboard_view(request):
         'student_status_labels': student_status_labels,
         'student_status_counts': student_status_counts,
         'has_student_data': any(c > 0 for c in student_status_counts),
+    }
+
+
+def _default_date_range():
+    from datetime import date, timedelta
+    today = date.today()
+    d = today.replace(day=1)
+    for _ in range(5):
+        d = (d - timedelta(days=1)).replace(day=1)
+    return d, today
+
+
+@admin_login_required
+def admin_dashboard_chart_data(request):
+    from datetime import date
+    date_from_default, date_to_default = _default_date_range()
+    try:
+        date_from_str = request.GET.get('date_from', '')
+        date_to_str = request.GET.get('date_to', '')
+        date_from = date.fromisoformat(date_from_str) if date_from_str else date_from_default
+        date_to = date.fromisoformat(date_to_str) if date_to_str else date_to_default
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+    if date_from > date_to:
+        return JsonResponse({'error': 'Start date must be before end date.'}, status=400)
+
+    data = _get_dashboard_chart_data(date_from, date_to)
+    data['date_from'] = date_from.isoformat()
+    data['date_to'] = date_to.isoformat()
+    return JsonResponse(data)
+
+
+@admin_login_required
+def admin_dashboard_view(request):
+    from django.db.models import Sum
+
+    total_students = Student.objects.count()
+    total_books = Book.objects.count()
+    pending_requests = Borrow.objects.filter(status='pending').count()
+    total_admins = Admin.objects.count()
+    total_fines = Borrow.objects.filter(fine_amount__gt=0).aggregate(Sum('fine_amount'))['fine_amount__sum'] or 0
+
+    date_from_default, date_to_default = _default_date_range()
+    chart_data = _get_dashboard_chart_data(date_from_default, date_to_default)
+
+    context = {
+        'admin': request.admin,
+        'total_students': total_students,
+        'total_books': total_books,
+        'pending_requests': pending_requests,
+        'total_admins': total_admins,
+        'total_fines': total_fines,
+        'default_date_from': date_from_default.isoformat(),
+        'default_date_to': date_to_default.isoformat(),
+        **chart_data,
     }
     return render(request, 'admin_dashboard.html', context)
 

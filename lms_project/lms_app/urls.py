@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin-portal/login/', views.admin_login_view, name='admin_login'),
     path('admin-portal/logout/', views.admin_logout_view, name='admin_logout'),
     path('admin-portal/dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
+    path('admin-portal/dashboard/chart-data/', views.admin_dashboard_chart_data, name='admin_dashboard_chart_data'),
     
     path('admin-portal/signup-requests/', views.admin_signup_requests, name='admin_signup_requests'),
     path('admin-portal/signup-requests/approve/<int:student_id>/', views.admin_approve_student, name='admin_approve_student'),
