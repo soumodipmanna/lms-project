@@ -332,12 +332,11 @@ def admin_dashboard_view(request):
     # --- Chart 4: Student Status Distribution ---
     status_qs = list(Student.objects.values('status').annotate(count=Count('id')))
     status_map = {s['status']: s['count'] for s in status_qs}
-    student_status_labels = ['Approved', 'Pending', 'Rejected', 'Disabled']
+    student_status_labels = ['Approved', 'Pending', 'Rejected']
     student_status_counts = [
         status_map.get('approved', 0),
         status_map.get('pending', 0),
         status_map.get('rejected', 0),
-        status_map.get('disabled', 0),
     ]
 
     context = {
