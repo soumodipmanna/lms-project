@@ -1029,9 +1029,8 @@ def admin_export_borrows_pdf(request):
     elements.append(Paragraph(f'Total records: {borrows.count()}  |  College Library Management System', footer_style))
 
     doc.build(elements)
-    buffer.seek(0)
     filename = f'borrow_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
-    response = HttpResponse(buffer, content_type='application/pdf')
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
@@ -1100,9 +1099,11 @@ def admin_export_fines_pdf(request):
         else:
             live_fine = float(b.fine_amount)
 
-        approved_waiver = b.waivers.filter(status='approved').first()
-        pending_waiver = b.waivers.filter(status='pending').first()
-        rejected_waiver = b.waivers.filter(status='rejected').first()
+        # Resolve waiver status from prefetched set — avoids per-row DB queries
+        all_waivers = list(b.waivers.all())
+        approved_waiver = next((w for w in all_waivers if w.status == 'approved'), None)
+        pending_waiver  = next((w for w in all_waivers if w.status == 'pending'),  None)
+        rejected_waiver = next((w for w in all_waivers if w.status == 'rejected'), None)
 
         if approved_waiver:
             waiver_status = 'Approved'
@@ -1178,9 +1179,8 @@ def admin_export_fines_pdf(request):
     ))
 
     doc.build(elements)
-    buffer.seek(0)
     filename = f'fines_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
-    response = HttpResponse(buffer, content_type='application/pdf')
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
