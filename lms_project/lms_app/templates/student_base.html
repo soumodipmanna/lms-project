@@ -208,9 +208,11 @@
             }
             list.innerHTML = items.map(n => {
                 const readClass = n.is_read ? 'read' : 'unread';
-                const target = n.link ? `href="${n.link}"` : '';
                 const tag = n.link ? 'a' : 'div';
-                return `<${tag} class="notif-item ${readClass}" ${target} onclick="markRead(${n.id}, this)">
+                const href = n.link ? escHtml(n.link) : '';
+                const hrefAttr = href ? `href="${href}"` : '';
+                const onclickAttr = `onclick="markRead(${n.id}, this, '${href}', event)"`;
+                return `<${tag} class="notif-item ${readClass}" ${hrefAttr} ${onclickAttr}>
                     <span class="notif-dot"></span>
                     <span class="notif-text">
                         <span class="notif-msg">${escHtml(n.message)}</span>
@@ -220,23 +222,30 @@
             }).join('');
         }
 
-        function markRead(id, el) {
-            if (el && el.classList.contains('unread')) {
-                fetch(`${MARK_READ_BASE}${id}/`, {
-                    method: 'POST',
-                    headers: {'X-CSRFToken': CSRF_TOKEN},
-                    credentials: 'same-origin'
-                }).then(() => {
-                    el.classList.remove('unread');
-                    el.classList.add('read');
-                    const badge = document.getElementById('notifBadge');
-                    if (badge) {
-                        let c = parseInt(badge.textContent) - 1;
-                        if (c <= 0) { badge.style.display = 'none'; }
-                        else { badge.textContent = c; }
-                    }
-                });
+        function markRead(id, el, href, event) {
+            if (href && event) event.preventDefault();
+            const isUnread = el && el.classList.contains('unread');
+            if (!isUnread) {
+                if (href) window.location.href = href;
+                return;
             }
+            fetch(`${MARK_READ_BASE}${id}/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF_TOKEN},
+                credentials: 'same-origin'
+            }).then(() => {
+                el.classList.remove('unread');
+                el.classList.add('read');
+                const badge = document.getElementById('notifBadge');
+                if (badge) {
+                    let c = parseInt(badge.textContent) - 1;
+                    if (c <= 0) { badge.style.display = 'none'; }
+                    else { badge.textContent = c; }
+                }
+                if (href) window.location.href = href;
+            }).catch(() => {
+                if (href) window.location.href = href;
+            });
         }
 
         function markAllRead() {

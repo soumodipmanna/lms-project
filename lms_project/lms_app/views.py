@@ -93,7 +93,13 @@ def dashboard(request):
         review_count=Count('reviews'),
     )
     student = request.user.student
-    send_due_soon_notifications()
+    # Throttle: run due-soon check at most once every 6 hours per student session
+    _due_check_key = f'due_check_{student.id}'
+    _last_check = request.session.get(_due_check_key, 0)
+    _now_ts = timezone.now().timestamp()
+    if _now_ts - _last_check > 6 * 3600:
+        send_due_soon_notifications()
+        request.session[_due_check_key] = _now_ts
     _placeholder = ('', 'dummy')
     categories = sorted(Book.objects.exclude(category__in=_placeholder).values_list('category', flat=True).distinct())
     departments = sorted(Book.objects.exclude(department__in=_placeholder).values_list('department', flat=True).distinct())
@@ -274,6 +280,8 @@ def send_due_soon_notifications():
 
 @login_required
 def notifications_json(request):
+    if not hasattr(request.user, 'student'):
+        return JsonResponse({'error': 'forbidden'}, status=403)
     student = request.user.student
     notifs = Notification.objects.filter(student=student).order_by('-created_at')[:10]
     unread_count = Notification.objects.filter(student=student, is_read=False).count()
@@ -296,6 +304,8 @@ def notifications_json(request):
 @require_POST
 @login_required
 def mark_notification_read(request, notif_id):
+    if not hasattr(request.user, 'student'):
+        return JsonResponse({'error': 'forbidden'}, status=403)
     student = request.user.student
     if notif_id == 0:
         Notification.objects.filter(student=student, is_read=False).update(is_read=True)
