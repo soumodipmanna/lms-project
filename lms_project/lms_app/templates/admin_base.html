@@ -28,6 +28,8 @@
         </div>
     </nav>
 
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <div class="container">
         <aside class="sidebar" id="sidebar">
             <ul class="sidebar-menu">
@@ -85,20 +87,57 @@
             });
         }, 5000);
 
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.remove('mobile-open');
+            backdrop.classList.remove('active');
+        }
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('mainContent');
             const toggleBtn = document.getElementById('sidebarToggle');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            toggleBtn.innerHTML = sidebar.classList.contains('collapsed') ? '→' : '☰';
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                const isOpen = sidebar.classList.toggle('mobile-open');
+                if (isOpen) {
+                    backdrop.classList.add('active');
+                } else {
+                    backdrop.classList.remove('active');
+                }
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                toggleBtn.innerHTML = sidebar.classList.contains('collapsed') ? '→' : '☰';
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
         }
+
+        document.getElementById('sidebarBackdrop').addEventListener('click', closeMobileSidebar);
+
         window.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
                 document.getElementById('sidebar').classList.add('collapsed');
                 document.getElementById('mainContent').classList.add('expanded');
                 document.getElementById('sidebarToggle').innerHTML = '→';
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+                toggleBtn.innerHTML = '☰';
+            } else {
+                sidebar.classList.remove('mobile-open');
+                backdrop.classList.remove('active');
             }
         });
     </script>

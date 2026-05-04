@@ -601,9 +601,23 @@ body {
 }
 .login-wrapper .form-group input::placeholder { color: #666; }
 
+/* ── Sidebar Backdrop (mobile overlay) ── */
+.sidebar-backdrop {
+    display: none; position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6); z-index: 98;
+    opacity: 0; transition: opacity 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.sidebar-backdrop.active { display: block; opacity: 1; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
-    .sidebar { display: none; }
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 99;
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
     .main-content { margin-left: 0; }
     .floating-book, .floating-page, .floating-bookmark { display: none; }
     .peacock-accent { opacity: 0.2; }
