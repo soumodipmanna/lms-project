@@ -311,6 +311,48 @@
             color: #d4af37;
         }
 
+        .features-teaser {
+            margin-top: 1.25rem;
+            padding: 1.1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.13);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .features-teaser-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.82rem;
+            color: #888;
+            font-weight: 400;
+        }
+
+        .features-teaser-row .feat-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .features-teaser-cta {
+            display: block;
+            text-align: center;
+            margin-top: 0.55rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(212, 175, 55, 0.75);
+            text-decoration: none;
+            letter-spacing: 0.2px;
+            transition: color 0.2s;
+        }
+
+        .features-teaser-cta:hover {
+            color: #d4af37;
+        }
+
         @media (max-width: 480px) {
             .logo-text {
                 font-size: 1.3rem;
@@ -365,8 +407,24 @@
             </div>
         </div>
 
+        <div class="features-teaser">
+            <div class="features-teaser-row">
+                <span class="feat-icon">🔍</span>
+                <span>Browse and search a full catalogue of books</span>
+            </div>
+            <div class="features-teaser-row">
+                <span class="feat-icon">📦</span>
+                <span>Request borrows and track loans from your dashboard</span>
+            </div>
+            <div class="features-teaser-row">
+                <span class="feat-icon">💰</span>
+                <span>View fines and submit waiver requests with ease</span>
+            </div>
+            <a href="{% url 'about' %}" class="features-teaser-cta">See all features →</a>
+        </div>
+
         <div class="footer-note">
-            <a href="{% url 'about' %}">Learn about the library</a> &nbsp;·&nbsp; Are you an administrator? <a href="{% url 'admin_login' %}">Admin login</a>
+            Are you an administrator? <a href="{% url 'admin_login' %}">Admin login</a>
         </div>
     </div>
 </body>
