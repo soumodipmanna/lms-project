@@ -60,6 +60,11 @@ body {
 .sidebar-toggle:hover { transform: scale(1.1); }
 .user-info { display: flex; align-items: center; gap: 1rem; }
 .user-info span { color: #c0c0c0; }
+.user-profile-link {
+    color: #c0c0c0; text-decoration: none;
+    transition: color 0.2s ease;
+}
+.user-profile-link:hover { color: #d4af37; text-decoration: underline; }
 .role-badge {
     background: rgba(212, 175, 55, 0.15);
     color: #d4af37; padding: 0.3rem 0.8rem;
