@@ -378,13 +378,27 @@
 
         .errorlist {
             list-style: none;
-            background: rgba(200, 50, 50, 0.15);
-            border: 1px solid rgba(200, 50, 50, 0.3);
-            padding: 0.8rem 1rem;
+            background: rgba(180, 40, 40, 0.12);
+            border: 1px solid rgba(200, 60, 60, 0.22);
+            border-left: 3px solid rgba(200, 60, 60, 0.65);
+            padding: 0.6rem 1rem;
             border-radius: 8px;
-            margin-bottom: 1rem;
+            margin-top: 0.4rem;
             color: #ff8a8a;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .errorlist li::before {
+            content: '\26A0\FE0F\00A0';
+            font-size: 0.8rem;
+        }
+
+        .errorlist.warning {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            border-left: 3px solid rgba(212, 175, 55, 0.65);
+            color: #d4af37;
         }
 
         .page-loader {

@@ -443,6 +443,31 @@
             min-height: 44px;
         }
 
+        .errorlist {
+            list-style: none;
+            background: rgba(180, 40, 40, 0.12);
+            border: 1px solid rgba(200, 60, 60, 0.22);
+            border-left: 3px solid rgba(200, 60, 60, 0.65);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            margin-top: 0.4rem;
+            color: #ff8a8a;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .errorlist li::before {
+            content: '\26A0\FE0F\00A0';
+            font-size: 0.8rem;
+        }
+
+        .errorlist.warning {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            border-left: 3px solid rgba(212, 175, 55, 0.65);
+            color: #d4af37;
+        }
+
         @media (max-width: 768px) {
             .navbar {
                 padding: 0.75rem 1rem;
