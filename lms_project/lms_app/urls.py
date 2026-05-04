@@ -3,6 +3,7 @@ from lms_app import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('about/', views.about, name='about'),
     
     path('signup/', views.student_signup, name='student_signup'),
     path('login/', views.student_login, name='student_login'),

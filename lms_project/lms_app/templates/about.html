@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About – Library Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(15, 22, 40, 0.7) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(26, 15, 46, 0.5) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-objects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-book {
+            position: absolute;
+            width: 40px;
+            height: 55px;
+            transform-style: preserve-3d;
+            animation: floatBook 12s ease-in-out infinite;
+        }
+
+        .floating-book .book-cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
+            border-radius: 2px 6px 6px 2px;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.3);
+            transform: rotateY(-10deg);
+        }
+
+        .floating-book .book-spine {
+            position: absolute;
+            left: -4px;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #b8941e, #8b6914);
+            border-radius: 2px 0 0 2px;
+            transform: rotateY(70deg) translateZ(-2px);
+        }
+
+        .floating-book .book-pages {
+            position: absolute;
+            right: 2px;
+            top: 3px;
+            width: 85%;
+            height: calc(100% - 6px);
+            background: linear-gradient(90deg, #f5f0e0, #e8dcc8);
+            border-radius: 0 3px 3px 0;
+            transform: translateZ(-1px);
+        }
+
+        .fb1 { top: 10%; left: 5%; animation-delay: 0s; animation-duration: 14s; }
+        .fb2 { top: 25%; right: 8%; animation-delay: -3s; animation-duration: 16s; }
+        .fb3 { bottom: 20%; left: 12%; animation-delay: -6s; animation-duration: 13s; }
+        .fb4 { top: 60%; right: 15%; animation-delay: -2s; animation-duration: 15s; }
+        .fb5 { top: 45%; left: 45%; animation-delay: -8s; animation-duration: 17s; }
+
+        @keyframes floatBook {
+            0%, 100% {
+                transform: translateY(0) rotateX(10deg) rotateY(-15deg) rotateZ(-5deg);
+                opacity: 0.15;
+            }
+            25% {
+                transform: translateY(-30px) rotateX(15deg) rotateY(5deg) rotateZ(3deg);
+                opacity: 0.25;
+            }
+            50% {
+                transform: translateY(-15px) rotateX(-5deg) rotateY(10deg) rotateZ(-2deg);
+                opacity: 0.2;
+            }
+            75% {
+                transform: translateY(-40px) rotateX(8deg) rotateY(-10deg) rotateZ(5deg);
+                opacity: 0.15;
+            }
+        }
+
+        .floating-bookmark {
+            position: absolute;
+            width: 12px;
+            height: 45px;
+            animation: floatBookmark 11s ease-in-out infinite;
+        }
+
+        .floating-bookmark::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #d4af37, #c9302c);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+        }
+
+        .bm1 { top: 20%; right: 20%; animation-delay: -2s; }
+        .bm2 { bottom: 35%; left: 30%; animation-delay: -6s; animation-duration: 13s; }
+        .bm3 { top: 55%; right: 35%; animation-delay: -4s; animation-duration: 15s; }
+
+        @keyframes floatBookmark {
+            0%, 100% {
+                transform: translateY(0) rotateZ(5deg);
+                opacity: 0.15;
+            }
+            50% {
+                transform: translateY(-35px) rotateZ(-8deg);
+                opacity: 0.3;
+            }
+        }
+
+        /* ─── NAV ─── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .nav-brand-icon {
+            font-size: 1.6rem;
+        }
+
+        .nav-brand-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #d4af37, #f5e6a3, #d4af37);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: goldShine 4s ease-in-out infinite;
+            letter-spacing: 0.3px;
+        }
+
+        @keyframes goldShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #b0b0b0;
+            text-decoration: none;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-link:hover {
+            color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .nav-link.primary {
+            background: linear-gradient(135deg, #d4af37, #b8941e);
+            color: #0a0a0f;
+            font-weight: 600;
+        }
+
+        .nav-link.primary:hover {
+            background: linear-gradient(135deg, #e0c050, #d4af37);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+        }
+
+        /* ─── PAGE WRAPPER ─── */
+        .page {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 5rem;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeUp {
+            0%   { opacity: 0; transform: translateY(28px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 50px;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #d4af37;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.8rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+            margin-bottom: 1.4rem;
+        }
+
+        .hero h1 .gold {
+            background: linear-gradient(135deg, #d4af37, #f5e6a3, #d4af37);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: goldShine 4s ease-in-out infinite;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #909090;
+            line-height: 1.75;
+            max-width: 580px;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+        }
+
+        .hero-cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.85rem 2rem;
+            border-radius: 12px;
+            font-family: 'Raleway', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37, #b8941e);
+            color: #0a0a0f;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #e0c050, #d4af37);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+            color: #0a0a0f;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #d4af37;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: rgba(212, 175, 55, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+        }
+
+        /* ─── STATS BAR ─── */
+        .stats-bar {
+            max-width: 780px;
+            margin: 0 auto 5rem;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.12);
+            border-radius: 16px;
+            overflow: hidden;
+            animation: fadeUp 0.9s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1.6rem 1rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #d4af37, #f5e6a3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        /* ─── FEATURES ─── */
+        .section {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 2rem 6rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeUp 0.9s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .section-label {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #d4af37;
+            margin-bottom: 0.8rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            color: #e8e8e8;
+            letter-spacing: -0.3px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(212, 175, 55, 0.14);
+            border-radius: 18px;
+            padding: 2rem 1.6rem;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.18s; }
+        .feature-card:nth-child(3) { animation-delay: 0.26s; }
+        .feature-card:nth-child(4) { animation-delay: 0.34s; }
+
+        .feature-card:hover {
+            border-color: rgba(212, 175, 55, 0.35);
+            background: rgba(212, 175, 55, 0.04);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3),
+                        0 0 0 1px rgba(212, 175, 55, 0.12);
+        }
+
+        .feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 1.1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.1px;
+        }
+
+        .feature-card p {
+            font-size: 0.88rem;
+            color: #6e6e6e;
+            line-height: 1.65;
+            font-weight: 400;
+        }
+
+        /* ─── HOW IT WORKS ─── */
+        .how-it-works {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem 6rem;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.4rem;
+            align-items: flex-start;
+            animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .step:nth-child(1) { animation-delay: 0.1s; }
+        .step:nth-child(2) { animation-delay: 0.2s; }
+        .step:nth-child(3) { animation-delay: 0.3s; }
+        .step:nth-child(4) { animation-delay: 0.4s; }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4af37, #b8941e);
+            color: #0a0a0f;
+            font-weight: 800;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
+        }
+
+        .step-body h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 0.35rem;
+        }
+
+        .step-body p {
+            font-size: 0.88rem;
+            color: #6e6e6e;
+            line-height: 1.65;
+        }
+
+        /* ─── CTA BANNER ─── */
+        .cta-banner {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 2rem 7rem;
+            text-align: center;
+            animation: fadeUp 0.9s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .cta-banner-inner {
+            background: rgba(212, 175, 55, 0.06);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 24px;
+            padding: 3.5rem 2.5rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .cta-banner h2 {
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 700;
+            color: #e8e8e8;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.2px;
+        }
+
+        .cta-banner p {
+            font-size: 0.95rem;
+            color: #777;
+            margin-bottom: 2rem;
+            line-height: 1.65;
+        }
+
+        .cta-banner .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            border-top: 1px solid rgba(212, 175, 55, 0.08);
+            padding: 1.6rem 2rem;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #444;
+            position: relative;
+            z-index: 10;
+        }
+
+        footer a {
+            color: rgba(212, 175, 55, 0.6);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer a:hover {
+            color: #d4af37;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 600px) {
+            nav {
+                padding: 0.85rem 1.2rem;
+            }
+
+            .nav-brand-text {
+                font-size: 0.9rem;
+            }
+
+            .nav-link {
+                font-size: 0.82rem;
+                padding: 0.4rem 0.7rem;
+            }
+
+            .hero {
+                padding: 4rem 1.5rem 3.5rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+                margin-bottom: 3.5rem;
+            }
+
+            .stat-item + .stat-item {
+                border-top: 1px solid rgba(212, 175, 55, 0.1);
+            }
+
+            .section, .how-it-works, .cta-banner {
+                padding-left: 1.2rem;
+                padding-right: 1.2rem;
+            }
+
+            .cta-banner-inner {
+                padding: 2.5rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-objects">
+        <div class="floating-book fb1"><div class="book-spine"></div><div class="book-pages"></div><div class="book-cover"></div></div>
+        <div class="floating-book fb2"><div class="book-spine"></div><div class="book-pages"></div><div class="book-cover"></div></div>
+        <div class="floating-book fb3"><div class="book-spine"></div><div class="book-pages"></div><div class="book-cover"></div></div>
+        <div class="floating-book fb4"><div class="book-spine"></div><div class="book-pages"></div><div class="book-cover"></div></div>
+        <div class="floating-book fb5"><div class="book-spine"></div><div class="book-pages"></div><div class="book-cover"></div></div>
+        <div class="floating-bookmark bm1"></div>
+        <div class="floating-bookmark bm2"></div>
+        <div class="floating-bookmark bm3"></div>
+    </div>
+
+    <nav>
+        <a href="{% url 'home' %}" class="nav-brand">
+            <span class="nav-brand-icon">📚</span>
+            <span class="nav-brand-text">Library Management System</span>
+        </a>
+        <div class="nav-links">
+            <a href="{% url 'student_login' %}" class="nav-link">Login</a>
+            <a href="{% url 'student_signup' %}" class="nav-link primary">Get Started</a>
+        </div>
+    </nav>
+
+    <div class="page">
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-badge">📖 Modern Library Platform</div>
+            <h1>Your campus library,<br><span class="gold">smarter than ever</span></h1>
+            <p>Browse thousands of books, request borrows in seconds, and track everything from one clean dashboard — built for students and librarians alike.</p>
+            <div class="hero-cta">
+                <a href="{% url 'student_signup' %}" class="btn btn-primary">Create a Free Account</a>
+                <a href="{% url 'student_login' %}" class="btn btn-secondary">Sign In</a>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number">∞</span>
+                <span class="stat-label">Books Available</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Online Access</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Free to Use</span>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-label">Features</span>
+                <h2>Everything you need, nothing you don't</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🔍</span>
+                    <h3>Browse Books</h3>
+                    <p>Search and explore a growing catalogue of titles across every genre. Filter by availability and find your next read instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📦</span>
+                    <h3>Easy Borrowing</h3>
+                    <p>Request a book with one click. Track your active loans, due dates, and return history all from your personal dashboard.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">✅</span>
+                    <h3>Quick Approval</h3>
+                    <p>Borrow requests are reviewed and approved by librarians promptly. You'll be notified as soon as your request is processed.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💰</span>
+                    <h3>Fine Management</h3>
+                    <p>View any outstanding fines at a glance and submit waiver requests if needed. Full transparency, no surprises.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section class="how-it-works">
+            <div class="section-header">
+                <span class="section-label">How it works</span>
+                <h2>Up and reading in three steps</h2>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-body">
+                        <h4>Create your account</h4>
+                        <p>Sign up with your student details. Your account will be reviewed and activated by a librarian — usually within the same day.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-body">
+                        <h4>Find a book you love</h4>
+                        <p>Browse the full catalogue from your dashboard. When something catches your eye, submit a borrow request in one click.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-body">
+                        <h4>Pick it up and enjoy</h4>
+                        <p>Once approved, collect your book from the library. Return it on time to keep your record clean and your access open.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-body">
+                        <h4>Track everything online</h4>
+                        <p>Your dashboard shows current loans, due dates, borrow history, and any fines — all in one place, any time.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="cta-banner">
+            <div class="cta-banner-inner">
+                <h2>Ready to get started?</h2>
+                <p>Join your fellow students and make the most of your campus library — it's completely free.</p>
+                <div class="btn-group">
+                    <a href="{% url 'student_signup' %}" class="btn btn-primary">Create an Account</a>
+                    <a href="{% url 'student_login' %}" class="btn btn-secondary">Sign In</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <span>Library Management System &nbsp;·&nbsp;</span>
+        <a href="{% url 'home' %}">Home</a>
+        <span> &nbsp;·&nbsp; </span>
+        <a href="{% url 'admin_login' %}">Admin login</a>
+    </footer>
+</body>
+</html>

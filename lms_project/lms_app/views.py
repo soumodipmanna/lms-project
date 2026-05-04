@@ -193,6 +193,10 @@ def home(request):
     return render(request, 'home.html')
 
 
+def about(request):
+    return render(request, 'about.html')
+
+
 def admin_login_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
