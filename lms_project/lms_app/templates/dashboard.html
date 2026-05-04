@@ -238,17 +238,59 @@
     <p>Browse and borrow books from our library collection</p>
 </div>
 
-<div class="search-box">
-    <input type="text" id="searchInput" placeholder="🔍 Search books by title, author, or ISBN...">
+<div class="filter-bar">
+    <div class="filter-search">
+        <input type="text" id="searchInput" placeholder="🔍 Search by title, author, or ISBN…">
+    </div>
+    <div class="filter-controls">
+        <select id="filterCategory" class="filter-select">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat|lower }}">{{ cat }}</option>
+            {% endfor %}
+        </select>
+        <select id="filterDepartment" class="filter-select">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+            <option value="{{ dept|lower }}">{{ dept }}</option>
+            {% endfor %}
+        </select>
+        <select id="filterLanguage" class="filter-select">
+            <option value="">All Languages</option>
+            {% for lang in languages %}
+            <option value="{{ lang|lower }}">{{ lang }}</option>
+            {% endfor %}
+        </select>
+        <label class="filter-toggle-label">
+            <input type="checkbox" id="availableOnly">
+            <span class="filter-toggle-track"><span class="filter-toggle-thumb"></span></span>
+            <span class="filter-toggle-text">Available only</span>
+        </label>
+    </div>
 </div>
 
 <div class="books-grid" id="booksGrid">
     {% for book in books %}
-    <div class="book-card" data-title="{{ book.title|lower }}" data-author="{{ book.author|lower }}" data-isbn="{{ book.isbn|lower }}">
+    <div class="book-card"
+         data-title="{{ book.title|lower }}"
+         data-author="{{ book.author|lower }}"
+         data-isbn="{{ book.isbn|lower }}"
+         data-category="{{ book.category|lower }}"
+         data-department="{{ book.department|lower }}"
+         data-language="{{ book.language|lower }}"
+         data-quantity="{{ book.quantity }}">
         <div class="book-title">{{ book.title }}</div>
         <div class="book-author">by {{ book.author }}</div>
         <div class="book-isbn">ISBN: {{ book.isbn }}</div>
-        <div class="book-quantity">{{ book.quantity }} available</div>
+        {% if book.category and book.category != 'dummy' %}
+        <div class="book-meta-tag">{{ book.category }}</div>
+        {% endif %}
+        {% if book.department and book.department != 'dummy' %}
+        <div class="book-meta-tag book-meta-dept">{{ book.department }}</div>
+        {% endif %}
+        <div class="book-quantity {% if book.quantity == 0 %}book-quantity-out{% endif %}">
+            {% if book.quantity == 0 %}Out of Stock{% else %}{{ book.quantity }} available{% endif %}
+        </div>
         <button
             type="button"
             class="btn-borrow"
@@ -257,11 +299,11 @@
         </button>
     </div>
     {% empty %}
-    <div class="no-results">No books available in the library</div>
+    <div class="no-results" style="display:block;">No books available in the library</div>
     {% endfor %}
 </div>
 
-<div class="no-results" id="noResults">No books match your search</div>
+<div class="no-results" id="noResults">No books match your filters</div>
 
 <div class="modal-overlay" id="borrowModal">
     <div class="modal">
@@ -293,34 +335,50 @@
 
 {% block extra_js %}
 <script>
-    const searchInput = document.getElementById('searchInput');
-    const booksGrid = document.getElementById('booksGrid');
-    const noResults = document.getElementById('noResults');
-    const bookCards = document.querySelectorAll('.book-card');
+    const searchInput     = document.getElementById('searchInput');
+    const filterCategory  = document.getElementById('filterCategory');
+    const filterDepartment = document.getElementById('filterDepartment');
+    const filterLanguage  = document.getElementById('filterLanguage');
+    const availableOnly   = document.getElementById('availableOnly');
+    const noResults       = document.getElementById('noResults');
+    const bookCards       = document.querySelectorAll('.book-card');
 
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        let visibleCount = 0;
+    function applyFilters() {
+        const term     = searchInput.value.toLowerCase().trim();
+        const cat      = filterCategory.value;
+        const dept     = filterDepartment.value;
+        const lang     = filterLanguage.value;
+        const onlyAvail = availableOnly.checked;
+        let visible = 0;
 
         bookCards.forEach(card => {
-            const title = card.getAttribute('data-title');
-            const author = card.getAttribute('data-author');
-            const isbn = card.getAttribute('data-isbn');
+            const title    = card.dataset.title    || '';
+            const author   = card.dataset.author   || '';
+            const isbn     = card.dataset.isbn     || '';
+            const cardCat  = card.dataset.category || '';
+            const cardDept = card.dataset.department || '';
+            const cardLang = card.dataset.language || '';
+            const qty      = parseInt(card.dataset.quantity, 10) || 0;
 
-            if (title.includes(searchTerm) || author.includes(searchTerm) || isbn.includes(searchTerm)) {
-                card.style.display = 'block';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
+            const matchSearch = !term || title.includes(term) || author.includes(term) || isbn.includes(term);
+            const matchCat    = !cat  || cardCat  === cat;
+            const matchDept   = !dept || cardDept === dept;
+            const matchLang   = !lang || cardLang === lang;
+            const matchAvail  = !onlyAvail || qty > 0;
+
+            const show = matchSearch && matchCat && matchDept && matchLang && matchAvail;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
         });
 
-        if (visibleCount === 0) {
-            noResults.style.display = 'block';
-        } else {
-            noResults.style.display = 'none';
-        }
-    });
+        noResults.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    filterCategory.addEventListener('change', applyFilters);
+    filterDepartment.addEventListener('change', applyFilters);
+    filterLanguage.addEventListener('change', applyFilters);
+    availableOnly.addEventListener('change', applyFilters);
 
     let currentBookId = null;
 
