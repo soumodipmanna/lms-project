@@ -283,7 +283,6 @@ def admin_logout_view(request):
 
 @admin_login_required
 def admin_dashboard_view(request):
-    import json
     from datetime import date, timedelta
     from django.db.models import Sum, Count
     from django.db.models.functions import TruncMonth
@@ -348,14 +347,18 @@ def admin_dashboard_view(request):
         'pending_requests': pending_requests,
         'total_admins': total_admins,
         'total_fines': total_fines,
-        'monthly_labels': json.dumps(monthly_labels),
-        'monthly_counts': json.dumps(monthly_counts),
-        'category_labels': json.dumps(category_labels),
-        'category_counts': json.dumps(category_counts),
-        'top_book_labels': json.dumps(top_book_labels),
-        'top_book_counts': json.dumps(top_book_counts),
-        'student_status_labels': json.dumps(student_status_labels),
-        'student_status_counts': json.dumps(student_status_counts),
+        'monthly_labels': monthly_labels,
+        'monthly_counts': monthly_counts,
+        'has_monthly_data': any(c > 0 for c in monthly_counts),
+        'category_labels': category_labels,
+        'category_counts': category_counts,
+        'has_categories': bool(category_labels),
+        'top_book_labels': top_book_labels,
+        'top_book_counts': top_book_counts,
+        'has_top_books': bool(top_book_labels),
+        'student_status_labels': student_status_labels,
+        'student_status_counts': student_status_counts,
+        'has_student_data': any(c > 0 for c in student_status_counts),
     }
     return render(request, 'admin_dashboard.html', context)
 
