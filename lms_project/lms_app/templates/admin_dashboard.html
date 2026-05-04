@@ -98,6 +98,14 @@
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{{ monthly_labels|json_script:"monthly-labels-data" }}
+{{ monthly_counts|json_script:"monthly-counts-data" }}
+{{ category_labels|json_script:"category-labels-data" }}
+{{ category_counts|json_script:"category-counts-data" }}
+{{ top_book_labels|json_script:"top-book-labels-data" }}
+{{ top_book_counts|json_script:"top-book-counts-data" }}
+{{ student_status_labels|json_script:"status-labels-data" }}
+{{ student_status_counts|json_script:"status-counts-data" }}
 {% endblock %}
 
 {% block content %}
@@ -227,36 +235,40 @@
 
 {% block extra_js %}
 <script>
-const GOLD       = '#d4af37';
-const GOLD_LIGHT = 'rgba(212,175,55,0.15)';
-const GOLD_FILL  = 'rgba(212,175,55,0.08)';
-const DARK_BG    = 'rgba(20,20,35,0)';
-
-Chart.defaults.color = '#888';
-Chart.defaults.font.family = "'Raleway', sans-serif";
-Chart.defaults.font.size = 12;
-
-const gridColor  = 'rgba(212,175,55,0.07)';
-const tickColor  = '#666';
-
+const GOLD    = '#d4af37';
 const PALETTE = [
     '#d4af37','#8b6914','#e8c96c','#a07820',
     '#f0dfa0','#6b4e10','#c9a030','#503a08',
     '#d4b870','#9a7428',
 ];
+const gridColor = 'rgba(212,175,55,0.07)';
+const tickColor = '#666';
+const tooltipDefaults = {
+    backgroundColor: 'rgba(10,10,20,0.92)',
+    borderColor: 'rgba(212,175,55,0.3)',
+    borderWidth: 1,
+    titleColor: GOLD,
+    bodyColor: '#c0c0c0',
+};
+
+Chart.defaults.color = '#888';
+Chart.defaults.font.family = "'Raleway', sans-serif";
+Chart.defaults.font.size = 12;
+
+function jsonData(id) {
+    return JSON.parse(document.getElementById(id).textContent);
+}
 
 // ── Chart 1: Borrowing Trends ──
 const trendCtx = document.getElementById('borrowingTrendsChart');
 if (trendCtx) {
-    const monthlyLabels = {{ monthly_labels|safe }};
-    const monthlyCounts = {{ monthly_counts|safe }};
     new Chart(trendCtx, {
         type: 'line',
         data: {
-            labels: monthlyLabels,
+            labels: jsonData('monthly-labels-data'),
             datasets: [{
                 label: 'Borrow Requests',
-                data: monthlyCounts,
+                data: jsonData('monthly-counts-data'),
                 borderColor: GOLD,
                 backgroundColor: 'rgba(212,175,55,0.10)',
                 borderWidth: 2.5,
@@ -274,32 +286,16 @@ if (trendCtx) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(10,10,20,0.92)',
-                    borderColor: 'rgba(212,175,55,0.3)',
-                    borderWidth: 1,
-                    titleColor: GOLD,
-                    bodyColor: '#c0c0c0',
-                    callbacks: {
-                        label: ctx => ` ${ctx.parsed.y} request${ctx.parsed.y !== 1 ? 's' : ''}`,
-                    },
-                },
+                tooltip: { ...tooltipDefaults, callbacks: {
+                    label: ctx => ` ${ctx.parsed.y} request${ctx.parsed.y !== 1 ? 's' : ''}`,
+                }},
             },
             scales: {
-                x: {
-                    grid: { color: gridColor },
-                    ticks: { color: tickColor },
-                    border: { color: gridColor },
-                },
+                x: { grid: { color: gridColor }, ticks: { color: tickColor }, border: { color: gridColor } },
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        color: tickColor,
-                        stepSize: 1,
-                        callback: v => Number.isInteger(v) ? v : null,
-                    },
-                    grid: { color: gridColor },
-                    border: { color: gridColor },
+                    ticks: { color: tickColor, stepSize: 1, callback: v => Number.isInteger(v) ? v : null },
+                    grid: { color: gridColor }, border: { color: gridColor },
                 },
             },
         },
@@ -309,14 +305,12 @@ if (trendCtx) {
 // ── Chart 2: Books by Category ──
 const catCtx = document.getElementById('booksByCategoryChart');
 if (catCtx) {
-    const catLabels = {{ category_labels|safe }};
-    const catCounts = {{ category_counts|safe }};
     new Chart(catCtx, {
         type: 'doughnut',
         data: {
-            labels: catLabels,
+            labels: jsonData('category-labels-data'),
             datasets: [{
-                data: catCounts,
+                data: jsonData('category-counts-data'),
                 backgroundColor: PALETTE.map(c => c + 'cc'),
                 borderColor: PALETTE,
                 borderWidth: 1.5,
@@ -328,25 +322,10 @@ if (catCtx) {
             maintainAspectRatio: false,
             cutout: '60%',
             plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        color: '#aaa',
-                        boxWidth: 12,
-                        padding: 10,
-                        font: { size: 11 },
-                    },
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(10,10,20,0.92)',
-                    borderColor: 'rgba(212,175,55,0.3)',
-                    borderWidth: 1,
-                    titleColor: GOLD,
-                    bodyColor: '#c0c0c0',
-                    callbacks: {
-                        label: ctx => ` ${ctx.label}: ${ctx.parsed} book${ctx.parsed !== 1 ? 's' : ''}`,
-                    },
-                },
+                legend: { position: 'right', labels: { color: '#aaa', boxWidth: 12, padding: 10, font: { size: 11 } } },
+                tooltip: { ...tooltipDefaults, callbacks: {
+                    label: ctx => ` ${ctx.label}: ${ctx.parsed} book${ctx.parsed !== 1 ? 's' : ''}`,
+                }},
             },
         },
     });
@@ -355,9 +334,9 @@ if (catCtx) {
 // ── Chart 3: Top 5 Most Borrowed Books ──
 const topCtx = document.getElementById('topBooksChart');
 if (topCtx) {
-    const topLabels = {{ top_book_labels|safe }};
-    const topCounts = {{ top_book_counts|safe }};
-    const shortLabels = topLabels.map(l => l.length > 28 ? l.slice(0, 26) + '…' : l);
+    const topLabels = jsonData('top-book-labels-data');
+    const topCounts = jsonData('top-book-counts-data');
+    const shortLabels = topLabels.map(l => l.length > 28 ? l.slice(0, 26) + '\u2026' : l);
     new Chart(topCtx, {
         type: 'bar',
         data: {
@@ -378,59 +357,35 @@ if (topCtx) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(10,10,20,0.92)',
-                    borderColor: 'rgba(212,175,55,0.3)',
-                    borderWidth: 1,
-                    titleColor: GOLD,
-                    bodyColor: '#c0c0c0',
-                    callbacks: {
-                        title: ctx => topLabels[ctx[0].dataIndex],
-                        label: ctx => ` Borrowed ${ctx.parsed.x} time${ctx.parsed.x !== 1 ? 's' : ''}`,
-                    },
-                },
+                tooltip: { ...tooltipDefaults, callbacks: {
+                    title: ctx => topLabels[ctx[0].dataIndex],
+                    label: ctx => ` Borrowed ${ctx.parsed.x} time${ctx.parsed.x !== 1 ? 's' : ''}`,
+                }},
             },
             scales: {
                 x: {
                     beginAtZero: true,
-                    ticks: {
-                        color: tickColor,
-                        stepSize: 1,
-                        callback: v => Number.isInteger(v) ? v : null,
-                    },
-                    grid: { color: gridColor },
-                    border: { color: gridColor },
+                    ticks: { color: tickColor, stepSize: 1, callback: v => Number.isInteger(v) ? v : null },
+                    grid: { color: gridColor }, border: { color: gridColor },
                 },
-                y: {
-                    ticks: { color: '#aaa', font: { size: 11 } },
-                    grid: { display: false },
-                    border: { display: false },
-                },
+                y: { ticks: { color: '#aaa', font: { size: 11 } }, grid: { display: false }, border: { display: false } },
             },
         },
     });
 }
 
-// ── Chart 4: Student Status ──
+// ── Chart 4: Student Status (dark-gold palette) ──
 const statusCtx = document.getElementById('studentStatusChart');
 if (statusCtx) {
-    const statusLabels = {{ student_status_labels|safe }};
-    const statusCounts = {{ student_status_counts|safe }};
-    const statusColors = [
-        'rgba(107,255,138,0.75)', // approved — green
-        'rgba(255,201,136,0.75)', // pending  — orange
-        'rgba(255,138,138,0.75)', // rejected — red
-        'rgba(136,136,136,0.75)', // disabled — grey
-    ];
-    const statusBorders = ['#6bff8a','#ffc988','#ff8a8a','#888'];
+    const statusPalette = ['#d4af37','#a07820','#e8c96c','#6b4e10'];
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
-            labels: statusLabels,
+            labels: jsonData('status-labels-data'),
             datasets: [{
-                data: statusCounts,
-                backgroundColor: statusColors,
-                borderColor: statusBorders,
+                data: jsonData('status-counts-data'),
+                backgroundColor: statusPalette.map(c => c + 'bb'),
+                borderColor: statusPalette,
                 borderWidth: 1.5,
                 hoverOffset: 8,
             }],
@@ -440,25 +395,10 @@ if (statusCtx) {
             maintainAspectRatio: false,
             cutout: '60%',
             plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        color: '#aaa',
-                        boxWidth: 12,
-                        padding: 10,
-                        font: { size: 11 },
-                    },
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(10,10,20,0.92)',
-                    borderColor: 'rgba(212,175,55,0.3)',
-                    borderWidth: 1,
-                    titleColor: GOLD,
-                    bodyColor: '#c0c0c0',
-                    callbacks: {
-                        label: ctx => ` ${ctx.label}: ${ctx.parsed} student${ctx.parsed !== 1 ? 's' : ''}`,
-                    },
-                },
+                legend: { position: 'right', labels: { color: '#aaa', boxWidth: 12, padding: 10, font: { size: 11 } } },
+                tooltip: { ...tooltipDefaults, callbacks: {
+                    label: ctx => ` ${ctx.label}: ${ctx.parsed} student${ctx.parsed !== 1 ? 's' : ''}`,
+                }},
             },
         },
     });
