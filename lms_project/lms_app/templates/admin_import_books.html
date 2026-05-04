@@ -43,6 +43,13 @@
         <div class="form-group">
             <label>{{ form.csv_file.label }}</label>
             {{ form.csv_file }}
+            {% if form.csv_file.errors %}
+                <ul class="errorlist">
+                    {% for error in form.csv_file.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
         <div class="form-actions">
             <button type="submit" class="btn-primary">⬆️ Upload & Import</button>
