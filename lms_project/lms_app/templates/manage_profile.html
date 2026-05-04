@@ -1,227 +1,123 @@
+{% extends 'student_base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Profile - Library Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/student_base.css' %}">
-    <style>
-        .profile-card {
-            background: rgba(20, 20, 35, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
 
-        .form-group input:disabled,
-        .form-group input[readonly] {
-            background: rgba(255, 255, 255, 0.03);
-            color: #666;
-            cursor: not-allowed;
-            border-color: rgba(212, 175, 55, 0.08);
-        }
+{% block title %}Manage Profile - Library Management{% endblock %}
 
-        .btn-primary {
-            background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
-            color: #0a0a0f;
-            border: none;
-            padding: 0.9rem 1.8rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 700;
-            font-family: 'Raleway', sans-serif;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            letter-spacing: 0.3px;
-            min-height: 44px;
-        }
+{% block extra_css %}
+<style>
+    .profile-card {
+        background: rgba(20, 20, 35, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+    }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.25);
-            background: linear-gradient(135deg, #e0c050 0%, #d4af37 100%);
-        }
+    .form-group input:disabled,
+    .form-group input[readonly] {
+        background: rgba(255, 255, 255, 0.03);
+        color: #666;
+        cursor: not-allowed;
+        border-color: rgba(212, 175, 55, 0.08);
+    }
 
-        @media (max-width: 768px) {
-            .profile-card { padding: 1.5rem; }
-            .form-group input { padding: 0.75rem; font-size: 0.95rem; }
-        }
+    .btn-primary {
+        background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
+        color: #0a0a0f;
+        border: none;
+        padding: 0.9rem 1.8rem;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+        font-family: 'Raleway', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        letter-spacing: 0.3px;
+        min-height: 44px;
+    }
 
-        @media (max-width: 480px) {
-            .profile-card { padding: 1rem; }
-            .btn-primary { width: 100%; }
-        }
-    </style>
-</head>
-<body>
-    <div class="page-loader" id="pageLoader">
-        <div class="books-loader">
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-            <div class="book-load"></div>
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.25);
+        background: linear-gradient(135deg, #e0c050 0%, #d4af37 100%);
+    }
+
+    @media (max-width: 768px) {
+        .profile-card { padding: 1.5rem; }
+        .form-group input { padding: 0.75rem; font-size: 0.95rem; }
+    }
+
+    @media (max-width: 480px) {
+        .profile-card { padding: 1rem; }
+        .btn-primary { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Manage Profile</h2>
+    <p>Update your personal information</p>
+</div>
+
+<div class="profile-card">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" value="{{ request.user.username }}" readonly>
         </div>
-        <div class="loader-text">Loading...</div>
-    </div>
 
-    <nav class="navbar">
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
-        <h1>📚 Library Portal</h1>
-        <div class="user-info">
-            <span class="user-name">{{ student.name|default:student.roll_no }}</span>
-            <a href="{% url 'student_logout' %}" class="logout-btn">Logout</a>
-        </div>
-    </nav>
-
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-    <div class="container">
-        <aside class="sidebar">
-            <ul class="sidebar-menu">
-                <li><a href="{% url 'dashboard' %}"><span class="icon"><i class="fas fa-book-open"></i></span><span class="label">Available Books</span></a></li>
-                <li><a href="{% url 'my_borrowed_books' %}"><span class="icon"><i class="fas fa-book-bookmark"></i></span><span class="label">My Borrowed Books</span></a></li>
-                <li><a href="{% url 'social_wall' %}"><span class="icon"><i class="fas fa-comments"></i></span><span class="label">Knowledge Wall</span></a></li>
-                <li><a href="{% url 'manage_profile' %}" class="active"><span class="icon"><i class="fas fa-user"></i></span><span class="label">Manage Profile</span></a></li>
-                <li><a href="{% url 'about' %}"><span class="icon"><i class="fas fa-info-circle"></i></span><span class="label">About</span></a></li>
-            </ul>
-        </aside>
-
-        <main class="main-content">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Full Name</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+            <ul class="errorlist">
+                {% for error in form.name.errors %}
+                <li>{{ error }}</li>
                 {% endfor %}
-            </div>
+            </ul>
             {% endif %}
-            
-            <div class="page-header">
-                <h2>Manage Profile</h2>
-                <p>Update your personal information</p>
-            </div>
+        </div>
 
-            <div class="profile-card">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" value="{{ request.user.username }}" readonly>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.name.id_for_label }}">Full Name</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.name.errors %}
-                            <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.email.id_for_label }}">Email</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.email.errors %}
-                            <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
-                        {{ form.phone_number }}
-                        {% if form.phone_number.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.phone_number.errors %}
-                            <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Roll Number</label>
-                        <input type="text" value="{{ student.roll_no }}" disabled>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Branch</label>
-                        <input type="text" value="{{ student.branch }}" disabled>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">💾 Update Profile</button>
-                </form>
-            </div>
-        </main>
-    </div>
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <ul class="errorlist">
+                {% for error in form.email.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
 
-    <script>
-        setTimeout(() => {
-            document.querySelectorAll('.messages .alert').forEach(alert => {
-                alert.style.transition = 'opacity 0.3s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            });
-        }, 5000);
-    </script>
-    
-    <script>
-        function closeMobileSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            sidebar.classList.remove('mobile-open');
-            backdrop.classList.remove('active');
-        }
+        <div class="form-group">
+            <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}
+            <ul class="errorlist">
+                {% for error in form.phone_number.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
 
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            const isMobile = window.innerWidth <= 768;
-            
-            if (isMobile) {
-                const isOpen = sidebar.classList.toggle('mobile-open');
-                if (isOpen) {
-                    backdrop.classList.add('active');
-                } else {
-                    backdrop.classList.remove('active');
-                }
-            } else {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('expanded');
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-            }
-        }
+        <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" value="{{ student.roll_no }}" disabled>
+        </div>
 
-        document.getElementById('sidebarBackdrop').addEventListener('click', closeMobileSidebar);
-        
-        window.addEventListener('DOMContentLoaded', function() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed && window.innerWidth > 768) {
-                document.querySelector('.sidebar').classList.add('collapsed');
-                document.querySelector('.main-content').classList.add('expanded');
-            }
-        });
-    </script>
-    <script>
-        document.querySelectorAll('a[href]:not([href^="#"]):not([href^="javascript"]):not([target="_blank"])').forEach(link => {
-            link.addEventListener('click', function(e) {
-                document.getElementById('pageLoader').classList.add('active');
-            });
-        });
-    </script>
-</body>
-</html>
+        <div class="form-group">
+            <label>Branch</label>
+            <input type="text" value="{{ student.branch }}" disabled>
+        </div>
+
+        <button type="submit" class="btn-primary">💾 Update Profile</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,318 +1,218 @@
+{% extends 'student_base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Borrowed Books - Library Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/student_base.css' %}">
-    <style>
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
 
-        .stat-card {
-            background: rgba(20, 20, 35, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
+{% block title %}My Borrowed Books - Library Management{% endblock %}
 
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #d4af37;
-            margin-bottom: 0.3rem;
-        }
+{% block extra_css %}
+<style>
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
 
-        .stat-label {
-            color: #888;
-            font-size: 0.9rem;
-        }
+    .stat-card {
+        background: rgba(20, 20, 35, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
 
-        .borrowed-books-grid { display: grid; gap: 1.5rem; }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 0.3rem;
+    }
 
-        .borrow-card {
-            background: rgba(20, 20, 35, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1.5rem;
-            align-items: start;
-            transition: all 0.3s ease;
-        }
+    .stat-label {
+        color: #888;
+        font-size: 0.9rem;
+    }
 
-        .borrow-card:hover {
-            border-color: rgba(212, 175, 55, 0.2);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        }
+    .borrowed-books-grid { display: grid; gap: 1.5rem; }
 
-        .borrow-info h3 { font-size: 1.2rem; color: #e0e0e0; margin-bottom: 0.5rem; font-weight: 600; }
+    .borrow-card {
+        background: rgba(20, 20, 35, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.5rem;
+        align-items: start;
+        transition: all 0.3s ease;
+    }
 
-        .borrow-details { color: #aaa; line-height: 1.6; }
-        .borrow-details div { margin-bottom: 0.3rem; }
-        .borrow-details strong { color: #c0c0c0; }
+    .borrow-card:hover {
+        border-color: rgba(212, 175, 55, 0.2);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
 
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            white-space: nowrap;
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-        }
+    .borrow-info h3 { font-size: 1.2rem; color: #e0e0e0; margin-bottom: 0.5rem; font-weight: 600; }
 
-        .status-pending {
-            background: rgba(212, 175, 55, 0.12);
-            color: #d4af37;
-            border: 1px solid rgba(212, 175, 55, 0.25);
-        }
+    .borrow-details { color: #aaa; line-height: 1.6; }
+    .borrow-details div { margin-bottom: 0.3rem; }
+    .borrow-details strong { color: #c0c0c0; }
 
-        .status-approved {
-            background: rgba(50, 180, 80, 0.12);
-            color: #4caf50;
-            border: 1px solid rgba(50, 180, 80, 0.25);
-        }
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        white-space: nowrap;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
 
-        .status-rejected {
-            background: rgba(200, 50, 50, 0.12);
-            color: #ff8a8a;
-            border: 1px solid rgba(200, 50, 50, 0.25);
-        }
+    .status-pending {
+        background: rgba(212, 175, 55, 0.12);
+        color: #d4af37;
+        border: 1px solid rgba(212, 175, 55, 0.25);
+    }
 
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #666; }
-        .empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .status-approved {
+        background: rgba(50, 180, 80, 0.12);
+        color: #4caf50;
+        border: 1px solid rgba(50, 180, 80, 0.25);
+    }
 
-        .no-results { text-align: center; padding: 3rem; color: #666; display: none; }
+    .status-rejected {
+        background: rgba(200, 50, 50, 0.12);
+        color: #ff8a8a;
+        border: 1px solid rgba(200, 50, 50, 0.25);
+    }
 
-        @media (max-width: 768px) {
-            .stats-cards { grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .stat-card { padding: 1rem; }
-            .stat-number { font-size: 1.5rem; }
-            .borrow-card { grid-template-columns: 1fr; padding: 1.25rem; gap: 1rem; }
-            .borrow-info h3 { font-size: 1.1rem; }
-            .borrow-details { font-size: 0.9rem; }
-        }
+    .empty-state { text-align: center; padding: 4rem 2rem; color: #666; }
+    .empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
 
-        @media (max-width: 480px) {
-            .stats-cards { grid-template-columns: 1fr; }
-            .borrow-card { padding: 1rem; }
-        }
-    </style>
-</head>
-<body>
-    <div class="page-loader" id="pageLoader">
-        <div class="books-loader">
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-            <div class="book-load"></div>
-        </div>
-        <div class="loader-text">Loading...</div>
+    .no-results { text-align: center; padding: 3rem; color: #666; display: none; }
+
+    @media (max-width: 768px) {
+        .stats-cards { grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .stat-card { padding: 1rem; }
+        .stat-number { font-size: 1.5rem; }
+        .borrow-card { grid-template-columns: 1fr; padding: 1.25rem; gap: 1rem; }
+        .borrow-info h3 { font-size: 1.1rem; }
+        .borrow-details { font-size: 0.9rem; }
+    }
+
+    @media (max-width: 480px) {
+        .stats-cards { grid-template-columns: 1fr; }
+        .borrow-card { padding: 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>My Borrowed Books</h2>
+    <p>Track your borrowed books and their status</p>
+</div>
+
+{% if borrowed %}
+<div class="stats-cards">
+    <div class="stat-card">
+        <div class="stat-number" id="approvedCount">0</div>
+        <div class="stat-label">Approved</div>
     </div>
-
-    <nav class="navbar">
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
-        <h1>📚 Library Portal</h1>
-        <div class="user-info">
-            <span class="user-name">{{ student.name|default:student.roll_no }}</span>
-            <a href="{% url 'student_logout' %}" class="logout-btn">Logout</a>
-        </div>
-    </nav>
-
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-    <div class="container">
-        <aside class="sidebar">
-            <ul class="sidebar-menu">
-                <li><a href="{% url 'dashboard' %}"><span class="icon"><i class="fas fa-book-open"></i></span><span class="label">Available Books</span></a></li>
-                <li><a href="{% url 'my_borrowed_books' %}" class="active"><span class="icon"><i class="fas fa-book-bookmark"></i></span><span class="label">My Borrowed Books</span></a></li>
-                <li><a href="{% url 'social_wall' %}"><span class="icon"><i class="fas fa-comments"></i></span><span class="label">Knowledge Wall</span></a></li>
-                <li><a href="{% url 'manage_profile' %}"><span class="icon"><i class="fas fa-user"></i></span><span class="label">Manage Profile</span></a></li>
-                <li><a href="{% url 'about' %}"><span class="icon"><i class="fas fa-info-circle"></i></span><span class="label">About</span></a></li>
-            </ul>
-        </aside>
-
-        <main class="main-content">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <div class="page-header">
-                <h2>My Borrowed Books</h2>
-                <p>Track your borrowed books and their status</p>
-            </div>
-
-            {% if borrowed %}
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <div class="stat-number" id="approvedCount">0</div>
-                    <div class="stat-label">Approved</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="pendingCount">0</div>
-                    <div class="stat-label">Pending</div>
-                </div>
-            </div>
-
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search by book title...">
-            </div>
-
-            <div class="borrowed-books-grid" id="borrowedBooksGrid">
-                {% for borrow in borrowed %}
-                <div class="borrow-card" data-title="{{ borrow.book.title|lower }}">
-                    <div class="borrow-info">
-                        <h3>{{ borrow.book.title }}</h3>
-                        <div class="borrow-details">
-                            <div><strong>Author:</strong> {{ borrow.book.author }}</div>
-                            <div><strong>ISBN:</strong> {{ borrow.book.isbn }}</div>
-                            <div><strong>Borrowed On:</strong> {{ borrow.borrow_date|date:"M d, Y" }}</div>
-                            {% if borrow.expected_return_date %}
-                            <div><strong>Expected Return:</strong> {{ borrow.expected_return_date|date:"M d, Y" }}</div>
-                            {% endif %}
-                            {% if borrow.return_date %}
-                            <div><strong>Actual Return:</strong> {{ borrow.return_date|date:"M d, Y" }}</div>
-                            {% endif %}
-                            {% if borrow.fine_amount and borrow.fine_amount > 0 %}
-                            <div><strong>Fine:</strong> ₹{{ borrow.fine_amount }}</div>
-                            {% endif %}
-                            {% if borrow.status == 'rejected' and borrow.reject_reason %}
-                            <div style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(200,50,50,0.12); border-left: 3px solid rgba(200,50,50,0.5); border-radius: 4px;">
-                                <strong style="color: #ff8a8a;">Rejection Reason:</strong><br>
-                                <span style="color: #ffaaaa;">{{ borrow.reject_reason }}</span>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div>
-                        <span class="status-badge status-{{ borrow.status }}">{{ borrow.get_status_display }}</span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            
-            <div class="no-results" id="noResults">No books match your search</div>
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon">📚</div>
-                <h3>No Borrowed Books</h3>
-                <p>You haven't borrowed any books yet. Visit the Available Books page to start borrowing!</p>
-            </div>
-            {% endif %}
-        </main>
+    <div class="stat-card">
+        <div class="stat-number" id="pendingCount">0</div>
+        <div class="stat-label">Pending</div>
     </div>
+</div>
 
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const borrowCards = document.querySelectorAll('.borrow-card');
-        const noResults = document.getElementById('noResults');
-        
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                let visibleCount = 0;
-                
-                borrowCards.forEach(card => {
-                    const title = card.getAttribute('data-title');
-                    
-                    if (title.includes(searchTerm)) {
-                        card.style.display = 'grid';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-                
-                if (visibleCount === 0 && borrowCards.length > 0) {
-                    noResults.style.display = 'block';
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="🔍 Search by book title...">
+</div>
+
+<div class="borrowed-books-grid" id="borrowedBooksGrid">
+    {% for borrow in borrowed %}
+    <div class="borrow-card" data-title="{{ borrow.book.title|lower }}">
+        <div class="borrow-info">
+            <h3>{{ borrow.book.title }}</h3>
+            <div class="borrow-details">
+                <div><strong>Author:</strong> {{ borrow.book.author }}</div>
+                <div><strong>ISBN:</strong> {{ borrow.book.isbn }}</div>
+                <div><strong>Borrowed On:</strong> {{ borrow.borrow_date|date:"M d, Y" }}</div>
+                {% if borrow.expected_return_date %}
+                <div><strong>Expected Return:</strong> {{ borrow.expected_return_date|date:"M d, Y" }}</div>
+                {% endif %}
+                {% if borrow.return_date %}
+                <div><strong>Actual Return:</strong> {{ borrow.return_date|date:"M d, Y" }}</div>
+                {% endif %}
+                {% if borrow.fine_amount and borrow.fine_amount > 0 %}
+                <div><strong>Fine:</strong> ₹{{ borrow.fine_amount }}</div>
+                {% endif %}
+                {% if borrow.status == 'rejected' and borrow.reject_reason %}
+                <div style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(200,50,50,0.12); border-left: 3px solid rgba(200,50,50,0.5); border-radius: 4px;">
+                    <strong style="color: #ff8a8a;">Rejection Reason:</strong><br>
+                    <span style="color: #ffaaaa;">{{ borrow.reject_reason }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <span class="status-badge status-{{ borrow.status }}">{{ borrow.get_status_display }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="no-results" id="noResults">No books match your search</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📚</div>
+    <h3>No Borrowed Books</h3>
+    <p>You haven't borrowed any books yet. Visit the Available Books page to start borrowing!</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const borrowCards = document.querySelectorAll('.borrow-card');
+    const noResults = document.getElementById('noResults');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let visibleCount = 0;
+
+            borrowCards.forEach(card => {
+                const title = card.getAttribute('data-title');
+
+                if (title.includes(searchTerm)) {
+                    card.style.display = 'grid';
+                    visibleCount++;
                 } else {
-                    noResults.style.display = 'none';
+                    card.style.display = 'none';
                 }
             });
-        }
-        
-        const approvedCount = document.querySelectorAll('.status-approved').length;
-        const pendingCount = document.querySelectorAll('.status-pending').length;
-        
-        if (document.getElementById('approvedCount')) {
-            document.getElementById('approvedCount').textContent = approvedCount;
-        }
-        if (document.getElementById('pendingCount')) {
-            document.getElementById('pendingCount').textContent = pendingCount;
-        }
-        
-        setTimeout(() => {
-            document.querySelectorAll('.messages .alert').forEach(alert => {
-                alert.style.transition = 'opacity 0.3s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            });
-        }, 5000);
-    </script>
-    
-    <script>
-        function closeMobileSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            sidebar.classList.remove('mobile-open');
-            backdrop.classList.remove('active');
-        }
 
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            const isMobile = window.innerWidth <= 768;
-            
-            if (isMobile) {
-                const isOpen = sidebar.classList.toggle('mobile-open');
-                if (isOpen) {
-                    backdrop.classList.add('active');
-                } else {
-                    backdrop.classList.remove('active');
-                }
+            if (visibleCount === 0 && borrowCards.length > 0) {
+                noResults.style.display = 'block';
             } else {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('expanded');
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                noResults.style.display = 'none';
             }
-        }
+        });
+    }
 
-        document.getElementById('sidebarBackdrop').addEventListener('click', closeMobileSidebar);
-        
-        window.addEventListener('DOMContentLoaded', function() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed && window.innerWidth > 768) {
-                document.querySelector('.sidebar').classList.add('collapsed');
-                document.querySelector('.main-content').classList.add('expanded');
-            }
-        });
-    </script>
-    <script>
-        document.querySelectorAll('a[href]:not([href^="#"]):not([href^="javascript"]):not([target="_blank"])').forEach(link => {
-            link.addEventListener('click', function(e) {
-                document.getElementById('pageLoader').classList.add('active');
-            });
-        });
-    </script>
-</body>
-</html>
+    const approvedCount = document.querySelectorAll('.status-approved').length;
+    const pendingCount = document.querySelectorAll('.status-pending').length;
+
+    if (document.getElementById('approvedCount')) {
+        document.getElementById('approvedCount').textContent = approvedCount;
+    }
+    if (document.getElementById('pendingCount')) {
+        document.getElementById('pendingCount').textContent = pendingCount;
+    }
+</script>
+{% endblock %}
