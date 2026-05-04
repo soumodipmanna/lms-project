@@ -94,6 +94,82 @@
 
     .no-results { text-align: center; padding: 3rem; color: #666; display: none; }
 
+    /* ── Star Rating ── */
+    .review-section {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(212, 175, 55, 0.1);
+    }
+    .review-label {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 0.6rem;
+        font-weight: 500;
+    }
+    .star-picker {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 0.15rem;
+        margin-bottom: 0.75rem;
+    }
+    .star-picker input[type="radio"] { display: none; }
+    .star-picker label {
+        font-size: 1.6rem;
+        color: #333;
+        cursor: pointer;
+        transition: color 0.15s;
+        line-height: 1;
+    }
+    .star-picker input:checked ~ label,
+    .star-picker label:hover,
+    .star-picker label:hover ~ label { color: #d4af37; }
+    .review-textarea {
+        width: 100%;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(212,175,55,0.2);
+        border-radius: 8px;
+        color: #c0c0c0;
+        padding: 0.6rem 0.8rem;
+        font-family: 'Raleway', sans-serif;
+        font-size: 0.88rem;
+        resize: vertical;
+        min-height: 64px;
+        box-sizing: border-box;
+    }
+    .review-textarea:focus {
+        outline: none;
+        border-color: rgba(212,175,55,0.45);
+        box-shadow: 0 0 0 3px rgba(212,175,55,0.08);
+    }
+    .btn-submit-review {
+        margin-top: 0.6rem;
+        background: rgba(212,175,55,0.1);
+        color: #d4af37;
+        border: 1px solid rgba(212,175,55,0.3);
+        padding: 0.5rem 1.1rem;
+        border-radius: 7px;
+        cursor: pointer;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+        font-size: 0.87rem;
+        transition: all 0.25s;
+    }
+    .btn-submit-review:hover {
+        background: rgba(212,175,55,0.2);
+        transform: translateY(-1px);
+    }
+    .existing-review {
+        margin-top: 1rem;
+        padding: 0.8rem 1rem;
+        background: rgba(212,175,55,0.06);
+        border: 1px solid rgba(212,175,55,0.15);
+        border-radius: 10px;
+    }
+    .existing-review .stars-display { color: #d4af37; font-size: 1.1rem; letter-spacing: 0.05rem; }
+    .existing-review .review-body { color: #aaa; font-size: 0.88rem; margin-top: 0.35rem; font-style: italic; }
+    .existing-review .review-meta { color: #666; font-size: 0.8rem; margin-top: 0.2rem; }
+
     @media (max-width: 768px) {
         .stats-cards { grid-template-columns: 1fr 1fr; gap: 1rem; }
         .stat-card { padding: 1rem; }
@@ -154,6 +230,38 @@
                 <div style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(200,50,50,0.12); border-left: 3px solid rgba(200,50,50,0.5); border-radius: 4px;">
                     <strong style="color: #ff8a8a;">Rejection Reason:</strong><br>
                     <span style="color: #ffaaaa;">{{ borrow.reject_reason }}</span>
+                </div>
+                {% endif %}
+
+                {% if borrow.is_returned %}
+                <div class="review-section">
+                    {% if borrow.student_review %}
+                    <div class="existing-review">
+                        <div class="review-label">Your rating</div>
+                        <div class="stars-display">
+                            {% for i in "12345" %}{% if forloop.counter <= borrow.student_review.rating %}★{% else %}☆{% endif %}{% endfor %}
+                            <span style="color:#aaa; font-size:0.85rem; margin-left:0.3rem;">{{ borrow.student_review.rating }}/5</span>
+                        </div>
+                        {% if borrow.student_review.review_text %}
+                        <div class="review-body">"{{ borrow.student_review.review_text }}"</div>
+                        {% endif %}
+                        <div class="review-meta">Reviewed {{ borrow.student_review.created_at|date:"M d, Y" }}</div>
+                    </div>
+                    {% else %}
+                    <div class="review-label">Rate this book</div>
+                    <form method="post" action="{% url 'submit_review' borrow.book.id %}">
+                        {% csrf_token %}
+                        <div class="star-picker" id="stars-{{ borrow.id }}">
+                            <input type="radio" name="rating" id="s5-{{ borrow.id }}" value="5"><label for="s5-{{ borrow.id }}" title="5 stars">★</label>
+                            <input type="radio" name="rating" id="s4-{{ borrow.id }}" value="4"><label for="s4-{{ borrow.id }}" title="4 stars">★</label>
+                            <input type="radio" name="rating" id="s3-{{ borrow.id }}" value="3"><label for="s3-{{ borrow.id }}" title="3 stars">★</label>
+                            <input type="radio" name="rating" id="s2-{{ borrow.id }}" value="2"><label for="s2-{{ borrow.id }}" title="2 stars">★</label>
+                            <input type="radio" name="rating" id="s1-{{ borrow.id }}" value="1"><label for="s1-{{ borrow.id }}" title="1 star">★</label>
+                        </div>
+                        <textarea name="review_text" class="review-textarea" placeholder="Share your thoughts… (optional, max 200 chars)" maxlength="200" rows="2"></textarea>
+                        <button type="submit" class="btn-submit-review">Submit Review</button>
+                    </form>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>

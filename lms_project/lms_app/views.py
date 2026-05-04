@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, AdminLoginForm, AdminCreateForm, BookForm, StudentCreateForm, CSVUploadForm, AdminProfileUpdateForm, AdminEditForm
 from django.contrib.auth.models import User
-from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver
+from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver, BookReview
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db import transaction
@@ -86,7 +86,11 @@ def student_logout(request):
 
 @login_required
 def dashboard(request):
-    books = Book.objects.all()
+    from django.db.models import Avg, Count
+    books = Book.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews'),
+    )
     student = request.user.student
     _placeholder = ('', 'dummy')
     categories = sorted(Book.objects.exclude(category__in=_placeholder).values_list('category', flat=True).distinct())
@@ -181,8 +185,41 @@ def return_book(request, borrow_id):
 @login_required
 def my_borrowed_books(request):
     student = request.user.student
-    borrowed = Borrow.objects.filter(student=student).order_by('-borrow_date')
-    return render(request, 'my_borrowed_books.html', {'borrowed': borrowed, 'student': student})
+    borrowed = list(Borrow.objects.filter(student=student).select_related('book').order_by('-borrow_date'))
+    reviews_by_book = {
+        r.book_id: r
+        for r in BookReview.objects.filter(student=student)
+    }
+    for borrow in borrowed:
+        borrow.student_review = reviews_by_book.get(borrow.book_id)
+    return render(request, 'my_borrowed_books.html', {
+        'borrowed': borrowed,
+        'student': student,
+    })
+
+
+@login_required
+def submit_review(request, book_id):
+    if request.method != 'POST':
+        return redirect('my_borrowed_books')
+    book = get_object_or_404(Book, id=book_id)
+    student = request.user.student
+    has_returned = Borrow.objects.filter(student=student, book=book, is_returned=True).exists()
+    if not has_returned:
+        messages.error(request, 'You can only review books you have returned.')
+        return redirect('my_borrowed_books')
+    raw_rating = request.POST.get('rating', '').strip()
+    if not raw_rating or not raw_rating.isdigit() or not (1 <= int(raw_rating) <= 5):
+        messages.error(request, 'Please select a rating between 1 and 5.')
+        return redirect('my_borrowed_books')
+    review_text = request.POST.get('review_text', '').strip()[:200]
+    BookReview.objects.update_or_create(
+        student=student,
+        book=book,
+        defaults={'rating': int(raw_rating), 'review_text': review_text},
+    )
+    messages.success(request, f'Thanks for rating "{book.title}"!')
+    return redirect('my_borrowed_books')
 
 
 @login_required
@@ -424,7 +461,11 @@ def admin_delete_student_view(request, student_id):
 
 @admin_login_required
 def admin_manage_books_view(request):
-    books = Book.objects.all()
+    from django.db.models import Avg, Count
+    books = Book.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews'),
+    )
     context = {
         'admin': request.admin,
         'books': books,

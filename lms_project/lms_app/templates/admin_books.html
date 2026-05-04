@@ -28,6 +28,7 @@
                 <th>Department</th>
                 <th>Language</th>
                 <th>Fine/Day</th>
+                <th>Avg Rating</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -42,6 +43,14 @@
                 <td>{{ book.department }}</td>
                 <td>{{ book.language }}</td>
                 <td>₹{{ book.fine_rate }}</td>
+                <td>
+                    {% if book.review_count %}
+                    <span style="color:#d4af37;">{{ book.avg_rating|floatformat:1 }}★</span>
+                    <span style="color:#666; font-size:0.8rem;">({{ book.review_count }})</span>
+                    {% else %}
+                    <span style="color:#555;">—</span>
+                    {% endif %}
+                </td>
                 <td>
                     <a href="{% url 'admin_edit_book' book.id %}" class="btn-success" title="Edit">✏️</a>
                     <form method="post" action="{% url 'admin_delete_book' book.id %}" style="display: inline;" onsubmit="return confirm('Delete book {{ book.title }}?');">

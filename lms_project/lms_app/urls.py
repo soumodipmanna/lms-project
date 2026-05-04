@@ -56,6 +56,8 @@ urlpatterns = [
 
     path('admin-portal/borrow-requests/export-pdf/', views.admin_export_borrows_pdf, name='admin_export_borrows_pdf'),
     
+    path('review/<int:book_id>/', views.submit_review, name='submit_review'),
+
     path('social-wall/', views.social_wall, name='social_wall'),
     path('social-wall/post/', views.create_post, name='create_post'),
     path('social-wall/like/<int:post_id>/', views.like_post, name='like_post'),

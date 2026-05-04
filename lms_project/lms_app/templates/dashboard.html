@@ -225,6 +225,17 @@
         .modal-buttons { flex-direction: column; }
     }
 
+    .book-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+    }
+    .book-rating .stars { color: #d4af37; letter-spacing: 0.05rem; }
+    .book-rating .rating-val { color: #d4af37; font-weight: 600; }
+    .book-rating .rating-count { color: #666; }
+
     @media (max-width: 480px) {
         .book-card { padding: 1rem; }
         .btn-borrow { padding: 0.7rem; font-size: 0.9rem; }
@@ -287,6 +298,13 @@
         {% endif %}
         {% if book.department and book.department != 'dummy' %}
         <div class="book-meta-tag book-meta-dept">{{ book.department }}</div>
+        {% endif %}
+        {% if book.review_count %}
+        <div class="book-rating">
+            <span class="stars" data-rating="{{ book.avg_rating|floatformat:1 }}"></span>
+            <span class="rating-val">{{ book.avg_rating|floatformat:1 }}</span>
+            <span class="rating-count">({{ book.review_count }})</span>
+        </div>
         {% endif %}
         <div class="book-quantity {% if book.quantity == 0 %}book-quantity-out{% endif %}">
             {% if book.quantity == 0 %}Out of Stock{% else %}{{ book.quantity }} available{% endif %}
@@ -381,6 +399,13 @@
     availableOnly.addEventListener('change', applyFilters);
 
     applyFilters();
+
+    // Render star spans from data-rating attribute
+    document.querySelectorAll('.book-rating .stars[data-rating]').forEach(el => {
+        const avg = parseFloat(el.dataset.rating) || 0;
+        const filled = Math.round(avg);
+        el.textContent = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+    });
 
     let currentBookId = null;
 
