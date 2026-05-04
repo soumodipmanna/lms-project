@@ -450,6 +450,30 @@ body {
 
 .notif-empty { padding: 1.5rem; text-align: center; color: #555; font-size: 0.88rem; }
 
+.notif-dropdown-footer {
+    border-top: 1px solid rgba(212, 175, 55, 0.1);
+    text-align: center;
+    padding: 0.6rem 1rem;
+}
+
+.notif-see-all {
+    color: #d4af37; font-size: 0.82rem; font-weight: 600;
+    text-decoration: none; letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+}
+
+.notif-see-all:hover { color: #f0d060; text-decoration: underline; }
+
+.sidebar-notif-badge {
+    background: #e53935; color: #fff;
+    font-size: 0.6rem; font-weight: 700;
+    min-width: 15px; height: 15px;
+    border-radius: 8px; padding: 0 3px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Raleway', sans-serif; line-height: 1;
+    vertical-align: middle; margin-left: 4px;
+}
+
 @media (max-width: 480px) {
     .notif-dropdown { width: 290px; right: -50px; }
 }

@@ -40,6 +40,9 @@
                     <div class="notif-list" id="notifList">
                         <div class="notif-empty">Loading…</div>
                     </div>
+                    <div class="notif-dropdown-footer">
+                        <a href="{% url 'notifications_list' %}" class="notif-see-all">See all notifications</a>
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -74,6 +77,7 @@
             <ul class="sidebar-menu">
                 <li><a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}><span class="icon"><i class="fas fa-book-open"></i></span><span class="label">Available Books</span></a></li>
                 <li><a href="{% url 'my_borrowed_books' %}" {% if request.resolver_match.url_name == 'my_borrowed_books' %}class="active"{% endif %}><span class="icon"><i class="fas fa-book-bookmark"></i></span><span class="label">My Borrowed Books</span></a></li>
+                <li><a href="{% url 'notifications_list' %}" {% if request.resolver_match.url_name == 'notifications_list' %}class="active"{% endif %}><span class="icon"><i class="fas fa-bell"></i></span><span class="label">Notifications <span class="sidebar-notif-badge" id="sidebarNotifBadge" style="display:none;"></span></span></a></li>
                 <li><a href="{% url 'social_wall' %}" {% if request.resolver_match.url_name == 'social_wall' %}class="active"{% endif %}><span class="icon"><i class="fas fa-comments"></i></span><span class="label">Knowledge Wall</span></a></li>
                 <li><a href="{% url 'manage_profile' %}" {% if request.resolver_match.url_name == 'manage_profile' %}class="active"{% endif %}><span class="icon"><i class="fas fa-user"></i></span><span class="label">Manage Profile</span></a></li>
                 <li><a href="{% url 'about' %}"><span class="icon"><i class="fas fa-info-circle"></i></span><span class="label">About</span></a></li>
@@ -190,12 +194,22 @@
 
         function renderBadge(count) {
             const badge = document.getElementById('notifBadge');
-            if (!badge) return;
-            if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : count;
-                badge.style.display = 'inline-flex';
-            } else {
-                badge.style.display = 'none';
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+            const sidebarBadge = document.getElementById('sidebarNotifBadge');
+            if (sidebarBadge) {
+                if (count > 0) {
+                    sidebarBadge.textContent = count > 99 ? '99+' : count;
+                    sidebarBadge.style.display = 'inline-flex';
+                } else {
+                    sidebarBadge.style.display = 'none';
+                }
             }
         }
 
@@ -237,11 +251,11 @@
                 el.classList.remove('unread');
                 el.classList.add('read');
                 const badge = document.getElementById('notifBadge');
+                let newCount = 0;
                 if (badge) {
-                    let c = parseInt(badge.textContent) - 1;
-                    if (c <= 0) { badge.style.display = 'none'; }
-                    else { badge.textContent = c; }
+                    newCount = Math.max(0, parseInt(badge.textContent || '0') - 1);
                 }
+                renderBadge(newCount);
                 if (href) window.location.href = href;
             }).catch(() => {
                 if (href) window.location.href = href;

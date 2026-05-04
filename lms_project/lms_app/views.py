@@ -316,6 +316,30 @@ def mark_notification_read(request, notif_id):
     return JsonResponse({'ok': True})
 
 
+@login_required
+def notifications_list(request):
+    if not hasattr(request.user, 'student'):
+        return redirect('dashboard')
+    student = request.user.student
+    from django.core.paginator import Paginator
+    all_notifs = Notification.objects.filter(student=student).order_by('-created_at')
+    unread_count = all_notifs.filter(is_read=False).count()
+
+    if request.method == 'POST' and request.POST.get('action') == 'mark_all_read':
+        Notification.objects.filter(student=student, is_read=False).update(is_read=True)
+        return redirect('notifications_list')
+
+    paginator = Paginator(all_notifs, 20)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'notifications.html', {
+        'page_obj': page_obj,
+        'unread_count': unread_count,
+        'student': student,
+    })
+
+
 @require_POST
 @login_required
 def submit_review(request, book_id):

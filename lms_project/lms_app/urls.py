@@ -59,6 +59,7 @@ urlpatterns = [
     
     path('review/<int:book_id>/', views.submit_review, name='submit_review'),
 
+    path('notifications/', views.notifications_list, name='notifications_list'),
     path('notifications/json/', views.notifications_json, name='notifications_json'),
     path('notifications/read/<int:notif_id>/', views.mark_notification_read, name='mark_notification_read'),
 
