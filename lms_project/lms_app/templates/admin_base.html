@@ -41,6 +41,11 @@
                 <li><a href="{% url 'admin_manage_admins' %}"{% if request.resolver_match.url_name == 'admin_manage_admins' or request.resolver_match.url_name == 'admin_add_admin' or request.resolver_match.url_name == 'admin_edit_admin' %} class="active"{% endif %}><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
                 {% endif %}
             </ul>
+            {# Note: admin_manage_profile is intentionally excluded from the sidebar.  #}
+            {# The profile page is a personal settings page linked from the            #}
+            {# admin_manage_admins page ("Edit Profile" button), not a primary admin   #}
+            {# navigation section. No sidebar item will be highlighted as active when  #}
+            {# the profile page is open.                                               #}
         </aside>
 
         <main class="main-content" id="mainContent">
