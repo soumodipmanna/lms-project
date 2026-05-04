@@ -283,15 +283,64 @@ def admin_logout_view(request):
 
 @admin_login_required
 def admin_dashboard_view(request):
+    import json
+    from datetime import date, timedelta
+    from django.db.models import Sum, Count
+    from django.db.models.functions import TruncMonth
+
     total_students = Student.objects.count()
     total_books = Book.objects.count()
     pending_requests = Borrow.objects.filter(status='pending').count()
     total_admins = Admin.objects.count()
-    
-    # Calculate total fines
-    from django.db.models import Sum
     total_fines = Borrow.objects.filter(fine_amount__gt=0).aggregate(Sum('fine_amount'))['fine_amount__sum'] or 0
-    
+
+    # --- Chart 1: Borrowing Trends (last 6 months) ---
+    today = date.today()
+    month_starts = []
+    d = today.replace(day=1)
+    for _ in range(6):
+        month_starts.insert(0, d)
+        d = (d - timedelta(days=1)).replace(day=1)
+
+    monthly_borrows_qs = (
+        Borrow.objects
+        .filter(borrow_date__gte=month_starts[0])
+        .annotate(month=TruncMonth('borrow_date'))
+        .values('month')
+        .annotate(count=Count('id'))
+    )
+    monthly_map = {entry['month'].date().replace(day=1): entry['count'] for entry in monthly_borrows_qs}
+    monthly_labels = [ms.strftime('%b %Y') for ms in month_starts]
+    monthly_counts = [monthly_map.get(ms, 0) for ms in month_starts]
+
+    # --- Chart 2: Books by Category ---
+    books_by_cat = list(
+        Book.objects.values('category').annotate(count=Count('id')).order_by('-count')
+    )
+    category_labels = [b['category'] for b in books_by_cat]
+    category_counts = [b['count'] for b in books_by_cat]
+
+    # --- Chart 3: Top 5 Most Borrowed Books ---
+    top_books = list(
+        Borrow.objects
+        .values('book__title')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+    top_book_labels = [b['book__title'] for b in top_books]
+    top_book_counts = [b['count'] for b in top_books]
+
+    # --- Chart 4: Student Status Distribution ---
+    status_qs = list(Student.objects.values('status').annotate(count=Count('id')))
+    status_map = {s['status']: s['count'] for s in status_qs}
+    student_status_labels = ['Approved', 'Pending', 'Rejected', 'Disabled']
+    student_status_counts = [
+        status_map.get('approved', 0),
+        status_map.get('pending', 0),
+        status_map.get('rejected', 0),
+        status_map.get('disabled', 0),
+    ]
+
     context = {
         'admin': request.admin,
         'total_students': total_students,
@@ -299,6 +348,14 @@ def admin_dashboard_view(request):
         'pending_requests': pending_requests,
         'total_admins': total_admins,
         'total_fines': total_fines,
+        'monthly_labels': json.dumps(monthly_labels),
+        'monthly_counts': json.dumps(monthly_counts),
+        'category_labels': json.dumps(category_labels),
+        'category_counts': json.dumps(category_counts),
+        'top_book_labels': json.dumps(top_book_labels),
+        'top_book_counts': json.dumps(top_book_counts),
+        'student_status_labels': json.dumps(student_status_labels),
+        'student_status_counts': json.dumps(student_status_counts),
     }
     return render(request, 'admin_dashboard.html', context)
 

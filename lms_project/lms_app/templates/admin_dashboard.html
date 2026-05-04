@@ -36,6 +36,7 @@
         border: 1px solid rgba(212, 175, 55, 0.1);
         padding: 1.5rem; border-radius: 16px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
     }
     .quick-actions h3 { margin-bottom: 1rem; color: #d4af37; font-weight: 600; }
     .action-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
@@ -47,7 +48,56 @@
         transition: all 0.3s ease; font-weight: 500;
     }
     .action-link:hover { background: rgba(212, 175, 55, 0.12); color: #d4af37; border-color: rgba(212, 175, 55, 0.25); transform: translateY(-2px); }
+
+    /* ── Charts ── */
+    .charts-section-title {
+        font-size: 1.4rem; font-weight: 700; color: #d4af37;
+        margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    }
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .chart-card {
+        background: rgba(20, 20, 35, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transition: border-color 0.3s ease;
+    }
+    .chart-card:hover { border-color: rgba(212, 175, 55, 0.22); }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .chart-title {
+        font-size: 1rem; font-weight: 600; color: #d4af37;
+        margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .chart-title span { font-size: 1.1rem; }
+    .chart-wrapper {
+        position: relative;
+        height: 260px;
+    }
+    .chart-card.full-width .chart-wrapper { height: 220px; }
+    .chart-empty {
+        display: flex; align-items: center; justify-content: center;
+        height: 100%; color: #555; font-size: 0.9rem; font-style: italic;
+    }
+
+    @media (max-width: 900px) {
+        .charts-grid { grid-template-columns: 1fr; }
+        .chart-card.full-width { grid-column: auto; }
+        .chart-wrapper { height: 220px; }
+        .chart-card.full-width .chart-wrapper { height: 220px; }
+    }
 </style>
+{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -125,4 +175,293 @@
         {% endif %}
     </div>
 </div>
+
+<p class="charts-section-title">📊 Analytics Overview</p>
+
+<div class="charts-grid">
+    <div class="chart-card full-width">
+        <div class="chart-title"><span>📈</span> Borrowing Trends — Last 6 Months</div>
+        <div class="chart-wrapper">
+            {% if monthly_counts != '[0, 0, 0, 0, 0, 0]' %}
+            <canvas id="borrowingTrendsChart"></canvas>
+            {% else %}
+            <div class="chart-empty">No borrow records in the last 6 months yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-title"><span>🍩</span> Books by Category</div>
+        <div class="chart-wrapper">
+            {% if category_labels != '[]' %}
+            <canvas id="booksByCategoryChart"></canvas>
+            {% else %}
+            <div class="chart-empty">No books added yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-title"><span>🏆</span> Top 5 Most Borrowed Books</div>
+        <div class="chart-wrapper">
+            {% if top_book_labels != '[]' %}
+            <canvas id="topBooksChart"></canvas>
+            {% else %}
+            <div class="chart-empty">No borrow records yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-title"><span>👥</span> Student Status Distribution</div>
+        <div class="chart-wrapper">
+            {% if total_students > 0 %}
+            <canvas id="studentStatusChart"></canvas>
+            {% else %}
+            <div class="chart-empty">No students registered yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const GOLD       = '#d4af37';
+const GOLD_LIGHT = 'rgba(212,175,55,0.15)';
+const GOLD_FILL  = 'rgba(212,175,55,0.08)';
+const DARK_BG    = 'rgba(20,20,35,0)';
+
+Chart.defaults.color = '#888';
+Chart.defaults.font.family = "'Raleway', sans-serif";
+Chart.defaults.font.size = 12;
+
+const gridColor  = 'rgba(212,175,55,0.07)';
+const tickColor  = '#666';
+
+const PALETTE = [
+    '#d4af37','#8b6914','#e8c96c','#a07820',
+    '#f0dfa0','#6b4e10','#c9a030','#503a08',
+    '#d4b870','#9a7428',
+];
+
+// ── Chart 1: Borrowing Trends ──
+const trendCtx = document.getElementById('borrowingTrendsChart');
+if (trendCtx) {
+    const monthlyLabels = {{ monthly_labels|safe }};
+    const monthlyCounts = {{ monthly_counts|safe }};
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Borrow Requests',
+                data: monthlyCounts,
+                borderColor: GOLD,
+                backgroundColor: 'rgba(212,175,55,0.10)',
+                borderWidth: 2.5,
+                pointBackgroundColor: GOLD,
+                pointBorderColor: '#0a0a0f',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.4,
+                fill: true,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(10,10,20,0.92)',
+                    borderColor: 'rgba(212,175,55,0.3)',
+                    borderWidth: 1,
+                    titleColor: GOLD,
+                    bodyColor: '#c0c0c0',
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed.y} request${ctx.parsed.y !== 1 ? 's' : ''}`,
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: tickColor },
+                    border: { color: gridColor },
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: tickColor,
+                        stepSize: 1,
+                        callback: v => Number.isInteger(v) ? v : null,
+                    },
+                    grid: { color: gridColor },
+                    border: { color: gridColor },
+                },
+            },
+        },
+    });
+}
+
+// ── Chart 2: Books by Category ──
+const catCtx = document.getElementById('booksByCategoryChart');
+if (catCtx) {
+    const catLabels = {{ category_labels|safe }};
+    const catCounts = {{ category_counts|safe }};
+    new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catCounts,
+                backgroundColor: PALETTE.map(c => c + 'cc'),
+                borderColor: PALETTE,
+                borderWidth: 1.5,
+                hoverOffset: 8,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#aaa',
+                        boxWidth: 12,
+                        padding: 10,
+                        font: { size: 11 },
+                    },
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10,10,20,0.92)',
+                    borderColor: 'rgba(212,175,55,0.3)',
+                    borderWidth: 1,
+                    titleColor: GOLD,
+                    bodyColor: '#c0c0c0',
+                    callbacks: {
+                        label: ctx => ` ${ctx.label}: ${ctx.parsed} book${ctx.parsed !== 1 ? 's' : ''}`,
+                    },
+                },
+            },
+        },
+    });
+}
+
+// ── Chart 3: Top 5 Most Borrowed Books ──
+const topCtx = document.getElementById('topBooksChart');
+if (topCtx) {
+    const topLabels = {{ top_book_labels|safe }};
+    const topCounts = {{ top_book_counts|safe }};
+    const shortLabels = topLabels.map(l => l.length > 28 ? l.slice(0, 26) + '…' : l);
+    new Chart(topCtx, {
+        type: 'bar',
+        data: {
+            labels: shortLabels,
+            datasets: [{
+                label: 'Times Borrowed',
+                data: topCounts,
+                backgroundColor: PALETTE.slice(0, topCounts.length).map(c => c + 'bb'),
+                borderColor: PALETTE.slice(0, topCounts.length),
+                borderWidth: 1.5,
+                borderRadius: 6,
+                borderSkipped: false,
+            }],
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(10,10,20,0.92)',
+                    borderColor: 'rgba(212,175,55,0.3)',
+                    borderWidth: 1,
+                    titleColor: GOLD,
+                    bodyColor: '#c0c0c0',
+                    callbacks: {
+                        title: ctx => topLabels[ctx[0].dataIndex],
+                        label: ctx => ` Borrowed ${ctx.parsed.x} time${ctx.parsed.x !== 1 ? 's' : ''}`,
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: tickColor,
+                        stepSize: 1,
+                        callback: v => Number.isInteger(v) ? v : null,
+                    },
+                    grid: { color: gridColor },
+                    border: { color: gridColor },
+                },
+                y: {
+                    ticks: { color: '#aaa', font: { size: 11 } },
+                    grid: { display: false },
+                    border: { display: false },
+                },
+            },
+        },
+    });
+}
+
+// ── Chart 4: Student Status ──
+const statusCtx = document.getElementById('studentStatusChart');
+if (statusCtx) {
+    const statusLabels = {{ student_status_labels|safe }};
+    const statusCounts = {{ student_status_counts|safe }};
+    const statusColors = [
+        'rgba(107,255,138,0.75)', // approved — green
+        'rgba(255,201,136,0.75)', // pending  — orange
+        'rgba(255,138,138,0.75)', // rejected — red
+        'rgba(136,136,136,0.75)', // disabled — grey
+    ];
+    const statusBorders = ['#6bff8a','#ffc988','#ff8a8a','#888'];
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: statusColors,
+                borderColor: statusBorders,
+                borderWidth: 1.5,
+                hoverOffset: 8,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#aaa',
+                        boxWidth: 12,
+                        padding: 10,
+                        font: { size: 11 },
+                    },
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10,10,20,0.92)',
+                    borderColor: 'rgba(212,175,55,0.3)',
+                    borderWidth: 1,
+                    titleColor: GOLD,
+                    bodyColor: '#c0c0c0',
+                    callbacks: {
+                        label: ctx => ` ${ctx.label}: ${ctx.parsed} student${ctx.parsed !== 1 ? 's' : ''}`,
+                    },
+                },
+            },
+        },
+    });
+}
+</script>
 {% endblock %}
