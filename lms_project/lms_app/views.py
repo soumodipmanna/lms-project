@@ -19,6 +19,8 @@ from .moderation import validate_content
 
 
 def student_signup(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     if request.method == 'POST':
         user_form = StudentSignupForm(request.POST)
         if user_form.is_valid():
@@ -44,6 +46,8 @@ def student_signup(request):
 
 
 def student_login(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     error_message = None
     if request.method == 'POST':
         form = StudentLoginForm(request.POST)
