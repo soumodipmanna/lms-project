@@ -57,6 +57,7 @@ urlpatterns = [
     path('admin-portal/fines/export-pdf/', views.admin_export_fines_pdf, name='admin_export_fines_pdf'),
 
     path('admin-portal/borrow-requests/export-pdf/', views.admin_export_borrows_pdf, name='admin_export_borrows_pdf'),
+    path('admin-portal/students/export-pdf/', views.admin_export_students_pdf, name='admin_export_students_pdf'),
     
     path('review/<int:book_id>/', views.submit_review, name='submit_review'),
 

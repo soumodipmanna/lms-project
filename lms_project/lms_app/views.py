@@ -1683,3 +1683,92 @@ def admin_reject_waiver_view(request, waiver_id):
         messages.warning(request, 'Fine waiver request rejected.')
 
     return redirect('admin_manage_fines')
+
+
+@admin_login_required
+def admin_export_students_pdf(request):
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from datetime import datetime
+
+    students = Student.objects.select_related('user').order_by('roll_no')
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=15*mm, leftMargin=15*mm,
+        topMargin=15*mm, bottomMargin=15*mm,
+    )
+
+    styles = getSampleStyleSheet()
+    gold = colors.HexColor('#d4af37')
+    dark = colors.HexColor('#0a0a0f')
+
+    title_style = ParagraphStyle('title', parent=styles['Title'],
+                                 fontSize=18, textColor=gold, spaceAfter=4)
+    sub_style = ParagraphStyle('sub', parent=styles['Normal'],
+                               fontSize=9, textColor=colors.HexColor('#888888'), spaceAfter=2)
+
+    elements = [
+        Paragraph('College Library Management System', title_style),
+        Paragraph('Student Report', ParagraphStyle('rpt', parent=styles['Heading2'],
+                  fontSize=13, textColor=colors.HexColor('#c0c0c0'), spaceAfter=2)),
+        Paragraph(f'Generated: {datetime.now().strftime("%d %b %Y, %I:%M %p")}', sub_style),
+        Spacer(1, 6*mm),
+    ]
+
+    headers = ['#', 'Name', 'Roll No', 'Department', 'Year', 'Email', 'Phone', 'Status']
+    data = [headers]
+
+    for i, s in enumerate(students, start=1):
+        data.append([
+            str(i),
+            s.name or '-',
+            s.roll_no,
+            s.branch or '-',
+            str(s.user.date_joined.year) if s.user.date_joined else '-',
+            s.user.email or '-',
+            s.phone_number or '-',
+            s.get_status_display(),
+        ])
+
+    col_widths = [10*mm, 48*mm, 28*mm, 44*mm, 18*mm, 58*mm, 28*mm, 24*mm]
+    table = Table(data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), gold),
+        ('TEXTCOLOR', (0, 0), (-1, 0), dark),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('TOPPADDING', (0, 0), (-1, 0), 6),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#14141f')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#c0c0c0')),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#14141f'), colors.HexColor('#1a1a2e')]),
+        ('ALIGN', (0, 1), (2, -1), 'CENTER'),
+        ('ALIGN', (4, 1), (4, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 1), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#2a2a3a')),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, gold),
+    ]))
+    elements.append(table)
+
+    footer_style = ParagraphStyle('footer', parent=styles['Normal'],
+                                  fontSize=8, textColor=colors.HexColor('#555555'), spaceBefore=6)
+    elements.append(Spacer(1, 4*mm))
+    elements.append(Paragraph(f'Total records: {students.count()}  |  College Library Management System', footer_style))
+
+    doc.build(elements)
+    filename = f'student_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response

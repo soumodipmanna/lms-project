@@ -10,6 +10,7 @@
             <p>View and manage student accounts</p>
         </div>
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{% url 'admin_export_students_pdf' %}" class="btn-export-pdf" title="Download student list as PDF">📄 Export PDF</a>
             <a href="{% url 'admin_import_students' %}" class="btn-import">📥 Import CSV</a>
             <a href="{% url 'admin_add_student' %}" class="btn-primary">➕ Add Student</a>
         </div>
