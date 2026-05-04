@@ -5,6 +5,7 @@ from .forms import StudentSignupForm, StudentLoginForm, ProfileUpdateForm, Admin
 from django.contrib.auth.models import User
 from .models import Book, Borrow, Student, Admin, Post, Like, Comment, FineWaiver, BookReview
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db import transaction
 from django.contrib.admin.models import LogEntry, CHANGE
@@ -198,10 +199,9 @@ def my_borrowed_books(request):
     })
 
 
+@require_POST
 @login_required
 def submit_review(request, book_id):
-    if request.method != 'POST':
-        return redirect('my_borrowed_books')
     book = get_object_or_404(Book, id=book_id)
     student = request.user.student
     has_returned = Borrow.objects.filter(student=student, book=book, is_returned=True).exists()
