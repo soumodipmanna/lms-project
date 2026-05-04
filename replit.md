@@ -24,7 +24,7 @@ lms_project/
     ├── views.py                 # All view functions (student, admin, social wall)
     ├── urls.py                  # App URL routing
     ├── forms.py                 # Django forms
-    ├── templates/               # HTML templates
+    ├── templates/               # HTML templates (admin_base.html is the shared base for all admin pages)
     ├── static/                  # Static assets (CSS, JS, images)
     ├── middleware.py             # NoCacheMiddleware
     ├── moderation.py            # Content filtering for social wall

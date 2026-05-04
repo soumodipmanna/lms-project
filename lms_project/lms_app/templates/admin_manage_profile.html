@@ -1,106 +1,35 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Profile - Admin Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/admin_base.css' %}">
-    <style>
-        .card { max-width: 600px; }
-    </style>
-</head>
-<body>
-    <div class="page-loader" id="pageLoader">
-        <div class="books-loader">
-            <div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div>
+{% extends 'admin_base.html' %}
+
+{% block title %}Manage Profile{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .card { max-width: 600px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Manage Profile</h2>
+</div>
+<div class="card" style="padding: 2rem;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" value="{{ admin.email }}" readonly>
         </div>
-        <div class="loader-text">Loading...</div>
-    </div>
-    <nav class="navbar">
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
-        <h1>🔐 Admin Portal</h1>
-        <div class="user-info">
-            <span>{{ admin.name }}</span>
-            <span class="role-badge">{{ admin.get_role_display }}</span>
-            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
+        <div class="form-group">
+            <label>Role</label>
+            <input type="text" value="{{ admin.get_role_display }}" readonly>
         </div>
-    </nav>
-    <div class="container">
-        <aside class="sidebar">
-            <ul class="sidebar-menu">
-                <li><a href="{% url 'admin_dashboard' %}"><span class="icon">📊</span><span class="label">Dashboard</span></a></li>
-                <li><a href="{% url 'admin_signup_requests' %}"><span class="icon">✋</span><span class="label">Signup Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_students' %}"><span class="icon">👥</span><span class="label">Manage Students</span></a></li>
-                <li><a href="{% url 'admin_manage_books' %}"><span class="icon">📚</span><span class="label">Manage Books</span></a></li>
-                <li><a href="{% url 'admin_borrow_requests' %}"><span class="icon">📋</span><span class="label">Borrow Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_fines' %}"><span class="icon">💰</span><span class="label">Manage Fines</span></a></li>
-                {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}"><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
-                {% endif %}
-            </ul>
-        </aside>
-        <main class="main-content">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            <div class="page-header">
-                <h2>Manage Profile</h2>
-            </div>
-            <div class="card" style="padding: 2rem;">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" value="{{ admin.email }}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Role</label>
-                        <input type="text" value="{{ admin.get_role_display }}" readonly>
-                    </div>
-                    {% for field in form %}
-                    <div class="form-group">
-                        <label>{{ field.label }}</label>
-                        {{ field }}
-                    </div>
-                    {% endfor %}
-                    <button type="submit" class="btn-primary">Save Changes</button>
-                </form>
-            </div>
-        </main>
-    </div>
-    <script>
-        const pageLoader = document.getElementById('pageLoader');
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!this.getAttribute('href').startsWith('#') && this.getAttribute('href') !== 'javascript:void(0)' && this.getAttribute('href')) {
-                    pageLoader.classList.add('active');
-                }
-            });
-        });
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                pageLoader.classList.add('active');
-            });
-        });
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-        window.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                document.querySelector('.sidebar').classList.add('collapsed');
-                document.querySelector('.main-content').classList.add('expanded');
-            }
-        });
-    </script>
-</body>
-</html>
+        {% for field in form %}
+        <div class="form-group">
+            <label>{{ field.label }}</label>
+            {{ field }}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

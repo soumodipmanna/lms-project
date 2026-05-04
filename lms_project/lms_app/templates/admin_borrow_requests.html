@@ -1,217 +1,139 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Borrow Requests - Admin Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/admin_base.css' %}">
-</head>
-<body>
-    <div class="page-loader" id="pageLoader">
-        <div class="books-loader">
-            <div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div>
-        </div>
-        <div class="loader-text">Loading...</div>
-    </div>
+{% extends 'admin_base.html' %}
 
-    <nav class="navbar">
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
-        <h1>🔐 Admin Portal</h1>
-        <div class="user-info">
-            <span>{{ admin.name }}</span>
-            <span class="role-badge">{{ admin.get_role_display }}</span>
-            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
-        </div>
-    </nav>
+{% block title %}Borrow Requests{% endblock %}
 
-    <div class="container">
-        <aside class="sidebar">
-            <ul class="sidebar-menu">
-                <li><a href="{% url 'admin_dashboard' %}"><span class="icon">📊</span><span class="label">Dashboard</span></a></li>
-                <li><a href="{% url 'admin_signup_requests' %}"><span class="icon">✋</span><span class="label">Signup Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_students' %}"><span class="icon">👥</span><span class="label">Manage Students</span></a></li>
-                <li><a href="{% url 'admin_manage_books' %}"><span class="icon">📚</span><span class="label">Manage Books</span></a></li>
-                <li><a href="{% url 'admin_borrow_requests' %}" class="active"><span class="icon">📋</span><span class="label">Borrow Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_fines' %}"><span class="icon">💰</span><span class="label">Manage Fines</span></a></li>
-                {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}"><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
-                {% endif %}
-            </ul>
-        </aside>
+{% block content %}
+<div class="page-header">
+    <h2>Borrow Requests</h2>
+    <p>Manage student borrow requests</p>
+</div>
 
-        <main class="main-content">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
+<div class="card">
+    <table class="table" style="min-width: 800px;">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Roll No</th>
+                <th>Book</th>
+                <th>Borrow Date</th>
+                <th>Expected Return</th>
+                <th>Actual Return</th>
+                <th>Fine</th>
+                <th>Waiver</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrow in borrows %}
+            <tr>
+                <td>{{ borrow.student.name|default:borrow.student.roll_no }}</td>
+                <td>{{ borrow.student.roll_no }}</td>
+                <td>{{ borrow.book.title }}</td>
+                <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
+                <td>{{ borrow.expected_return_date|date:"M d, Y"|default:"-" }}</td>
+                <td>{{ borrow.return_date|date:"M d, Y"|default:"-" }}</td>
+                <td>
+                    {% if borrow.fine_amount and borrow.fine_amount > 0 %}
+                    <span style="color: #ff8a8a; font-weight: 600;">₹{{ borrow.fine_amount }}</span>
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if borrow.waiver_status == 'approved' %}
+                    <span style="color: #6bff8a; font-weight: 600; font-size: 12px;">✓ Waived ₹{{ borrow.waiver_amount }}</span>
+                    {% elif borrow.waiver_status == 'pending' %}
+                    <span style="color: #ffc988; font-weight: 600; font-size: 12px;">⏳ Pending ₹{{ borrow.waiver_amount }}</span>
+                    {% elif borrow.waiver_status == 'rejected' %}
+                    <span style="color: #ff8a8a; font-weight: 600; font-size: 12px;">✗ Rejected</span>
+                    {% else %}-{% endif %}
+                </td>
+                <td><span class="badge badge-{{ borrow.status }}">{{ borrow.get_status_display }}</span></td>
+                <td>
+                    {% if borrow.status == 'pending' %}
+                    <form method="post" action="{% url 'admin_approve_borrow' borrow.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="btn-success">Approve</button>
+                    </form>
+                    <button class="btn-danger"
+                            data-borrow-id="{{ borrow.id }}"
+                            data-book-title="{{ borrow.book.title }}"
+                            data-student-roll="{{ borrow.student.roll_no }}"
+                            onclick="openRejectModal(this)">Reject</button>
+                    {% elif borrow.status == 'approved' and not borrow.is_returned %}
+                    <form method="post" action="{% url 'admin_return_book' borrow.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="btn-success">✓ Mark Returned</button>
+                    </form>
+                    {% elif borrow.is_returned %}
+                    <span style="color: #6bff8a; font-weight: 500;">✓ Returned</span>
+                    {% else %}
+                    <span style="color: #666;">{{ borrow.get_status_display }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" style="text-align: center; color: #666; padding: 2rem;">No borrow requests found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<div id="rejectModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-bottom: 1rem; color: #ff8a8a;">Reject Borrow Request</h2>
+        <p style="margin-bottom: 1rem; color: #888;">
+            <strong style="color: #c0c0c0;">Book:</strong> <span id="rejectBookTitle"></span><br>
+            <strong style="color: #c0c0c0;">Student Roll No:</strong> <span id="rejectStudentRoll"></span>
+        </p>
+        <form id="rejectForm" method="post" action="">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label for="rejectReasonText" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #b0b0b0;">Reason for Rejection: <span style="color: #ff8a8a;">*</span></label>
+                <textarea id="rejectReasonText" name="reject_reason" rows="4" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; font-family: 'Raleway', sans-serif; color: #e0e0e0; resize: vertical;" placeholder="Enter the reason for rejecting this request..." required></textarea>
             </div>
-            {% endif %}
-
-            <div class="page-header">
-                <h2>Borrow Requests</h2>
-                <p>Manage student borrow requests</p>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="closeRejectModal()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Cancel</button>
+                <button type="button" onclick="submitRejectForm()" style="background: rgba(200,50,50,0.2); color: #ff8a8a; border: 1px solid rgba(200,50,50,0.3); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Reject Request</button>
             </div>
-
-            <div class="card">
-                <table class="table" style="min-width: 800px;">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Roll No</th>
-                            <th>Book</th>
-                            <th>Borrow Date</th>
-                            <th>Expected Return</th>
-                            <th>Actual Return</th>
-                            <th>Fine</th>
-                            <th>Waiver</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for borrow in borrows %}
-                        <tr>
-                            <td>{{ borrow.student.name|default:borrow.student.roll_no }}</td>
-                            <td>{{ borrow.student.roll_no }}</td>
-                            <td>{{ borrow.book.title }}</td>
-                            <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
-                            <td>{{ borrow.expected_return_date|date:"M d, Y"|default:"-" }}</td>
-                            <td>{{ borrow.return_date|date:"M d, Y"|default:"-" }}</td>
-                            <td>
-                                {% if borrow.fine_amount and borrow.fine_amount > 0 %}
-                                <span style="color: #ff8a8a; font-weight: 600;">₹{{ borrow.fine_amount }}</span>
-                                {% else %}-{% endif %}
-                            </td>
-                            <td>
-                                {% if borrow.waiver_status == 'approved' %}
-                                <span style="color: #6bff8a; font-weight: 600; font-size: 12px;">✓ Waived ₹{{ borrow.waiver_amount }}</span>
-                                {% elif borrow.waiver_status == 'pending' %}
-                                <span style="color: #ffc988; font-weight: 600; font-size: 12px;">⏳ Pending ₹{{ borrow.waiver_amount }}</span>
-                                {% elif borrow.waiver_status == 'rejected' %}
-                                <span style="color: #ff8a8a; font-weight: 600; font-size: 12px;">✗ Rejected</span>
-                                {% else %}-{% endif %}
-                            </td>
-                            <td><span class="badge badge-{{ borrow.status }}">{{ borrow.get_status_display }}</span></td>
-                            <td>
-                                {% if borrow.status == 'pending' %}
-                                <form method="post" action="{% url 'admin_approve_borrow' borrow.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button class="btn-success">Approve</button>
-                                </form>
-                                <button class="btn-danger"
-                                        data-borrow-id="{{ borrow.id }}"
-                                        data-book-title="{{ borrow.book.title }}"
-                                        data-student-roll="{{ borrow.student.roll_no }}"
-                                        onclick="openRejectModal(this)">Reject</button>
-                                {% elif borrow.status == 'approved' and not borrow.is_returned %}
-                                <form method="post" action="{% url 'admin_return_book' borrow.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button class="btn-success">✓ Mark Returned</button>
-                                </form>
-                                {% elif borrow.is_returned %}
-                                <span style="color: #6bff8a; font-weight: 500;">✓ Returned</span>
-                                {% else %}
-                                <span style="color: #666;">{{ borrow.get_status_display }}</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="10" style="text-align: center; color: #666; padding: 2rem;">No borrow requests found</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </main>
+        </form>
     </div>
+</div>
+{% endblock %}
 
-    <div id="rejectModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 1rem; color: #ff8a8a;">Reject Borrow Request</h2>
-            <p style="margin-bottom: 1rem; color: #888;">
-                <strong style="color: #c0c0c0;">Book:</strong> <span id="rejectBookTitle"></span><br>
-                <strong style="color: #c0c0c0;">Student Roll No:</strong> <span id="rejectStudentRoll"></span>
-            </p>
-            <form id="rejectForm" method="post" action="">
-                {% csrf_token %}
-                <div style="margin-bottom: 1rem;">
-                    <label for="rejectReasonText" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #b0b0b0;">Reason for Rejection: <span style="color: #ff8a8a;">*</span></label>
-                    <textarea id="rejectReasonText" name="reject_reason" rows="4" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; font-family: 'Raleway', sans-serif; color: #e0e0e0; resize: vertical;" placeholder="Enter the reason for rejecting this request..." required></textarea>
-                </div>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button type="button" onclick="closeRejectModal()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Cancel</button>
-                    <button type="button" onclick="submitRejectForm()" style="background: rgba(200,50,50,0.2); color: #ff8a8a; border: 1px solid rgba(200,50,50,0.3); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Reject Request</button>
-                </div>
-            </form>
-        </div>
-    </div>
+{% block extra_js %}
+<script>
+    let currentBorrowId = null;
 
-    <script>
-        const pageLoader = document.getElementById('pageLoader');
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!this.getAttribute('href').startsWith('#') &&
-                    this.getAttribute('href') !== 'javascript:void(0)' &&
-                    this.getAttribute('href')) {
-                    pageLoader.classList.add('active');
-                }
-            });
-        });
-        document.querySelectorAll('form').forEach(form => { form.addEventListener('submit', function() { pageLoader.classList.add('active'); }); });
-        setTimeout(() => {
-            document.querySelectorAll('.messages .alert').forEach(alert => {
-                alert.style.transition = 'opacity 0.3s ease'; alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            });
-        }, 5000);
+    function openRejectModal(button) {
+        currentBorrowId = button.getAttribute('data-borrow-id');
+        document.getElementById('rejectBookTitle').textContent = button.getAttribute('data-book-title');
+        document.getElementById('rejectStudentRoll').textContent = button.getAttribute('data-student-roll');
+        document.getElementById('rejectReasonText').value = '';
+        const modal = document.getElementById('rejectModal');
+        modal.style.display = 'flex';
+        setTimeout(() => { modal.classList.add('active'); }, 10);
+    }
 
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-        window.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                document.querySelector('.sidebar').classList.add('collapsed');
-                document.querySelector('.main-content').classList.add('expanded');
-            }
-        });
+    function closeRejectModal() {
+        const modal = document.getElementById('rejectModal');
+        modal.classList.remove('active');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    }
 
-        let currentBorrowId = null;
+    function submitRejectForm() {
+        const reason = document.getElementById('rejectReasonText').value.trim();
+        if (!reason) { alert('Please provide a reason for rejection.'); return; }
+        const form = document.getElementById('rejectForm');
+        form.action = '/admin-portal/borrow-requests/reject/' + currentBorrowId + '/';
+        form.submit();
+    }
 
-        function openRejectModal(button) {
-            currentBorrowId = button.getAttribute('data-borrow-id');
-            document.getElementById('rejectBookTitle').textContent = button.getAttribute('data-book-title');
-            document.getElementById('rejectStudentRoll').textContent = button.getAttribute('data-student-roll');
-            document.getElementById('rejectReasonText').value = '';
-            const modal = document.getElementById('rejectModal');
-            modal.style.display = 'flex';
-            setTimeout(() => { modal.classList.add('active'); }, 10);
-        }
-
-        function closeRejectModal() {
-            const modal = document.getElementById('rejectModal');
-            modal.classList.remove('active');
-            setTimeout(() => { modal.style.display = 'none'; }, 300);
-        }
-
-        function submitRejectForm() {
-            const reason = document.getElementById('rejectReasonText').value.trim();
-            if (!reason) { alert('Please provide a reason for rejection.'); return; }
-            const form = document.getElementById('rejectForm');
-            form.action = '/admin-portal/borrow-requests/reject/' + currentBorrowId + '/';
-            form.submit();
-        }
-
-        document.getElementById('rejectModal').addEventListener('click', function(e) {
-            if (e.target === this) { closeRejectModal(); }
-        });
-    </script>
-</body>
-</html>
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+        if (e.target === this) { closeRejectModal(); }
+    });
+</script>
+{% endblock %}

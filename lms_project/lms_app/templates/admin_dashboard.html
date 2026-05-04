@@ -1,212 +1,128 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Library Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/admin_base.css' %}">
-    <style>
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem; margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: rgba(20, 20, 35, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            padding: 1.5rem; border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); border-color: rgba(212, 175, 55, 0.2); }
-        .stat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-        .stat-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-        }
-        .stat-icon.gold { background: rgba(212, 175, 55, 0.12); }
-        .stat-icon.green { background: rgba(50, 180, 80, 0.12); }
-        .stat-icon.orange { background: rgba(255, 160, 50, 0.12); }
-        .stat-icon.blue { background: rgba(50, 150, 255, 0.12); }
-        .stat-icon.red { background: rgba(200, 50, 50, 0.12); }
-        .stat-number { font-size: 2rem; font-weight: 700; color: #d4af37; margin-bottom: 0.3rem; }
-        .stat-label { color: #888; font-size: 0.9rem; }
+{% extends 'admin_base.html' %}
 
-        .quick-actions {
-            background: rgba(20, 20, 35, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            padding: 1.5rem; border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        .quick-actions h3 { margin-bottom: 1rem; color: #d4af37; font-weight: 600; }
-        .action-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
-        .action-link {
-            display: flex; align-items: center; gap: 0.8rem; padding: 1rem;
-            background: rgba(212, 175, 55, 0.06);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            border-radius: 10px; text-decoration: none; color: #c0c0c0;
-            transition: all 0.3s ease; font-weight: 500;
-        }
-        .action-link:hover { background: rgba(212, 175, 55, 0.12); color: #d4af37; border-color: rgba(212, 175, 55, 0.25); transform: translateY(-2px); }
-    </style>
-</head>
-<body>
-    <div class="page-loader" id="pageLoader">
-        <div class="books-loader">
-            <div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div>
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .stats-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: rgba(20, 20, 35, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 1.5rem; border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); border-color: rgba(212, 175, 55, 0.2); }
+    .stat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .stat-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+    }
+    .stat-icon.gold { background: rgba(212, 175, 55, 0.12); }
+    .stat-icon.green { background: rgba(50, 180, 80, 0.12); }
+    .stat-icon.orange { background: rgba(255, 160, 50, 0.12); }
+    .stat-icon.blue { background: rgba(50, 150, 255, 0.12); }
+    .stat-icon.red { background: rgba(200, 50, 50, 0.12); }
+    .stat-number { font-size: 2rem; font-weight: 700; color: #d4af37; margin-bottom: 0.3rem; }
+    .stat-label { color: #888; font-size: 0.9rem; }
+
+    .quick-actions {
+        background: rgba(20, 20, 35, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 1.5rem; border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .quick-actions h3 { margin-bottom: 1rem; color: #d4af37; font-weight: 600; }
+    .action-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+    .action-link {
+        display: flex; align-items: center; gap: 0.8rem; padding: 1rem;
+        background: rgba(212, 175, 55, 0.06);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        border-radius: 10px; text-decoration: none; color: #c0c0c0;
+        transition: all 0.3s ease; font-weight: 500;
+    }
+    .action-link:hover { background: rgba(212, 175, 55, 0.12); color: #d4af37; border-color: rgba(212, 175, 55, 0.25); transform: translateY(-2px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Dashboard</h2>
+    <p>Welcome back, {{ admin.name }}! Here's what's happening today.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-number">{{ total_students }}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-icon gold">👥</div>
         </div>
-        <div class="loader-text">Loading...</div>
     </div>
-
-    <nav class="navbar">
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
-        <h1>🔐 Admin Portal</h1>
-        <div class="user-info">
-            <span>{{ admin.name }}</span>
-            <span class="role-badge">{{ admin.get_role_display }}</span>
-            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-number">{{ total_books }}</div>
+                <div class="stat-label">Total Books</div>
+            </div>
+            <div class="stat-icon green">📚</div>
         </div>
-    </nav>
-
-    <div class="container">
-        <aside class="sidebar">
-            <ul class="sidebar-menu">
-                <li><a href="{% url 'admin_dashboard' %}" class="active"><span class="icon">📊</span><span class="label">Dashboard</span></a></li>
-                <li><a href="{% url 'admin_signup_requests' %}"><span class="icon">✋</span><span class="label">Signup Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_students' %}"><span class="icon">👥</span><span class="label">Manage Students</span></a></li>
-                <li><a href="{% url 'admin_manage_books' %}"><span class="icon">📚</span><span class="label">Manage Books</span></a></li>
-                <li><a href="{% url 'admin_borrow_requests' %}"><span class="icon">📋</span><span class="label">Borrow Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_fines' %}"><span class="icon">💰</span><span class="label">Manage Fines</span></a></li>
-                {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}"><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
-                {% endif %}
-            </ul>
-        </aside>
-
-        <main class="main-content">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="page-header">
-                <h2>Dashboard</h2>
-                <p>Welcome back, {{ admin.name }}! Here's what's happening today.</p>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-number">{{ total_students }}</div>
-                            <div class="stat-label">Total Students</div>
-                        </div>
-                        <div class="stat-icon gold">👥</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-number">{{ total_books }}</div>
-                            <div class="stat-label">Total Books</div>
-                        </div>
-                        <div class="stat-icon green">📚</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-number">{{ pending_requests }}</div>
-                            <div class="stat-label">Pending Requests</div>
-                        </div>
-                        <div class="stat-icon orange">⏳</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-number">₹{{ total_fines|floatformat:2 }}</div>
-                            <div class="stat-label">Fine Management</div>
-                        </div>
-                        <div class="stat-icon red">💰</div>
-                    </div>
-                </div>
-                {% if admin.role == 'superadmin' %}
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-number">{{ total_admins }}</div>
-                            <div class="stat-label">Total Admins</div>
-                        </div>
-                        <div class="stat-icon blue">🔑</div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="quick-actions">
-                <h3>Quick Actions</h3>
-                <div class="action-links">
-                    <a href="{% url 'admin_add_student' %}" class="action-link">
-                        <span class="icon">➕</span><span>Add New Student</span>
-                    </a>
-                    <a href="{% url 'admin_add_book' %}" class="action-link">
-                        <span class="icon">📖</span><span>Add New Book</span>
-                    </a>
-                    <a href="{% url 'admin_borrow_requests' %}" class="action-link">
-                        <span class="icon">📋</span><span>Review Requests</span>
-                    </a>
-                    {% if admin.role == 'superadmin' %}
-                    <a href="{% url 'admin_add_admin' %}" class="action-link">
-                        <span class="icon">👤</span><span>Add New Admin</span>
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-        </main>
     </div>
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-number">{{ pending_requests }}</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            <div class="stat-icon orange">⏳</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-number">₹{{ total_fines|floatformat:2 }}</div>
+                <div class="stat-label">Fine Management</div>
+            </div>
+            <div class="stat-icon red">💰</div>
+        </div>
+    </div>
+    {% if admin.role == 'superadmin' %}
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-number">{{ total_admins }}</div>
+                <div class="stat-label">Total Admins</div>
+            </div>
+            <div class="stat-icon blue">🔑</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 
-    <script>
-        const pageLoader = document.getElementById('pageLoader');
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!this.getAttribute('href').startsWith('#') &&
-                    this.getAttribute('href') !== 'javascript:void(0)' &&
-                    this.getAttribute('href')) {
-                    pageLoader.classList.add('active');
-                }
-            });
-        });
-        setTimeout(() => {
-            document.querySelectorAll('.messages .alert').forEach(alert => {
-                alert.style.transition = 'opacity 0.3s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            });
-        }, 5000);
-
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            toggleBtn.innerHTML = sidebar.classList.contains('collapsed') ? '→' : '☰';
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-        window.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                document.querySelector('.sidebar').classList.add('collapsed');
-                document.querySelector('.main-content').classList.add('expanded');
-                document.getElementById('sidebarToggle').innerHTML = '→';
-            }
-        });
-    </script>
-</body>
-</html>
+<div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-links">
+        <a href="{% url 'admin_add_student' %}" class="action-link">
+            <span class="icon">➕</span><span>Add New Student</span>
+        </a>
+        <a href="{% url 'admin_add_book' %}" class="action-link">
+            <span class="icon">📖</span><span>Add New Book</span>
+        </a>
+        <a href="{% url 'admin_borrow_requests' %}" class="action-link">
+            <span class="icon">📋</span><span>Review Requests</span>
+        </a>
+        {% if admin.role == 'superadmin' %}
+        <a href="{% url 'admin_add_admin' %}" class="action-link">
+            <span class="icon">👤</span><span>Add New Admin</span>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

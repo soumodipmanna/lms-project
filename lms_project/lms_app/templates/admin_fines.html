@@ -1,261 +1,193 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Fines - Admin Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/admin_base.css' %}">
-    <style>
-        @media (max-width: 768px) {
-            .sidebar { display: block; position: fixed; left: -260px; top: 64px; height: calc(100vh - 64px); z-index: 99; transition: left 0.3s ease; }
-            .sidebar.mobile-open { left: 0; }
-            .main-content { margin-left: 0; padding: 1rem; }
-            .table { font-size: 0.82rem; }
-            .table th, .table td { padding: 0.5rem; }
-        }
-    </style>
-</head>
-<body>
-    <div class="page-loader" id="pageLoader">
-        <div class="books-loader">
-            <div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div><div class="book"></div>
-        </div>
-        <div class="loader-text">Loading...</div>
-    </div>
+{% extends 'admin_base.html' %}
 
-    <nav class="navbar">
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">&#9776;</button>
-        <h1>&#128274; Admin Portal</h1>
-        <div class="user-info">
-            <span>{{ admin.name }}</span>
-            <span class="role-badge">{{ admin.get_role_display }}</span>
-            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
-        </div>
-    </nav>
+{% block title %}Manage Fines{% endblock %}
 
-    <div class="container">
-        <aside class="sidebar">
-            <ul class="sidebar-menu">
-                <li><a href="{% url 'admin_dashboard' %}"><span class="icon">&#128202;</span><span class="label">Dashboard</span></a></li>
-                <li><a href="{% url 'admin_signup_requests' %}"><span class="icon">&#9995;</span><span class="label">Signup Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_students' %}"><span class="icon">&#128101;</span><span class="label">Manage Students</span></a></li>
-                <li><a href="{% url 'admin_manage_books' %}"><span class="icon">&#128218;</span><span class="label">Manage Books</span></a></li>
-                <li><a href="{% url 'admin_borrow_requests' %}"><span class="icon">&#128203;</span><span class="label">Borrow Requests</span></a></li>
-                <li><a href="{% url 'admin_manage_fines' %}" class="active"><span class="icon">&#128176;</span><span class="label">Manage Fines</span></a></li>
-                {% if admin.role == 'superadmin' %}
-                <li><a href="{% url 'admin_manage_admins' %}"><span class="icon">&#128273;</span><span class="label">Manage Admins</span></a></li>
-                {% endif %}
-            </ul>
-        </aside>
+{% block extra_styles %}
+<style>
+    @media (max-width: 768px) {
+        .sidebar { display: block; position: fixed; left: -260px; top: 64px; height: calc(100vh - 64px); z-index: 99; transition: left 0.3s ease; }
+        .sidebar.mobile-open { left: 0; }
+        .main-content { margin-left: 0; padding: 1rem; }
+        .table { font-size: 0.82rem; }
+        .table th, .table td { padding: 0.5rem; }
+    }
+</style>
+{% endblock %}
 
-        <main class="main-content">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
+{% block content %}
+<div class="page-header">
+    <h2>Manage Fines &amp; Waivers</h2>
+    <p>View fines and manage waiver requests</p>
+</div>
+
+{% if admin.role == 'superadmin' and pending_waivers %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h3>Pending Waiver Requests</h3>
+    <table class="table" style="min-width: 600px;">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Book</th>
+                <th>Original Fine</th>
+                <th>Waiver Amount</th>
+                <th>Reason</th>
+                <th>Requested By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for waiver in pending_waivers %}
+            <tr>
+                <td>{{ waiver.borrow.student.name|default:waiver.borrow.student.roll_no }}</td>
+                <td>{{ waiver.borrow.book.title }}</td>
+                <td class="fine-amount">Rs.{{ waiver.original_fine }}</td>
+                <td style="color: #6bff8a; font-weight: 600;">Rs.{{ waiver.waived_amount }}</td>
+                <td>{{ waiver.reason }}</td>
+                <td>{{ waiver.requested_by.name }}</td>
+                <td>
+                    <form method="post" action="{% url 'admin_approve_waiver' waiver.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="btn-success" type="submit">Approve</button>
+                    </form>
+                    <button class="btn-danger" onclick="openRejectWaiverModal({{ waiver.id }})">Reject</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>All Fines</h3>
+    <table class="table" style="min-width: 600px;">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Roll No</th>
+                <th>Book</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Fine Amount</th>
+                <th>Waiver</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrow in borrows_with_fines %}
+            <tr>
+                <td>{{ borrow.student.name|default:borrow.student.roll_no }}</td>
+                <td>{{ borrow.student.roll_no }}</td>
+                <td>{{ borrow.book.title }}</td>
+                <td>{{ borrow.expected_return_date|date:"M d, Y"|default:"-" }}</td>
+                <td>
+                    {% if borrow.is_returned %}
+                    <span class="badge badge-approved">Returned</span>
+                    {% else %}
+                    <span class="badge badge-pending">Not Returned</span>
+                    {% endif %}
+                </td>
+                <td class="fine-amount">Rs.{{ borrow.live_fine|floatformat:2 }}</td>
+                <td>
+                    {% if borrow.approved_waiver %}
+                    <span class="waived-badge">Waived Rs.{{ borrow.approved_waiver.waived_amount }}</span>
+                    {% elif borrow.active_waiver %}
+                    <span class="badge badge-pending">Pending</span>
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if not borrow.active_waiver and borrow.live_fine > 0 %}
+                    <button class="btn-primary" style="padding: 0.55rem 1rem; font-size: 0.85rem;" onclick="openWaiverModal({{ borrow.id }}, '{{ borrow.book.title|escapejs }}', '{{ borrow.student.roll_no|escapejs }}', {{ borrow.live_fine|floatformat:2 }})">Request Waiver</button>
+                    {% elif borrow.active_waiver %}
+                    <span style="color: #ffc988; font-size: 0.85rem;">Waiver Pending</span>
+                    {% else %}-{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; color: #666; padding: 2rem;">No fines recorded</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<div id="waiverModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-bottom: 1rem; color: #d4af37;">Request Fine Waiver</h2>
+        <p style="margin-bottom: 0.5rem; color: #888;"><strong style="color: #c0c0c0;">Book:</strong> <span id="waiverBookTitle"></span></p>
+        <p style="margin-bottom: 0.5rem; color: #888;"><strong style="color: #c0c0c0;">Student:</strong> <span id="waiverStudentRoll"></span></p>
+        <p style="margin-bottom: 1rem; color: #888;"><strong style="color: #c0c0c0;">Current Fine:</strong> <span id="waiverCurrentFine" class="fine-amount"></span></p>
+        <form id="waiverForm" method="post" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="waivedAmount">Waiver Amount (Rs.) <span style="color: #ff8a8a;">*</span></label>
+                <input type="number" id="waivedAmount" name="waived_amount" step="0.01" min="0.01" class="form-input" required>
             </div>
-            {% endif %}
-
-            <div class="page-header">
-                <h2>Manage Fines &amp; Waivers</h2>
-                <p>View fines and manage waiver requests</p>
+            <div class="form-group">
+                <label for="waiverReason">Reason <span style="color: #ff8a8a;">*</span></label>
+                <textarea id="waiverReason" name="reason" rows="3" class="form-input" placeholder="Enter reason for waiver..." required></textarea>
             </div>
-
-            {% if admin.role == 'superadmin' and pending_waivers %}
-            <div class="card" style="margin-bottom: 2rem;">
-                <h3>Pending Waiver Requests</h3>
-                <table class="table" style="min-width: 600px;">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Book</th>
-                            <th>Original Fine</th>
-                            <th>Waiver Amount</th>
-                            <th>Reason</th>
-                            <th>Requested By</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for waiver in pending_waivers %}
-                        <tr>
-                            <td>{{ waiver.borrow.student.name|default:waiver.borrow.student.roll_no }}</td>
-                            <td>{{ waiver.borrow.book.title }}</td>
-                            <td class="fine-amount">Rs.{{ waiver.original_fine }}</td>
-                            <td style="color: #6bff8a; font-weight: 600;">Rs.{{ waiver.waived_amount }}</td>
-                            <td>{{ waiver.reason }}</td>
-                            <td>{{ waiver.requested_by.name }}</td>
-                            <td>
-                                <form method="post" action="{% url 'admin_approve_waiver' waiver.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button class="btn-success" type="submit">Approve</button>
-                                </form>
-                                <button class="btn-danger" onclick="openRejectWaiverModal({{ waiver.id }})">Reject</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="closeWaiverModal()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Cancel</button>
+                <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem; font-weight: 600; font-size: 0.95rem;">Submit Waiver</button>
             </div>
-            {% endif %}
+        </form>
+    </div>
+</div>
 
-            <div class="card">
-                <h3>All Fines</h3>
-                <table class="table" style="min-width: 600px;">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Roll No</th>
-                            <th>Book</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Fine Amount</th>
-                            <th>Waiver</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for borrow in borrows_with_fines %}
-                        <tr>
-                            <td>{{ borrow.student.name|default:borrow.student.roll_no }}</td>
-                            <td>{{ borrow.student.roll_no }}</td>
-                            <td>{{ borrow.book.title }}</td>
-                            <td>{{ borrow.expected_return_date|date:"M d, Y"|default:"-" }}</td>
-                            <td>
-                                {% if borrow.is_returned %}
-                                <span class="badge badge-approved">Returned</span>
-                                {% else %}
-                                <span class="badge badge-pending">Not Returned</span>
-                                {% endif %}
-                            </td>
-                            <td class="fine-amount">Rs.{{ borrow.live_fine|floatformat:2 }}</td>
-                            <td>
-                                {% if borrow.approved_waiver %}
-                                <span class="waived-badge">Waived Rs.{{ borrow.approved_waiver.waived_amount }}</span>
-                                {% elif borrow.active_waiver %}
-                                <span class="badge badge-pending">Pending</span>
-                                {% else %}-{% endif %}
-                            </td>
-                            <td>
-                                {% if not borrow.active_waiver and borrow.live_fine > 0 %}
-                                <button class="btn-primary" style="padding: 0.55rem 1rem; font-size: 0.85rem;" onclick="openWaiverModal({{ borrow.id }}, '{{ borrow.book.title|escapejs }}', '{{ borrow.student.roll_no|escapejs }}', {{ borrow.live_fine|floatformat:2 }})">Request Waiver</button>
-                                {% elif borrow.active_waiver %}
-                                <span style="color: #ffc988; font-size: 0.85rem;">Waiver Pending</span>
-                                {% else %}-{% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" style="text-align: center; color: #666; padding: 2rem;">No fines recorded</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<div id="rejectWaiverModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-bottom: 1rem; color: #ff8a8a;">Reject Waiver Request</h2>
+        <form id="rejectWaiverForm" method="post" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rejectionReason">Reason for Rejection</label>
+                <textarea id="rejectionReason" name="rejection_reason" rows="3" class="form-input" placeholder="Optional reason..."></textarea>
             </div>
-        </main>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="closeRejectWaiverModal()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Cancel</button>
+                <button type="submit" class="btn-danger" style="padding: 0.75rem 1.5rem; font-weight: 600;">Reject</button>
+            </div>
+        </form>
     </div>
+</div>
+{% endblock %}
 
-    <div id="waiverModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 1rem; color: #d4af37;">Request Fine Waiver</h2>
-            <p style="margin-bottom: 0.5rem; color: #888;"><strong style="color: #c0c0c0;">Book:</strong> <span id="waiverBookTitle"></span></p>
-            <p style="margin-bottom: 0.5rem; color: #888;"><strong style="color: #c0c0c0;">Student:</strong> <span id="waiverStudentRoll"></span></p>
-            <p style="margin-bottom: 1rem; color: #888;"><strong style="color: #c0c0c0;">Current Fine:</strong> <span id="waiverCurrentFine" class="fine-amount"></span></p>
-            <form id="waiverForm" method="post" action="">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="waivedAmount">Waiver Amount (Rs.) <span style="color: #ff8a8a;">*</span></label>
-                    <input type="number" id="waivedAmount" name="waived_amount" step="0.01" min="0.01" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="waiverReason">Reason <span style="color: #ff8a8a;">*</span></label>
-                    <textarea id="waiverReason" name="reason" rows="3" class="form-input" placeholder="Enter reason for waiver..." required></textarea>
-                </div>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button type="button" onclick="closeWaiverModal()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Cancel</button>
-                    <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem; font-weight: 600; font-size: 0.95rem;">Submit Waiver</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="rejectWaiverModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 1rem; color: #ff8a8a;">Reject Waiver Request</h2>
-            <form id="rejectWaiverForm" method="post" action="">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="rejectionReason">Reason for Rejection</label>
-                    <textarea id="rejectionReason" name="rejection_reason" rows="3" class="form-input" placeholder="Optional reason..."></textarea>
-                </div>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button type="button" onclick="closeRejectWaiverModal()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 600;">Cancel</button>
-                    <button type="submit" class="btn-danger" style="padding: 0.75rem 1.5rem; font-weight: 600;">Reject</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-        window.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                document.querySelector('.sidebar').classList.add('collapsed');
-                document.querySelector('.main-content').classList.add('expanded');
-            }
-        });
-
-        function openWaiverModal(borrowId, bookTitle, studentRoll, currentFine) {
-            document.getElementById('waiverBookTitle').textContent = bookTitle;
-            document.getElementById('waiverStudentRoll').textContent = studentRoll;
-            document.getElementById('waiverCurrentFine').textContent = 'Rs.' + currentFine.toFixed(2);
-            document.getElementById('waivedAmount').max = currentFine;
-            document.getElementById('waivedAmount').value = '';
-            document.getElementById('waiverReason').value = '';
-            document.getElementById('waiverForm').action = '{% url "admin_request_waiver" 0 %}'.replace('/0/', '/' + borrowId + '/');
-            const modal = document.getElementById('waiverModal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
-        }
-        function closeWaiverModal() {
-            const modal = document.getElementById('waiverModal');
-            modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
-        }
-        function openRejectWaiverModal(waiverId) {
-            document.getElementById('rejectionReason').value = '';
-            document.getElementById('rejectWaiverForm').action = '{% url "admin_reject_waiver" 0 %}'.replace('/0/', '/' + waiverId + '/');
-            const modal = document.getElementById('rejectWaiverModal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
-        }
-        function closeRejectWaiverModal() {
-            const modal = document.getElementById('rejectWaiverModal');
-            modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
-        }
-        document.getElementById('waiverModal').addEventListener('click', function(e) { if (e.target === this) closeWaiverModal(); });
-        document.getElementById('rejectWaiverModal').addEventListener('click', function(e) { if (e.target === this) closeRejectWaiverModal(); });
-
-        const pageLoader = document.getElementById('pageLoader');
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!this.getAttribute('href').startsWith('#') && this.getAttribute('href') !== 'javascript:void(0)' && this.getAttribute('href')) {
-                    pageLoader.classList.add('active');
-                }
-            });
-        });
-        document.querySelectorAll('form').forEach(form => { form.addEventListener('submit', function() { pageLoader.classList.add('active'); }); });
-        setTimeout(() => { document.querySelectorAll('.messages .alert').forEach(alert => { alert.style.transition = 'opacity 0.3s ease'; alert.style.opacity = '0'; setTimeout(() => alert.remove(), 300); }); }, 5000);
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script>
+    function openWaiverModal(borrowId, bookTitle, studentRoll, currentFine) {
+        document.getElementById('waiverBookTitle').textContent = bookTitle;
+        document.getElementById('waiverStudentRoll').textContent = studentRoll;
+        document.getElementById('waiverCurrentFine').textContent = 'Rs.' + currentFine.toFixed(2);
+        document.getElementById('waivedAmount').max = currentFine;
+        document.getElementById('waivedAmount').value = '';
+        document.getElementById('waiverReason').value = '';
+        document.getElementById('waiverForm').action = '{% url "admin_request_waiver" 0 %}'.replace('/0/', '/' + borrowId + '/');
+        const modal = document.getElementById('waiverModal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
+    function closeWaiverModal() {
+        const modal = document.getElementById('waiverModal');
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+    function openRejectWaiverModal(waiverId) {
+        document.getElementById('rejectionReason').value = '';
+        document.getElementById('rejectWaiverForm').action = '{% url "admin_reject_waiver" 0 %}'.replace('/0/', '/' + waiverId + '/');
+        const modal = document.getElementById('rejectWaiverModal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
+    function closeRejectWaiverModal() {
+        const modal = document.getElementById('rejectWaiverModal');
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+    document.getElementById('waiverModal').addEventListener('click', function(e) { if (e.target === this) closeWaiverModal(); });
+    document.getElementById('rejectWaiverModal').addEventListener('click', function(e) { if (e.target === this) closeRejectWaiverModal(); });
+</script>
+{% endblock %}
