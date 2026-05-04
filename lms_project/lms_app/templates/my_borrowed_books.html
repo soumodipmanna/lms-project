@@ -18,6 +18,7 @@
             background: #0a0a0f;
             color: #e0e0e0;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .page-loader {
@@ -75,6 +76,9 @@
             padding: 0.5rem;
             display: flex;
             align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
             transition: transform 0.3s ease;
         }
 
@@ -101,7 +105,9 @@
             border-radius: 16px;
             cursor: pointer;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
             font-weight: 500;
             font-family: 'Raleway', sans-serif;
             transition: all 0.3s ease;
@@ -440,6 +446,31 @@
             color: #d4af37;
         }
 
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 98;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .sidebar-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .status-badge {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+        }
+
         @media (max-width: 768px) {
             .navbar {
                 padding: 0.75rem 1rem;
@@ -456,15 +487,17 @@
             .logout-btn {
                 padding: 0.5rem 0.8rem;
                 font-size: 0.85rem;
+                min-height: 44px;
             }
 
             .sidebar {
                 position: fixed;
                 left: -260px;
-                top: 64px;
-                height: calc(100vh - 64px);
+                top: 0;
+                height: 100vh;
                 z-index: 99;
-                transition: left 0.3s ease;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                padding-top: 64px;
             }
 
             .sidebar.mobile-open {
@@ -566,6 +599,8 @@
             <a href="{% url 'student_logout' %}" class="logout-btn">Logout</a>
         </div>
     </nav>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <div class="container">
         <aside class="sidebar">
@@ -700,31 +735,34 @@
     </script>
     
     <script>
+        function closeMobileSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.remove('mobile-open');
+            backdrop.classList.remove('active');
+        }
+
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
+            const backdrop = document.getElementById('sidebarBackdrop');
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
-                sidebar.classList.toggle('mobile-open');
+                const isOpen = sidebar.classList.toggle('mobile-open');
+                if (isOpen) {
+                    backdrop.classList.add('active');
+                } else {
+                    backdrop.classList.remove('active');
+                }
             } else {
                 sidebar.classList.toggle('collapsed');
                 mainContent.classList.toggle('expanded');
                 localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             }
         }
-        
-        document.addEventListener('click', function(e) {
-            const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const isMobile = window.innerWidth <= 768;
-            
-            if (isMobile && sidebar.classList.contains('mobile-open')) {
-                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
-                    sidebar.classList.remove('mobile-open');
-                }
-            }
-        });
+
+        document.getElementById('sidebarBackdrop').addEventListener('click', closeMobileSidebar);
         
         window.addEventListener('DOMContentLoaded', function() {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
