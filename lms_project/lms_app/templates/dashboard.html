@@ -272,6 +272,13 @@
             <option value="{{ lang|lower }}">{{ lang }}</option>
             {% endfor %}
         </select>
+        <select id="sortBy" class="filter-select">
+            <option value="">Sort by…</option>
+            <option value="title-asc">Title A–Z</option>
+            <option value="title-desc">Title Z–A</option>
+            <option value="author-asc">Author A–Z</option>
+            <option value="avail-desc">Most Available</option>
+        </select>
         <label class="filter-toggle-label">
             <input type="checkbox" id="availableOnly">
             <span class="filter-toggle-track"><span class="filter-toggle-thumb"></span></span>
@@ -353,29 +360,33 @@
 
 {% block extra_js %}
 <script>
-    const searchInput     = document.getElementById('searchInput');
-    const filterCategory  = document.getElementById('filterCategory');
+    const searchInput      = document.getElementById('searchInput');
+    const filterCategory   = document.getElementById('filterCategory');
     const filterDepartment = document.getElementById('filterDepartment');
-    const filterLanguage  = document.getElementById('filterLanguage');
-    const availableOnly   = document.getElementById('availableOnly');
-    const noResults       = document.getElementById('noResults');
-    const bookCards       = document.querySelectorAll('.book-card');
+    const filterLanguage   = document.getElementById('filterLanguage');
+    const sortBy           = document.getElementById('sortBy');
+    const availableOnly    = document.getElementById('availableOnly');
+    const noResults        = document.getElementById('noResults');
+    const booksGrid        = document.getElementById('booksGrid');
+    const bookCards        = Array.from(document.querySelectorAll('.book-card'));
+
+    bookCards.forEach((card, i) => { card.dataset.originalIndex = i; });
 
     function applyFilters() {
-        const term     = searchInput.value.toLowerCase().trim();
-        const cat      = filterCategory.value;
-        const dept     = filterDepartment.value;
-        const lang     = filterLanguage.value;
+        const term      = searchInput.value.toLowerCase().trim();
+        const cat       = filterCategory.value;
+        const dept      = filterDepartment.value;
+        const lang      = filterLanguage.value;
+        const sort      = sortBy.value;
         const onlyAvail = availableOnly.checked;
-        let visible = 0;
 
-        bookCards.forEach(card => {
-            const title    = card.dataset.title    || '';
-            const author   = card.dataset.author   || '';
-            const isbn     = card.dataset.isbn     || '';
-            const cardCat  = card.dataset.category || '';
+        const visible = bookCards.filter(card => {
+            const title    = card.dataset.title      || '';
+            const author   = card.dataset.author     || '';
+            const isbn     = card.dataset.isbn       || '';
+            const cardCat  = card.dataset.category   || '';
             const cardDept = card.dataset.department || '';
-            const cardLang = card.dataset.language || '';
+            const cardLang = card.dataset.language   || '';
             const qty      = parseInt(card.dataset.quantity, 10) || 0;
 
             const matchSearch = !term || title.includes(term) || author.includes(term) || isbn.includes(term);
@@ -386,16 +397,33 @@
 
             const show = matchSearch && matchCat && matchDept && matchLang && matchAvail;
             card.style.display = show ? '' : 'none';
-            if (show) visible++;
+            return show;
         });
 
-        noResults.style.display = visible === 0 ? 'block' : 'none';
+        if (visible.length > 1) {
+            const sorted = visible.slice();
+            if (sort) {
+                sorted.sort((a, b) => {
+                    if (sort === 'title-asc')  return (a.dataset.title  || '').localeCompare(b.dataset.title  || '');
+                    if (sort === 'title-desc') return (b.dataset.title  || '').localeCompare(a.dataset.title  || '');
+                    if (sort === 'author-asc') return (a.dataset.author || '').localeCompare(b.dataset.author || '');
+                    if (sort === 'avail-desc') return (parseInt(b.dataset.quantity, 10) || 0) - (parseInt(a.dataset.quantity, 10) || 0);
+                    return 0;
+                });
+            } else {
+                sorted.sort((a, b) => parseInt(a.dataset.originalIndex, 10) - parseInt(b.dataset.originalIndex, 10));
+            }
+            sorted.forEach(card => booksGrid.appendChild(card));
+        }
+
+        noResults.style.display = visible.length === 0 ? 'block' : 'none';
     }
 
     searchInput.addEventListener('input', applyFilters);
     filterCategory.addEventListener('change', applyFilters);
     filterDepartment.addEventListener('change', applyFilters);
     filterLanguage.addEventListener('change', applyFilters);
+    sortBy.addEventListener('change', applyFilters);
     availableOnly.addEventListener('change', applyFilters);
 
     applyFilters();
