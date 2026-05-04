@@ -308,7 +308,7 @@ def admin_dashboard_view(request):
         .values('month')
         .annotate(count=Count('id'))
     )
-    monthly_map = {entry['month'].date().replace(day=1): entry['count'] for entry in monthly_borrows_qs}
+    monthly_map = {entry['month'].replace(day=1): entry['count'] for entry in monthly_borrows_qs}
     monthly_labels = [ms.strftime('%b %Y') for ms in month_starts]
     monthly_counts = [monthly_map.get(ms, 0) for ms in month_starts]
 
