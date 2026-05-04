@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Q
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_str
@@ -264,8 +265,9 @@ def send_due_soon_notifications():
                 day_str = f"in {days_left} days"
             msg_prefix = f'Reminder: "{borrow.book.title}" is due {day_str}.'
             already_notified = Notification.objects.filter(
+                Q(message__startswith=f'Reminder: "{borrow.book.title}" is due') |
+                Q(message__startswith=f"Reminder: '{borrow.book.title}' is due"),
                 student=borrow.student,
-                message__startswith=f'Reminder: "{borrow.book.title}" is due',
                 created_at__gte=cutoff,
             ).exists()
             if not already_notified:
@@ -1228,7 +1230,6 @@ def admin_export_fines_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import mm
-    from django.db.models import Q
     from datetime import datetime
 
     borrows = Borrow.objects.filter(

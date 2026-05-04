@@ -54,3 +54,20 @@ Optional SMTP email (Mailgun) configured via environment variables. Falls back t
 
 ## Database
 SQLite database at `lms_project/db.sqlite3`. Migrations are managed via Django's migration system (`python manage.py migrate`).
+
+## Management Commands
+
+### send_due_reminders
+Creates in-app `Notification` rows for students whose approved borrow is due **tomorrow** (within 24 hours).
+
+- **Location**: `lms_project/lms_app/management/commands/send_due_reminders.py`
+- **Message format**: `"Reminder: '{book title}' is due tomorrow. Return it on time to avoid a fine."`
+- **Deduplication**: Skips a borrow if an identical reminder was already created in the last 24 hours.
+- **Run manually**:
+  ```bash
+  cd lms_project && python manage.py send_due_reminders
+  ```
+- **Automate**: Schedule via cron (no Celery required), e.g. run once a day at 8 AM:
+  ```
+  0 8 * * * cd /path/to/lms_project && python manage.py send_due_reminders
+  ```
