@@ -190,7 +190,7 @@ def manage_profile(request):
 
 
 def home(request):
-    return render(request, 'landing.html')
+    return render(request, 'home.html')
 
 
 def admin_login_required(view_func):
