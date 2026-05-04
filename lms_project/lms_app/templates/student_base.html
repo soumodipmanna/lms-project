@@ -33,6 +33,25 @@
 
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
+    <nav class="bottom-nav" aria-label="Mobile navigation">
+        <a href="{% url 'dashboard' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-book-open"></i>
+            <span>Books</span>
+        </a>
+        <a href="{% url 'my_borrowed_books' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'my_borrowed_books' %}active{% endif %}">
+            <i class="fas fa-book-bookmark"></i>
+            <span>Borrowed</span>
+        </a>
+        <a href="{% url 'social_wall' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'social_wall' %}active{% endif %}">
+            <i class="fas fa-comments"></i>
+            <span>Wall</span>
+        </a>
+        <a href="{% url 'manage_profile' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'manage_profile' %}active{% endif %}">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
     <div class="container">
         <aside class="sidebar">
             <ul class="sidebar-menu">
