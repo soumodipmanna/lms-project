@@ -640,6 +640,15 @@ def admin_delete_book_view(request, book_id):
 
 
 @admin_login_required
+def admin_pending_counts_json(request):
+    borrow_count = Borrow.objects.filter(status='pending').count()
+    signup_count = Student.objects.filter(status='pending').count()
+    response = JsonResponse({'borrow_pending': borrow_count, 'signup_pending': signup_count})
+    response['Cache-Control'] = 'no-store'
+    return response
+
+
+@admin_login_required
 def admin_borrow_requests_view(request):
     borrows = Borrow.objects.all().select_related('student', 'student__user', 'book').prefetch_related('waivers').order_by('-borrow_date')
     for borrow in borrows:

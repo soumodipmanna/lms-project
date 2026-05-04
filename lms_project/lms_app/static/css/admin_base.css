@@ -129,6 +129,19 @@ body {
     color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.2);
 }
 .sidebar-menu a.active::before { height: 0; }
+.pending-badge {
+    margin-left: auto;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+.sidebar.collapsed .pending-badge { display: none !important; }
 .icon { font-size: 1.2rem; min-width: 1.2rem; display: inline-flex; justify-content: center; }
 .sidebar.collapsed .sidebar-menu a .icon { margin: 0; }
 

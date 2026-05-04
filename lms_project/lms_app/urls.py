@@ -36,6 +36,7 @@ urlpatterns = [
     path('admin-portal/books/edit/<int:book_id>/', views.admin_edit_book_view, name='admin_edit_book'),
     path('admin-portal/books/delete/<int:book_id>/', views.admin_delete_book_view, name='admin_delete_book'),
     
+    path('admin-portal/pending-counts/', views.admin_pending_counts_json, name='admin_pending_counts'),
     path('admin-portal/borrow-requests/', views.admin_borrow_requests_view, name='admin_borrow_requests'),
     path('admin-portal/borrow-requests/approve/<int:borrow_id>/', views.admin_approve_borrow_view, name='admin_approve_borrow'),
     path('admin-portal/borrow-requests/reject/<int:borrow_id>/', views.admin_reject_borrow_view, name='admin_reject_borrow'),

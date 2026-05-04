@@ -34,10 +34,10 @@
         <aside class="sidebar" id="sidebar">
             <ul class="sidebar-menu">
                 <li><a href="{% url 'admin_dashboard' %}"{% if request.resolver_match.url_name == 'admin_dashboard' %} class="active"{% endif %}><span class="icon">📊</span><span class="label">Dashboard</span></a></li>
-                <li><a href="{% url 'admin_signup_requests' %}"{% if request.resolver_match.url_name == 'admin_signup_requests' %} class="active"{% endif %}><span class="icon">✋</span><span class="label">Signup Requests</span></a></li>
+                <li><a href="{% url 'admin_signup_requests' %}"{% if request.resolver_match.url_name == 'admin_signup_requests' %} class="active"{% endif %}><span class="icon">✋</span><span class="label">Signup Requests</span><span class="pending-badge" id="signupBadge" style="display:none;"></span></a></li>
                 <li><a href="{% url 'admin_manage_students' %}"{% if request.resolver_match.url_name == 'admin_manage_students' or request.resolver_match.url_name == 'admin_add_student' or request.resolver_match.url_name == 'admin_import_students' %} class="active"{% endif %}><span class="icon">👥</span><span class="label">Manage Students</span></a></li>
                 <li><a href="{% url 'admin_manage_books' %}"{% if request.resolver_match.url_name == 'admin_manage_books' or request.resolver_match.url_name == 'admin_add_book' or request.resolver_match.url_name == 'admin_edit_book' or request.resolver_match.url_name == 'admin_import_books' %} class="active"{% endif %}><span class="icon">📚</span><span class="label">Manage Books</span></a></li>
-                <li><a href="{% url 'admin_borrow_requests' %}"{% if request.resolver_match.url_name == 'admin_borrow_requests' %} class="active"{% endif %}><span class="icon">📋</span><span class="label">Borrow Requests</span></a></li>
+                <li><a href="{% url 'admin_borrow_requests' %}"{% if request.resolver_match.url_name == 'admin_borrow_requests' %} class="active"{% endif %}><span class="icon">📋</span><span class="label">Borrow Requests</span><span class="pending-badge" id="borrowBadge" style="display:none;"></span></a></li>
                 <li><a href="{% url 'admin_manage_fines' %}"{% if request.resolver_match.url_name == 'admin_manage_fines' %} class="active"{% endif %}><span class="icon">💰</span><span class="label">Manage Fines</span></a></li>
                 {% if admin.role == 'superadmin' %}
                 <li><a href="{% url 'admin_manage_admins' %}"{% if request.resolver_match.url_name == 'admin_manage_admins' or request.resolver_match.url_name == 'admin_add_admin' or request.resolver_match.url_name == 'admin_edit_admin' %} class="active"{% endif %}><span class="icon">🔑</span><span class="label">Manage Admins</span></a></li>
@@ -140,6 +140,33 @@
                 backdrop.classList.remove('active');
             }
         });
+    </script>
+    <script>
+        function updatePendingBadge(badgeEl, count) {
+            if (count > 0) {
+                badgeEl.textContent = count;
+                badgeEl.style.display = 'inline-block';
+            } else {
+                badgeEl.style.display = 'none';
+            }
+        }
+
+        function fetchPendingCounts() {
+            fetch('{% url "admin_pending_counts" %}', { cache: 'no-store' })
+                .then(function(res) {
+                    if (!res.ok || !res.headers.get('content-type').includes('application/json')) return;
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (!data) return;
+                    updatePendingBadge(document.getElementById('borrowBadge'), data.borrow_pending);
+                    updatePendingBadge(document.getElementById('signupBadge'), data.signup_pending);
+                })
+                .catch(function() {});
+        }
+
+        fetchPendingCounts();
+        setInterval(fetchPendingCounts, 60000);
     </script>
     {% block extra_js %}{% endblock %}
 </body>
