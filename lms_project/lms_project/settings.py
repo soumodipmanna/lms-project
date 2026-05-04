@@ -20,13 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!-od-3guye!n0&-f%ikh!&7*b@mbp7dm392kn^5!l7bdn^pwi='
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-fallback-dev-only')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.environ.get("REPLIT_DOMAINS", "").split(",") + ["localhost", "127.0.0.1"] if os.environ.get("REPLIT_DOMAINS") else ["*"]
+ALLOWED_HOSTS = os.environ.get("REPLIT_DOMAINS", "").split(",") + ["localhost", "127.0.0.1"] if os.environ.get("REPLIT_DOMAINS") else ["localhost", "127.0.0.1"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://" + domain for domain in os.environ.get("REPLIT_DOMAINS", "").split(",")
@@ -123,7 +121,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

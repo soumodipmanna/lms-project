@@ -1,6 +1,7 @@
-modules = ["web", "python-3.11", "postgresql-16"]
+modules = ["web", "python-3.11", "bash"]
 [agent]
 expertMode = true
+stack = "BEST_EFFORT_FALLBACK"
 
 [nix]
 channel = "stable-25_05"
@@ -41,6 +42,8 @@ run = ["bash", "-c", "cd lms_project && gunicorn --bind=0.0.0.0:5000 --reuse-por
 [userenv]
 
 [userenv.shared]
+DJANGO_SECRET_KEY = "!m_^cwbc7@6!sk)s-7*9ctnf-pi-=0c*hyyyb^18nw#*0%32-k"
+DEBUG = "True"
 
 [postMerge]
 path = "scripts/post-merge.sh"
