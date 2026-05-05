@@ -328,7 +328,7 @@
     {% endfor %}
 </div>
 
-{% if books %}<div class="no-results" id="noResults">No books match your filters</div>{% endif %}
+<div class="no-results" id="noResults" style="display:none;">No books match your filters</div>
 
 <div class="modal-overlay" id="borrowModal">
     <div class="modal">
@@ -416,7 +416,9 @@
             sorted.forEach(card => booksGrid.appendChild(card));
         }
 
-        noResults.style.display = visible.length === 0 ? 'block' : 'none';
+        if (noResults) {
+            noResults.style.display = (bookCards.length > 0 && visible.length === 0) ? 'block' : 'none';
+        }
     }
 
     searchInput.addEventListener('input', applyFilters);
