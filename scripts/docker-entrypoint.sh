@@ -10,6 +10,9 @@ python manage.py bootstrap_admin
 echo "Seeding demo users..."
 python manage.py seed_demo_users
 
+echo "Seeding books..."
+python manage.py seed_books
+
 echo "Starting gunicorn on 0.0.0.0:5000"
 exec gunicorn \
     --bind 0.0.0.0:5000 \

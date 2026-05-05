@@ -1,0 +1,135 @@
+from django.core.management.base import BaseCommand
+
+from lms_app.models import Book
+
+BOOKS = [
+    ("To Kill a Mockingbird", "Harper Lee", "9780061935466", "Fiction", "Arts & Humanities", "English", 3),
+    ("1984", "George Orwell", "9780451524935", "Fiction", "Arts & Humanities", "English", 4),
+    ("The Great Gatsby", "F. Scott Fitzgerald", "9780743273565", "Fiction", "Arts & Humanities", "English", 2),
+    ("Pride and Prejudice", "Jane Austen", "9780141439518", "Fiction", "Arts & Humanities", "English", 3),
+    ("The Catcher in the Rye", "J.D. Salinger", "9780316769174", "Fiction", "Arts & Humanities", "English", 2),
+    ("Brave New World", "Aldous Huxley", "9780060850524", "Fiction", "Arts & Humanities", "English", 3),
+    ("Animal Farm", "George Orwell", "9780451526342", "Fiction", "Arts & Humanities", "English", 5),
+    ("Lord of the Flies", "William Golding", "9780571295715", "Fiction", "Arts & Humanities", "English", 2),
+    ("The Alchemist", "Paulo Coelho", "9780062315007", "Fiction", "Arts & Humanities", "English", 4),
+    ("The Hobbit", "J.R.R. Tolkien", "9780547928227", "Fantasy", "Arts & Humanities", "English", 3),
+    ("Harry Potter and the Philosopher's Stone", "J.K. Rowling", "9780747532743", "Fantasy", "Arts & Humanities", "English", 5),
+    ("The Da Vinci Code", "Dan Brown", "9780307474278", "Thriller", "Arts & Humanities", "English", 3),
+    ("Gone with the Wind", "Margaret Mitchell", "9781451635621", "Historical Fiction", "Arts & Humanities", "English", 2),
+    ("Moby Dick", "Herman Melville", "9781503280786", "Fiction", "Arts & Humanities", "English", 2),
+    ("War and Peace", "Leo Tolstoy", "9780199232765", "Historical Fiction", "Arts & Humanities", "English", 2),
+    ("Crime and Punishment", "Fyodor Dostoevsky", "9780486415871", "Fiction", "Arts & Humanities", "English", 3),
+    ("The Odyssey", "Homer", "9780140268867", "Classic", "Arts & Humanities", "English", 2),
+    ("Hamlet", "William Shakespeare", "9780743477123", "Drama", "Arts & Humanities", "English", 4),
+    ("Frankenstein", "Mary Shelley", "9780486282114", "Horror", "Arts & Humanities", "English", 3),
+    ("Jane Eyre", "Charlotte Bronte", "9780142437209", "Fiction", "Arts & Humanities", "English", 2),
+    ("Introduction to Algorithms", "Thomas H. Cormen", "9780262033848", "Computer Science", "Computer Science", "English", 4),
+    ("Clean Code", "Robert C. Martin", "9780132350884", "Computer Science", "Computer Science", "English", 3),
+    ("The Pragmatic Programmer", "David Thomas", "9780135957059", "Computer Science", "Computer Science", "English", 3),
+    ("Design Patterns", "Gang of Four", "9780201633610", "Computer Science", "Computer Science", "English", 2),
+    ("Structure and Interpretation of Computer Programs", "Harold Abelson", "9780262510875", "Computer Science", "Computer Science", "English", 2),
+    ("Artificial Intelligence: A Modern Approach", "Stuart Russell", "9780136042594", "Computer Science", "Computer Science", "English", 3),
+    ("Operating System Concepts", "Abraham Silberschatz", "9781119800361", "Computer Science", "Computer Science", "English", 4),
+    ("Computer Networks", "Andrew S. Tanenbaum", "9780132126953", "Computer Science", "Computer Science", "English", 3),
+    ("Database System Concepts", "Abraham Silberschatz", "9780078022159", "Computer Science", "Computer Science", "English", 3),
+    ("Computer Organization and Architecture", "William Stallings", "9780134997193", "Computer Science", "Computer Science", "English", 2),
+    ("Data Structures and Algorithms in Python", "Michael T. Goodrich", "9781118290279", "Computer Science", "Computer Science", "English", 3),
+    ("Machine Learning", "Tom M. Mitchell", "9780070428072", "Computer Science", "Computer Science", "English", 2),
+    ("Deep Learning", "Ian Goodfellow", "9780262035613", "Computer Science", "Computer Science", "English", 2),
+    ("Python Crash Course", "Eric Matthes", "9781593279288", "Computer Science", "Computer Science", "English", 4),
+    ("JavaScript: The Good Parts", "Douglas Crockford", "9780596517748", "Computer Science", "Computer Science", "English", 3),
+    ("Engineering Mathematics", "K.A. Stroud", "9781137031204", "Mathematics", "Engineering", "English", 4),
+    ("Calculus: Early Transcendentals", "James Stewart", "9781285741550", "Mathematics", "Engineering", "English", 3),
+    ("Linear Algebra and Its Applications", "David C. Lay", "9780321982384", "Mathematics", "Engineering", "English", 3),
+    ("Probability and Statistics for Engineering", "Jay L. Devore", "9781305251809", "Mathematics", "Engineering", "English", 3),
+    ("Mechanics of Materials", "R.C. Hibbeler", "9780134319650", "Engineering", "Mechanical Engineering", "English", 3),
+    ("Thermodynamics: An Engineering Approach", "Yunus A. Cengel", "9780073398174", "Engineering", "Mechanical Engineering", "English", 3),
+    ("Fluid Mechanics", "Frank M. White", "9780073398273", "Engineering", "Mechanical Engineering", "English", 2),
+    ("Engineering Mechanics: Statics", "R.C. Hibbeler", "9780133918922", "Engineering", "Mechanical Engineering", "English", 3),
+    ("Machine Design", "Robert L. Norton", "9780133356717", "Engineering", "Mechanical Engineering", "English", 2),
+    ("Manufacturing Engineering and Technology", "Serope Kalpakjian", "9780133128741", "Engineering", "Mechanical Engineering", "English", 2),
+    ("Electric Circuits", "James W. Nilsson", "9780134746968", "Engineering", "Electrical Engineering", "English", 3),
+    ("Electronic Devices and Circuit Theory", "Robert L. Boylestad", "9780132622264", "Engineering", "Electrical Engineering", "English", 3),
+    ("Signals and Systems", "Alan V. Oppenheim", "9780138147570", "Engineering", "Electrical Engineering", "English", 2),
+    ("Digital Signal Processing", "John G. Proakis", "9780131873742", "Engineering", "Electrical Engineering", "English", 2),
+    ("Power System Analysis", "John J. Grainger", "9780070612938", "Engineering", "Electrical Engineering", "English", 2),
+    ("Control Systems Engineering", "Norman S. Nise", "9781119474227", "Engineering", "Electrical Engineering", "English", 3),
+    ("Principles of Physics", "David Halliday", "9781118230732", "Physics", "Science", "English", 4),
+    ("University Physics", "Hugh D. Young", "9780135159552", "Physics", "Science", "English", 3),
+    ("Concepts of Modern Physics", "Arthur Beiser", "9780072448481", "Physics", "Science", "English", 2),
+    ("Organic Chemistry", "Paula Yurkanis Bruice", "9780134042282", "Chemistry", "Science", "English", 3),
+    ("Inorganic Chemistry", "Gary L. Miessler", "9780321811059", "Chemistry", "Science", "English", 2),
+    ("Physical Chemistry", "Peter Atkins", "9781429290197", "Chemistry", "Science", "English", 2),
+    ("Biology", "Neil A. Campbell", "9780134093413", "Biology", "Science", "English", 3),
+    ("Molecular Biology of the Cell", "Bruce Alberts", "9780393884821", "Biology", "Science", "English", 2),
+    ("Genetics: From Genes to Genomes", "Leland Hartwell", "9780073525266", "Biology", "Science", "English", 2),
+    ("Microbiology: An Introduction", "Gerard J. Tortora", "9780134605197", "Biology", "Science", "English", 3),
+    ("Principles of Economics", "N. Gregory Mankiw", "9781305585126", "Economics", "Business & Economics", "English", 4),
+    ("Microeconomics", "Paul Krugman", "9781319098780", "Economics", "Business & Economics", "English", 3),
+    ("Macroeconomics", "Olivier Blanchard", "9780133780581", "Economics", "Business & Economics", "English", 3),
+    ("Financial Accounting", "Walter T. Harrison", "9780134065823", "Accounting", "Business & Economics", "English", 3),
+    ("Management Accounting", "Ray H. Garrison", "9781259307416", "Accounting", "Business & Economics", "English", 2),
+    ("Principles of Marketing", "Philip Kotler", "9780134492513", "Marketing", "Business & Economics", "English", 3),
+    ("Strategic Management", "Fred R. David", "9780134167480", "Management", "Business & Economics", "English", 2),
+    ("Organizational Behavior", "Stephen P. Robbins", "9780133507645", "Management", "Business & Economics", "English", 3),
+    ("Business Law", "Kenneth W. Clarkson", "9781305967250", "Law", "Business & Economics", "English", 2),
+    ("Corporate Finance", "Stephen A. Ross", "9781260091878", "Finance", "Business & Economics", "English", 3),
+    ("A Brief History of Time", "Stephen Hawking", "9780553380163", "Science", "Science", "English", 4),
+    ("The Selfish Gene", "Richard Dawkins", "9780198788607", "Science", "Science", "English", 3),
+    ("Cosmos", "Carl Sagan", "9780345539434", "Science", "Science", "English", 3),
+    ("The Double Helix", "James D. Watson", "9780743216302", "Science", "Science", "English", 2),
+    ("Surely You're Joking, Mr. Feynman!", "Richard P. Feynman", "9780393316049", "Science", "Science", "English", 3),
+    ("Sapiens: A Brief History of Humankind", "Yuval Noah Harari", "9780062316097", "History", "Arts & Humanities", "English", 4),
+    ("Homo Deus", "Yuval Noah Harari", "9780062464316", "History", "Arts & Humanities", "English", 3),
+    ("Guns, Germs, and Steel", "Jared Diamond", "9780393354324", "History", "Arts & Humanities", "English", 2),
+    ("The Art of War", "Sun Tzu", "9781599869773", "Philosophy", "Arts & Humanities", "English", 4),
+    ("Meditations", "Marcus Aurelius", "9780140449334", "Philosophy", "Arts & Humanities", "English", 3),
+    ("The Republic", "Plato", "9780140455113", "Philosophy", "Arts & Humanities", "English", 2),
+    ("Think and Grow Rich", "Napoleon Hill", "9781585424337", "Self-Help", "Business & Economics", "English", 3),
+    ("How to Win Friends and Influence People", "Dale Carnegie", "9780671027032", "Self-Help", "Arts & Humanities", "English", 4),
+    ("The 7 Habits of Highly Effective People", "Stephen R. Covey", "9781982137274", "Self-Help", "Arts & Humanities", "English", 3),
+    ("Atomic Habits", "James Clear", "9780735211292", "Self-Help", "Arts & Humanities", "English", 4),
+    ("Thinking, Fast and Slow", "Daniel Kahneman", "9780374533557", "Psychology", "Arts & Humanities", "English", 3),
+    ("The Psychology of Money", "Morgan Housel", "9780857197689", "Finance", "Business & Economics", "English", 3),
+    ("Rich Dad Poor Dad", "Robert T. Kiyosaki", "9781612680194", "Finance", "Business & Economics", "English", 4),
+    ("Zero to One", "Peter Thiel", "9780804139021", "Business", "Business & Economics", "English", 3),
+    ("The Lean Startup", "Eric Ries", "9780307887894", "Business", "Business & Economics", "English", 3),
+    ("Good to Great", "Jim Collins", "9780066620992", "Management", "Business & Economics", "English", 2),
+    ("The Innovator's Dilemma", "Clayton M. Christensen", "9781633691780", "Business", "Business & Economics", "English", 2),
+    ("Outliers", "Malcolm Gladwell", "9780316017930", "Psychology", "Arts & Humanities", "English", 3),
+    ("Freakonomics", "Steven D. Levitt", "9780060731335", "Economics", "Business & Economics", "English", 3),
+    ("The Black Swan", "Nassim Nicholas Taleb", "9780812973815", "Finance", "Business & Economics", "English", 2),
+    ("Emotional Intelligence", "Daniel Goleman", "9780553383713", "Psychology", "Arts & Humanities", "English", 3),
+    ("Man's Search for Meaning", "Viktor E. Frankl", "9780807014271", "Psychology", "Arts & Humanities", "English", 3),
+    ("Introduction to Psychology", "Rod Plotnik", "9781111344948", "Psychology", "Arts & Humanities", "English", 3),
+    ("The Origin of Species", "Charles Darwin", "9780140432053", "Biology", "Science", "English", 2),
+]
+
+
+class Command(BaseCommand):
+    help = "Seed 100 books into the database. Skips books with duplicate ISBNs."
+
+    def handle(self, *args, **options):
+        created = 0
+        skipped = 0
+        for title, author, isbn, category, department, language, quantity in BOOKS:
+            _, was_created = Book.objects.get_or_create(
+                isbn=isbn,
+                defaults={
+                    "title": title,
+                    "author": author,
+                    "category": category,
+                    "department": department,
+                    "language": language,
+                    "quantity": quantity,
+                    "fine_rate": 5.00,
+                },
+            )
+            if was_created:
+                created += 1
+            else:
+                skipped += 1
+
+        self.stdout.write(self.style.SUCCESS(
+            f"seed_books: {created} books created, {skipped} already existed."
+        ))
