@@ -7,7 +7,7 @@ services:
       - "5000:5000"
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
-      DEBUG: ${DEBUG:-False}
+      DEBUG: ${DEBUG:-True}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
       EMAIL_HOST: ${EMAIL_HOST:-smtp.mailgun.org}
       EMAIL_PORT: ${EMAIL_PORT:-587}
