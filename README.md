@@ -78,11 +78,15 @@ Then open http://localhost:5000.
 
 Configuration (optional): copy `.env.example` to `.env` and adjust values such as `DJANGO_SECRET_KEY`, `DEBUG`, or SMTP settings. Compose interpolates these into the container via the `environment:` section, and sensible defaults apply when no `.env` file is present — so the default `docker compose up --build` works out of the box.
 
-The compose setup creates two named volumes so your data persists across rebuilds:
-- `lms_data` — SQLite database file (`/data/db.sqlite3` inside the container)
+The compose setup starts two services:
+- `db` — PostgreSQL 16 (production-grade storage with safe concurrent writes)
+- `web` — Django app served by gunicorn on port 5000
+
+And two named volumes so your data persists across rebuilds:
+- `lms_pgdata` — PostgreSQL data directory
 - `lms_media` — Uploaded images (`/app/lms_project/media` inside the container)
 
-On first startup the container seeds the volume with the project's existing `lms_project/db.sqlite3` (sample data, demo accounts, etc.) so the dockerized app starts populated. On subsequent runs the volume's existing DB is preserved and never overwritten.
+The web container waits for Postgres to become healthy, runs migrations on startup, then serves the app via gunicorn on port 5000.
 
 Supported environment variables (all optional, sensible defaults applied):
 
@@ -90,13 +94,43 @@ Supported environment variables (all optional, sensible defaults applied):
 | --- | --- |
 | `DJANGO_SECRET_KEY` | Django secret key (set a long random value for production) |
 | `DEBUG` | `True` / `False` |
-| `DATABASE_PATH` | SQLite file path inside the container |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT` | Postgres connection (used by the bundled `db` service) |
+| `DATABASE_URL` | Single connection string (e.g. `postgres://user:pass@host:5432/db`); takes precedence over the discrete `POSTGRES_*` vars |
+| `DATABASE_PATH` | SQLite file path inside the container — only used by the SQLite fallback when no Postgres vars are set |
 | `EMAIL_BACKEND` | Django email backend |
 | `EMAIL_HOST`, `EMAIL_PORT` | SMTP host and port |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | SMTP credentials (leave blank to fall back to console email backend) |
 | `DEFAULT_FROM_EMAIL` | "From" address for outgoing mail |
 
-The container runs migrations on startup and serves the app via gunicorn on port 5000.
+### Database configuration
+
+The Django settings pick a database in this order:
+
+1. `DATABASE_URL` (e.g. `postgres://user:pass@host:5432/dbname`) — takes precedence.
+2. `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_HOST` / `POSTGRES_PORT` — used by the bundled compose stack (defaults: `lms` / `lms` / `lms` / `db` / `5432`).
+3. SQLite fallback at `DATABASE_PATH` (or `BASE_DIR/db.sqlite3`) when none of the above are set — keeps `python manage.py runserver` working for local dev outside Docker with no extra setup.
+
+When no Postgres vars are set, the container also seeds the SQLite volume on first startup with the project's existing `lms_project/db.sqlite3` (sample data, demo accounts) so a SQLite-only deployment starts populated. On subsequent runs the volume's existing DB is preserved and never overwritten. With Postgres in use, no SQLite seeding occurs.
+
+### Migrating an existing SQLite database to Postgres
+
+If you previously ran the SQLite-based compose stack and want to keep your data:
+
+```bash
+# 1. Start ONLY the old SQLite stack and dump its data (run from a checkout
+#    that still uses SQLite, or temporarily unset the POSTGRES_* env vars):
+docker compose run --rm web python manage.py dumpdata \
+    --natural-foreign --natural-primary \
+    -e contenttypes -e auth.Permission \
+    --indent 2 > backup.json
+
+# 2. Bring up the new Postgres-backed stack and load the dump:
+docker compose up -d --build
+docker compose exec web python manage.py loaddata /app/backup.json
+```
+
+Copy `backup.json` into the web container (e.g. via a bind mount or
+`docker cp lms-web:/app/ backup.json`) before running `loaddata`.
 
 ### Bootstrap an initial admin (one-shot)
 

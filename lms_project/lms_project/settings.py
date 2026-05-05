@@ -79,12 +79,39 @@ WSGI_APPLICATION = 'lms_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+def _build_database_config():
+    database_url = os.environ.get('DATABASE_URL', '').strip()
+    if database_url:
+        from urllib.parse import urlparse, unquote
+        parsed = urlparse(database_url)
+        scheme = parsed.scheme.lower()
+        if scheme.startswith('postgres'):
+            return {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': (parsed.path or '').lstrip('/') or 'postgres',
+                'USER': unquote(parsed.username or ''),
+                'PASSWORD': unquote(parsed.password or ''),
+                'HOST': parsed.hostname or '',
+                'PORT': str(parsed.port or ''),
+            }
+
+    if os.environ.get('POSTGRES_DB') or os.environ.get('POSTGRES_HOST'):
+        return {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('POSTGRES_DB', 'lms'),
+            'USER': os.environ.get('POSTGRES_USER', 'lms'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+            'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+            'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+        }
+
+    return {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.environ.get('DATABASE_PATH', BASE_DIR / 'db.sqlite3'),
     }
-}
+
+
+DATABASES = {'default': _build_database_config()}
 
 
 # Password validation
