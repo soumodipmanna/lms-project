@@ -36,4 +36,6 @@ RUN mkdir -p /app/lms_project/media
 
 EXPOSE 5000
 
+RUN chmod +x /app/scripts/docker-entrypoint.sh
+
 ENTRYPOINT ["/app/scripts/docker-entrypoint.sh"]
