@@ -595,7 +595,7 @@ def admin_dashboard_view(request):
 
 @admin_login_required
 def admin_manage_students_view(request):
-    students = Student.objects.filter(status__in=['approved', 'disabled']).select_related('user')
+    students = Student.objects.all().select_related('user').order_by('status', 'roll_no')
     context = {
         'admin': request.admin,
         'students': students,
