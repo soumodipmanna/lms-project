@@ -66,6 +66,24 @@ admin.save()
 python manage.py runserver 0.0.0.0:5000
 ```
 
+## Run with Docker
+
+The repo includes a `Dockerfile` and `docker-compose.yml` so you can build and run the whole app in one command:
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost:5000.
+
+Configuration (optional): copy `.env.example` to `.env` and adjust values such as `DJANGO_SECRET_KEY`, `DEBUG`, or SMTP settings. Compose interpolates these into the container via the `environment:` section, and sensible defaults apply when no `.env` file is present — so the default `docker compose up --build` works out of the box.
+
+The compose setup creates two named volumes so your data persists across rebuilds:
+- `lms_data` — SQLite database file (`/data/db.sqlite3` inside the container)
+- `lms_media` — Uploaded images (`/app/lms_project/media` inside the container)
+
+The container runs migrations on startup and serves the app via gunicorn on port 5000.
+
 ## Project Structure
 
 ```

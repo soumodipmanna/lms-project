@@ -1,0 +1,24 @@
+services:
+  web:
+    build: .
+    image: lms-project:latest
+    container_name: lms-web
+    ports:
+      - "5000:5000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
+      DEBUG: ${DEBUG:-False}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.mailgun.org}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-LMS-Info <noreply@library.com>}
+      DATABASE_PATH: ${DATABASE_PATH:-/data/db.sqlite3}
+    volumes:
+      - lms_data:/data
+      - lms_media:/app/lms_project/media
+    restart: unless-stopped
+
+volumes:
+  lms_data:
+  lms_media:
