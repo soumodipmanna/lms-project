@@ -23,6 +23,7 @@
         <button class="tab-btn" onclick="filterStudents('approved', this)">Active <span class="tab-count" id="count-approved"></span></button>
         <button class="tab-btn" onclick="filterStudents('disabled', this)">Disabled <span class="tab-count" id="count-disabled"></span></button>
         <button class="tab-btn tab-btn-rejected" onclick="filterStudents('rejected', this)">Rejected <span class="tab-count" id="count-rejected"></span></button>
+        <button class="tab-btn tab-btn-pending" onclick="filterStudents('pending', this)">Pending <span class="tab-count" id="count-pending"></span></button>
     </div>
 </div>
 
@@ -41,8 +42,7 @@
         </thead>
         <tbody id="studentsTableBody">
             {% for student in students %}
-            <tr data-status="{{ student.status }}"
-                data-rejection-reason="{{ student.status_reason|default:'' }}">
+            <tr data-status="{{ student.status }}">
                 <td>{{ student.roll_no }}</td>
                 <td>{{ student.name|default:"-" }}</td>
                 <td>{{ student.branch }}</td>
@@ -50,42 +50,45 @@
                 <td>{{ student.phone_number|default:"-" }}</td>
                 <td>
                     {% if student.status == 'approved' %}
-                    <span style="color: #6bff8a; font-weight: 500;">✓ Active</span>
+                        <span style="color: #6bff8a; font-weight: 500;">✓ Active</span>
                     {% elif student.status == 'disabled' %}
-                    <span style="color: #ff8a8a; font-weight: 500;">⊘ Disabled</span>
+                        <span style="color: #ff8a8a; font-weight: 500;">⊘ Disabled</span>
                     {% elif student.status == 'rejected' %}
-                    <span style="color: #ffa500; font-weight: 500;" title="{{ student.status_reason|default:'No reason provided' }}">✖ Rejected{% if student.status_reason %} ⓘ{% endif %}</span>
-                    {% if student.status_reason %}
-                    <div style="font-size: 0.75rem; color: #aaa; margin-top: 0.2rem; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ student.status_reason }}">{{ student.status_reason }}</div>
-                    {% endif %}
+                        <span style="color: #ffa500; font-weight: 500;" title="{{ student.status_reason|default:'No reason provided' }}">✖ Rejected</span>
+                        {% if student.status_reason %}
+                        <div style="font-size: 0.75rem; color: #aaa; margin-top: 0.2rem; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ student.status_reason }}">{{ student.status_reason }}</div>
+                        {% endif %}
+                    {% elif student.status == 'pending' %}
+                        <span style="color: #87ceeb; font-weight: 500;">⏳ Pending</span>
                     {% endif %}
                 </td>
                 <td>
                     {% if student.status == 'approved' %}
-                    <button class="btn-danger" onclick="openDisableModal({{ student.id }}, '{{ student.roll_no }}')" title="Disable Student">⊘ Disable</button>
-                    {% endif %}
-                    {% if student.status == 'rejected' %}
-                    <form method="post" action="{% url 'admin_delete_student' student.id %}" style="display: inline;"
-                          onsubmit="return confirm('Delete account for {{ student.roll_no }}?\n\nThis will permanently remove their account so they can re-register with the same email.');">
-                        {% csrf_token %}
-                        <button class="btn-danger" title="Delete account to allow re-registration">🗑️ Delete Account</button>
-                    </form>
-                    {% else %}
-                    <form method="post" action="{% url 'admin_delete_student' student.id %}" style="display: inline;" onsubmit="return confirm('Delete student {{ student.roll_no }}?');">
-                        {% csrf_token %}
-                        <button class="btn-danger" title="Delete">🗑️</button>
-                    </form>
+                        <button class="btn-danger" onclick="openDisableModal({{ student.id }}, '{{ student.roll_no }}')" title="Disable Student">⊘ Disable</button>
+                        <form method="post" action="{% url 'admin_delete_student' student.id %}" style="display: inline;" onsubmit="return confirm('Delete student {{ student.roll_no }}?');">
+                            {% csrf_token %}
+                            <button class="btn-danger" title="Delete">🗑️</button>
+                        </form>
+                    {% elif student.status == 'disabled' %}
+                        <form method="post" action="{% url 'admin_delete_student' student.id %}" style="display: inline;" onsubmit="return confirm('Delete student {{ student.roll_no }}?');">
+                            {% csrf_token %}
+                            <button class="btn-danger" title="Delete">🗑️</button>
+                        </form>
+                    {% elif student.status == 'rejected' %}
+                        <form method="post" action="{% url 'admin_delete_student' student.id %}" style="display: inline;"
+                              onsubmit="return confirm('Delete account for {{ student.roll_no }}?\n\nThis will permanently remove their account so they can re-register with the same email.');">
+                            {% csrf_token %}
+                            <button class="btn-danger" title="Delete account to allow re-registration">🗑️ Delete Account</button>
+                        </form>
+                    {% elif student.status == 'pending' %}
+                        <span style="color: #666; font-size: 0.85rem;">Awaiting review</span>
                     {% endif %}
                 </td>
-            </tr>
-            {% empty %}
-            <tr id="emptyRow">
-                <td colspan="7" style="text-align: center; color: #666; padding: 2rem;">No students found</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <p id="noFilterResults" style="display:none; text-align:center; color:#666; padding:1.5rem 0;">No students in this category.</p>
+    <p id="emptyMessage" style="display:none; text-align:center; color:#666; padding:1.5rem 0;">No students found.</p>
 </div>
 {% endblock %}
 
@@ -124,16 +127,16 @@
             row.style.display = match ? '' : 'none';
             if (match) visible++;
         });
-        document.getElementById('noFilterResults').style.display = visible === 0 ? 'block' : 'none';
+        document.getElementById('emptyMessage').style.display = visible === 0 ? 'block' : 'none';
     }
 
     function updateCounts() {
         const rows = document.querySelectorAll('#studentsTableBody tr[data-status]');
-        const counts = { all: 0, approved: 0, disabled: 0, rejected: 0 };
+        const counts = { all: 0, approved: 0, disabled: 0, rejected: 0, pending: 0 };
         rows.forEach(row => {
             counts.all++;
             const s = row.dataset.status;
-            if (counts[s] !== undefined) counts[s]++;
+            if (s in counts) counts[s]++;
         });
         Object.entries(counts).forEach(([status, count]) => {
             const el = document.getElementById('count-' + status);
@@ -149,7 +152,13 @@
     }
     function closeDisableModal() { document.getElementById('disableModal').classList.remove('active'); }
 
-    document.addEventListener('DOMContentLoaded', updateCounts);
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCounts();
+        const rows = document.querySelectorAll('#studentsTableBody tr[data-status]');
+        if (rows.length === 0) {
+            document.getElementById('emptyMessage').style.display = 'block';
+        }
+    });
 </script>
 <style>
     .tab-btn {
@@ -165,6 +174,7 @@
     .tab-btn:hover { background: #333; color: #fff; }
     .tab-btn.active { background: #d4af37; color: #000; border-color: #d4af37; font-weight: 600; }
     .tab-btn-rejected.active { background: #ffa500; border-color: #ffa500; }
+    .tab-btn-pending.active { background: #87ceeb; border-color: #87ceeb; }
     .tab-count { font-size: 0.8rem; opacity: 0.8; margin-left: 2px; }
 </style>
 {% endblock %}
