@@ -1,21 +1,14 @@
 #!/bin/sh
 set -e
 
-DB_PATH="${DATABASE_PATH:-/data/db.sqlite3}"
-SEED_DB="/app/seed/db.sqlite3"
-
-mkdir -p "$(dirname "$DB_PATH")"
-
-if [ ! -f "$DB_PATH" ] && [ -f "$SEED_DB" ]; then
-    echo "Seeding database from $SEED_DB -> $DB_PATH"
-    cp "$SEED_DB" "$DB_PATH"
-fi
-
 echo "Running migrations..."
 python manage.py migrate --noinput
 
 echo "Bootstrapping initial admin (if configured)..."
 python manage.py bootstrap_admin
+
+echo "Seeding demo users..."
+python manage.py seed_demo_users
 
 echo "Starting gunicorn on 0.0.0.0:5000"
 exec gunicorn \

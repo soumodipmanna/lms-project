@@ -27,7 +27,6 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
       DEBUG: ${DEBUG:-True}
-      DATABASE_PATH: ${DATABASE_PATH:-/data/db.sqlite3}
       POSTGRES_DB: ${POSTGRES_DB:-lms}
       POSTGRES_USER: ${POSTGRES_USER:-lms}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lms}

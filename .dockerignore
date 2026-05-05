@@ -19,6 +19,7 @@ __pycache__
 htmlcov
 attached_assets
 PROJECT_SHOWCASE.md
+**/db.sqlite3
 **/db.sqlite3-journal
 lms_project/staticfiles
 lms_project/media
