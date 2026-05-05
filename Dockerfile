@@ -22,7 +22,9 @@ WORKDIR /app
 RUN pip install --upgrade pip && pip install uv
 
 COPY pyproject.toml uv.lock ./
-RUN uv pip install --system --no-cache -r pyproject.toml
+RUN uv export --frozen --no-dev --no-emit-project --format requirements-txt -o /tmp/requirements.txt \
+    && uv pip install --system --no-cache -r /tmp/requirements.txt \
+    && rm /tmp/requirements.txt
 
 COPY . .
 
