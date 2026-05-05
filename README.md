@@ -98,6 +98,23 @@ Supported environment variables (all optional, sensible defaults applied):
 
 The container runs migrations on startup and serves the app via gunicorn on port 5000.
 
+### Bootstrap an initial admin (one-shot)
+
+To get a usable admin account on the very first `docker compose up --build`, set the following in your `.env` (or shell environment) before bringing the stack up:
+
+```env
+INITIAL_ADMIN_EMAIL=admin@example.com
+INITIAL_ADMIN_PASSWORD=change-me-on-first-login
+INITIAL_ADMIN_NAME=Initial Admin   # optional, defaults to "Initial Admin"
+```
+
+On every container start, after migrations run, the `bootstrap_admin` management command checks for an `Admin` with that email:
+- If neither variable is set, the step is skipped silently.
+- If no admin with that email exists, a new **superadmin** record is created with the given password.
+- If an admin with that email already exists, the record is left **untouched** — the password is **never** overwritten on subsequent runs. Change the password from inside the admin portal.
+
+This makes `docker compose up --build` a true one-command setup: bring up the stack, then log into the admin portal with the credentials you configured.
+
 ## Project Structure
 
 ```

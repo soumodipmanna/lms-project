@@ -14,6 +14,9 @@ fi
 echo "Running migrations..."
 python manage.py migrate --noinput
 
+echo "Bootstrapping initial admin (if configured)..."
+python manage.py bootstrap_admin
+
 echo "Starting gunicorn on 0.0.0.0:5000"
 exec gunicorn \
     --bind 0.0.0.0:5000 \
