@@ -19,18 +19,16 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY pyproject.toml ./
-RUN pip install \
-        "django>=5.2.8" \
-        "gunicorn>=23.0.0" \
-        "pillow>=12.1.0" \
-        "reportlab>=4.0.0"
+RUN pip install --upgrade pip && pip install uv
+
+COPY pyproject.toml uv.lock ./
+RUN uv pip install --system --no-cache -r pyproject.toml
 
 COPY . .
 
 WORKDIR /app/lms_project
 
-RUN python manage.py collectstatic --noinput || true
+RUN python manage.py collectstatic --noinput
 
 RUN mkdir -p /data /app/lms_project/media
 
