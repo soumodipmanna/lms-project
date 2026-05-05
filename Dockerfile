@@ -28,6 +28,10 @@ RUN uv export --frozen --no-dev --no-emit-project --format requirements-txt -o /
 
 COPY . .
 
+RUN mkdir -p /app/seed \
+    && if [ -f /app/lms_project/db.sqlite3 ]; then cp /app/lms_project/db.sqlite3 /app/seed/db.sqlite3; fi \
+    && rm -f /app/lms_project/db.sqlite3
+
 WORKDIR /app/lms_project
 
 RUN python manage.py collectstatic --noinput
@@ -36,4 +40,4 @@ RUN mkdir -p /data /app/lms_project/media
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:5000 --workers 3 --access-logfile - --error-logfile - lms_project.wsgi:application"]
+ENTRYPOINT ["/app/scripts/docker-entrypoint.sh"]

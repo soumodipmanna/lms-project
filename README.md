@@ -82,6 +82,20 @@ The compose setup creates two named volumes so your data persists across rebuild
 - `lms_data` — SQLite database file (`/data/db.sqlite3` inside the container)
 - `lms_media` — Uploaded images (`/app/lms_project/media` inside the container)
 
+On first startup the container seeds the volume with the project's existing `lms_project/db.sqlite3` (sample data, demo accounts, etc.) so the dockerized app starts populated. On subsequent runs the volume's existing DB is preserved and never overwritten.
+
+Supported environment variables (all optional, sensible defaults applied):
+
+| Variable | Purpose |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | Django secret key (set a long random value for production) |
+| `DEBUG` | `True` / `False` |
+| `DATABASE_PATH` | SQLite file path inside the container |
+| `EMAIL_BACKEND` | Django email backend |
+| `EMAIL_HOST`, `EMAIL_PORT` | SMTP host and port |
+| `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | SMTP credentials (leave blank to fall back to console email backend) |
+| `DEFAULT_FROM_EMAIL` | "From" address for outgoing mail |
+
 The container runs migrations on startup and serves the app via gunicorn on port 5000.
 
 ## Project Structure
